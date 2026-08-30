@@ -14,6 +14,7 @@ const SUITES: Array = [
 	preload("res://tools/testes/teste_grande.gd"),
 	preload("res://tools/testes/teste_formatador.gd"),
 	preload("res://tools/testes/teste_economia.gd"),
+	preload("res://tools/testes/teste_dados.gd"),
 ]
 
 func _ready() -> void:
