@@ -22,10 +22,27 @@ sair de 1 caractere para números que já não cabem em nenhuma comparação hum
 
 ```bash
 godot --headless --path . tools/testes/runner.tscn   # segundos
-godot --headless --path . tools/teste_fumaca.tscn    # minutos
+godot --headless --path . tools/teste_fumaca.tscn    # segundos
 ```
 
 Os dois precisam imprimir `PASSOU`.
+
+## Réguas
+
+Régua não aprova nem reprova: ela **mede**. Ver [`TUNING.md`](TUNING.md).
+
+```bash
+godot --headless --path . tools/medir_ritmo.tscn     # tempo até cada marco
+```
+
+## Capturas
+
+```bash
+godot --path . tools/capturar.tscn --resolution 1920x1080
+godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama
+```
+
+Precisa de janela — headless não renderiza. Sai em `user://capturas`.
 
 ## Requisitos
 

@@ -2,10 +2,17 @@
 ##
 ##   godot --headless --path . tools/teste_fumaca.tscn
 ##
-## Sobe a cena principal de verdade e joga os primeiros trinta segundos do GDD §3: o
-## macaco que nao digita sozinho, os cliques ate juntar o Instinto Digitador, a compra, e
-## a producao automatica comecando. E o unico teste que prova a LIGACAO entre as pecas --
-## a suite unitaria provaria as mesmas contas com a cena inteira desligada.
+## Sobe a cena principal de verdade e joga a run da v0.1 inteira: o macaco que nao digita
+## sozinho, os cliques ate juntar o Instinto Digitador, a compra, a producao automatica, a
+## loja, o primeiro marco caindo, o Panorama, a ida e volta pelo save e quatro horas
+## offline. E o unico teste que prova a LIGACAO entre as pecas -- a suite unitaria provaria
+## as mesmas contas com a cena inteira desligada.
+##
+## O relogio e ACELERADO e nao esperado: as quatro horas offline entram como argumento.
+## Esperar quatro horas para provar quatro horas e exatamente o motivo de essa conta nunca
+## ser testada em lugar nenhum.
+##
+## Headless nao renderiza: nao ha afirmacao sobre pixel aqui. Isso e assunto de captura.
 ##
 ## O clique entra por Input.parse_input_event e nao chamando Economia.digitar direto, de
 ## proposito: assim ele passa pelo _unhandled_input da Partida, que e justamente o pedaco
@@ -19,6 +26,7 @@ const FRAMES := 120
 const CLIQUES := 12
 const UPGRADE_INICIAL := "instinto_digitador"
 const CAMINHO_DO_SAVE := "user://teste_fumaca_save.json"
+const HORAS_OFFLINE := 4.0
 
 func _ready() -> void:
 	# arquivo proprio e apagado ANTES de a cena subir: a Partida carrega o save no _ready,
@@ -142,10 +150,22 @@ func _ready() -> void:
 		_falhar("o Panorama comecou aberto")
 		return
 
+	# os primeiros marcos ja podem ter caido com os cliques e a compra la atras, entao o
+	# que se conta aqui e o SALTO: todo cruzamento emite exatamente um sinal, nem mais
+	var ja_alcancados := Jogo.marcos_alcancados.size()
+	var cruzados: Array[String] = []
+	var ouvinte := func(marco: DadosMarco) -> void: cruzados.append(marco.id)
+	EventBus.marco_alcancado.connect(ouvinte)
 	Economia.digitar(2000)
 	Marcos.verificar()
-	if Jogo.marcos_alcancados.is_empty():
-		_falhar("dois mil caracteres nao cruzaram marco nenhum")
+	EventBus.marco_alcancado.disconnect(ouvinte)
+	if cruzados.is_empty():
+		_falhar("dois mil caracteres nao dispararam marco nenhum no EventBus")
+		return
+	if cruzados.size() != Jogo.marcos_alcancados.size() - ja_alcancados:
+		_falhar("o EventBus emitiu %d sinais para %d marcos novos na lista" % [
+			cruzados.size(), Jogo.marcos_alcancados.size() - ja_alcancados,
+		])
 		return
 
 	EventBus.panorama_pedido.emit()
@@ -165,8 +185,53 @@ func _ready() -> void:
 		_falhar("o Panorama nao fechou")
 		return
 
-	print("PASSOU (%d cliques, %s comprado, cps %s)" % [
-		CLIQUES, UPGRADE_INICIAL, Jogo.caracteres_por_segundo.para_texto(),
+	# 7. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	var total_antes := Jogo.total_caracteres
+	var macacos_no_save := Jogo.macacos
+	var upgrades_antes := Jogo.upgrades_comprados.size()
+	var marcos_antes := Jogo.marcos_alcancados.size()
+	if not Save.gravar():
+		_falhar("nao gravou o save")
+		return
+
+	Jogo.total_caracteres = Grande.zero()
+	Jogo.macacos = Grande.zero()
+	Jogo.upgrades_comprados = [] as Array[String]
+	Jogo.marcos_alcancados = [] as Array[String]
+
+	if Save.carregar() <= 0.0:
+		_falhar("carregar nao devolveu o timestamp da gravacao")
+		return
+	if not Jogo.total_caracteres.igual_a(total_antes):
+		_falhar("o total voltou diferente: %s em vez de %s" % [
+			Jogo.total_caracteres.para_texto(), total_antes.para_texto(),
+		])
+		return
+	if not Jogo.macacos.igual_a(macacos_no_save):
+		_falhar("a contagem de macacos voltou diferente")
+		return
+	if Jogo.upgrades_comprados.size() != upgrades_antes:
+		_falhar("os upgrades comprados nao voltaram")
+		return
+	if Jogo.marcos_alcancados.size() != marcos_antes:
+		_falhar("os marcos alcancados nao voltaram")
+		return
+
+	# 8. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
+	var antes_do_offline := Jogo.total_caracteres
+	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)
+	if creditado.sinal() <= 0:
+		_falhar("quatro horas fora nao creditaram nada")
+		return
+	if not Jogo.total_caracteres.igual_a(antes_do_offline.mais(creditado)):
+		_falhar("o credito offline nao bateu com o total")
+		return
+
+	Save.apagar()
+	print("PASSOU (%d cliques, %s comprado, %d marcos, save ida e volta, %s de %.0f h offline)" % [
+		CLIQUES, UPGRADE_INICIAL, Jogo.marcos_alcancados.size(),
+		Formatador.formatar(creditado), HORAS_OFFLINE,
 	])
 	get_tree().quit(0)
 
