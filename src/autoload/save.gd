@@ -32,7 +32,7 @@ extends Node
 ## 7: entram as automacoes compradas e o estado ligado de cada uma (issue #28).
 ## 8: entra o contador de Universos reescritos (issue #31). Os Fragmentos ja existiam
 ## desde a versao 1, guardados e nunca usados -- o campo estava la esperando o sistema.
-const VERSAO: int = 8
+const VERSAO: int = 9
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -71,6 +71,7 @@ func gravar() -> bool:
 		"fragmentos": Jogo.fragmentos.para_texto(),
 		"multiplicador_global": Jogo.multiplicador_global,
 		"tempo_jogado": Jogo.tempo_jogado,
+		"tempo_da_ultima_rara": Jogo.tempo_da_ultima_rara,
 		"tempo_da_run": Jogo.tempo_da_run,
 		"recorde_por_segundo": Jogo.recorde_por_segundo.para_texto(),
 		"macacos_comprados": Jogo.macacos_comprados.para_texto(),
@@ -168,6 +169,7 @@ const _PADROES := {
 	"fragmentos": "0",
 	"multiplicador_global": 1.0,
 	"tempo_jogado": 0.0,
+	"tempo_da_ultima_rara": -1.0,
 	"tempo_da_run": 0.0,
 	"recorde_por_segundo": "0",
 	"macacos_comprados": "0",
@@ -195,6 +197,7 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.fragmentos = Grande.de_texto(str(dados["fragmentos"]))
 	Jogo.multiplicador_global = float(dados["multiplicador_global"])
 	Jogo.tempo_jogado = float(dados["tempo_jogado"])
+	Jogo.tempo_da_ultima_rara = float(dados["tempo_da_ultima_rara"])
 	Jogo.tempo_da_run = float(dados["tempo_da_run"])
 	Jogo.recorde_por_segundo = Grande.de_texto(str(dados["recorde_por_segundo"]))
 	Jogo.macacos_comprados = Grande.de_texto(str(dados["macacos_comprados"]))

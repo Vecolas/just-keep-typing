@@ -10,6 +10,16 @@ Em `.tres` dentro de `data/`, expostos por `@export` ou por `Resource`. Se você
 abrir um script para mudar um número numa sessão de tuning, esse número está no lugar
 errado — ver `CONVENCOES.md`, "Números vão para `.tres`".
 
+### Um número que não é de balanço, e mesmo assim mora aqui
+
+`data/raridade.tres` — `intervalo = 900 s` entre duas descobertas Lendárias ou acima.
+
+Ele não muda quanto o jogador produz; muda quanto tempo separa dois momentos raros. No
+endgame a chance de tudo o que ainda falta já vale 1, então sem esse intervalo as seis
+descobertas do GDD §11 caem no mesmo quadro: seis avisos empilhados não são seis momentos
+raros, são um só. A raridade não está na chance, está no **espaço** entre uma e outra — e
+espaço é balanceamento como qualquer outro, então mora em `.tres`.
+
 ---
 
 ## Réguas ≠ testes

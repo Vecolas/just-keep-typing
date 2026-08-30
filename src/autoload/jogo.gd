@@ -114,6 +114,18 @@ var automacoes: Dictionary = {}
 ## Quantas vezes o Universo foi reescrito (GDD §20). Nao zera nunca.
 var reescritas: int = 0
 
+## tempo_jogado no instante da ultima descoberta Lendaria ou acima. E o que espaca uma
+## rara da seguinte -- ver Descobertas.em_quarentena e dados_raridade.gd.
+##
+## Vai para o save de proposito: fechar o jogo e voltar nao pode entregar a segunda
+## lendaria de graca, senao a quarentena vira um botao.
+##
+## ⚠️ NEGATIVO significa "nenhuma ainda", e nao zero. A primeira versao usava zero e a
+## quarentena nunca ligava: a primeira rara costuma cair com tempo_jogado ainda baixo,
+## gravava zero de volta, e zero era justamente o valor que desligava a regra. A suite
+## pegou seis lendarias no mesmo instante.
+var tempo_da_ultima_rara: float = -1.0
+
 ## Segundos desta run, que zeram no prestigio. tempo_jogado nao zera.
 var tempo_da_run: float = 0.0
 

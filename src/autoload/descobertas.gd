@@ -18,6 +18,7 @@
 extends Node
 
 const PASTA := "res://data/descobertas"
+const RARIDADE := "res://data/raridade.tres"
 
 ## Semente propria. A suite escreve aqui antes de sortear; o jogo deixa aleatoria.
 var gerador := RandomNumberGenerator.new()
@@ -25,9 +26,15 @@ var gerador := RandomNumberGenerator.new()
 ## Ordenadas da mais comum para a mais rara.
 var _descobertas: Array[DadosDescoberta] = []
 
+## A quarentena das raras. Ver dados_raridade.gd.
+var _raridade: DadosRaridade = null
+
 
 func _ready() -> void:
 	gerador.randomize()
+	_raridade = ResourceLoader.load(RARIDADE) as DadosRaridade
+	if _raridade == null:
+		push_error("Descobertas: %s nao carregou" % RARIDADE)
 	for caminho in _listar_tres(PASTA):
 		var descoberta := ResourceLoader.load(caminho) as DadosDescoberta
 		if descoberta != null:
@@ -92,11 +99,36 @@ func sortear(produzido: Grande) -> void:
 	for descoberta in _descobertas:
 		if encontrada(descoberta.id):
 			continue
+		if em_quarentena(descoberta):
+			continue
 		if gerador.randf() >= chance_de(descoberta, produzido):
 			continue
 		Jogo.descobertas.append(descoberta.id)
+		if _e_rara(descoberta):
+			Jogo.tempo_da_ultima_rara = Jogo.tempo_jogado
 		EventBus.descoberta_encontrada.emit(descoberta)
 		return
+
+
+## Se esta descoberta ainda esta esperando o espaco da anterior da mesma faixa.
+##
+## ⚠️ ISTO NAO E BALANCEAMENTO DE CHANCE, E RITMO DE LEITURA. No endgame a chance de tudo
+## que falta vale 1 -- sem esta funcao, o quadro em que o jogador cruza a producao das
+## Lendarias despeja as seis de uma vez, e seis avisos empilhados nao sao seis momentos
+## raros: sao um so, e barulhento.
+##
+## Publica porque a suite precisa afirmar exatamente isto (issue #32).
+func em_quarentena(descoberta: DadosDescoberta) -> bool:
+	if _raridade == null or not _e_rara(descoberta):
+		return false
+	# antes da primeira rara nao ha o que espacar; negativo e o "nenhuma ainda" (ver jogo.gd)
+	if Jogo.tempo_da_ultima_rara < 0.0:
+		return false
+	return Jogo.tempo_jogado - Jogo.tempo_da_ultima_rara < _raridade.intervalo
+
+
+func _e_rara(descoberta: DadosDescoberta) -> bool:
+	return _raridade != null and descoberta.categoria >= _raridade.categoria_minima
 
 
 static func _listar_tres(pasta: String) -> PackedStringArray:

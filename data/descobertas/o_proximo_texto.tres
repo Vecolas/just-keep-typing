@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "o_proximo_texto"
+nome = "O Próximo Texto"
+texto = "Um macaco escreveu o que outro macaco escreveria cinco segundos depois. O segundo leu, e desistiu."
+categoria = 6
+chance_base = 1e-42
+bonus = 250.0
