@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "um_artigo_cientifico"
+nome = "Um Artigo Científico"
+texto = "Com metodologia e referências. As referências também foram digitadas por macacos."
+categoria = 2
+chance_base = 5e-08
+bonus = 1.75

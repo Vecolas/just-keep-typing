@@ -50,3 +50,10 @@ signal maquina_trocada(id: String)
 
 ## Emitido depois de a sala ja ter sido trocada, com o id da nova.
 signal sala_expandida(id: String)
+
+## Emitido quando uma descoberta sai, depois de o id ja estar em Jogo.descobertas.
+## Diferente do marco, esta traz bonus junto -- quem escuta mostra, e o bonus ja vale.
+signal descoberta_encontrada(descoberta: DadosDescoberta)
+
+## Pedido de abrir a tela de Descobertas.
+signal descobertas_pedidas()

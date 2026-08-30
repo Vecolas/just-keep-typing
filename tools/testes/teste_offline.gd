@@ -85,6 +85,7 @@ func _creditar_de_verdade() -> void:
 		"macacos": Jogo.macacos,
 		"tempo": Jogo.tempo_jogado,
 		"upgrades": Jogo.upgrades_comprados.duplicate(),
+		"descobertas": Jogo.descobertas.duplicate(),
 	}
 
 	Jogo.total_caracteres = Grande.zero()
@@ -107,11 +108,16 @@ func _creditar_de_verdade() -> void:
 	perto(Jogo.tempo_jogado, HORA, 1e-6, "e o relogio da partida andou junto")
 	igual(avisos.size(), 1, "avisou quem vai mostrar a tela de volta")
 
-	# fora por mais que o teto: credita o teto, e o aviso diz quantos segundos contaram
+	# fora por mais que o teto: credita o teto, e o aviso diz quantos segundos contaram.
+	# o cps e relido aqui porque o credito anterior pode ter soltado uma descoberta, e o
+	# bonus dela ja vale no quadro seguinte -- que e o comportamento certo (regra 2)
 	Jogo.total_caracteres = Grande.zero()
+	var por_segundo_agora := Economia.producao_por_segundo()
 	Economia.creditar_offline(100.0 * HORA)
 	ok(
-		Jogo.total_caracteres.igual_a(por_segundo.vezes(Grande.de_float(Economia.teto_offline_segundos()))),
+		Jogo.total_caracteres.igual_a(
+			por_segundo_agora.vezes(Grande.de_float(Economia.teto_offline_segundos()))
+		),
 		"cem horas fora creditam so o teto",
 	)
 	igual(avisos.size(), 2, "e avisou de novo")
@@ -133,3 +139,4 @@ func _creditar_de_verdade() -> void:
 	Jogo.macacos = guardado["macacos"]
 	Jogo.tempo_jogado = guardado["tempo"]
 	Jogo.upgrades_comprados = guardado["upgrades"]
+	Jogo.descobertas = guardado["descobertas"]

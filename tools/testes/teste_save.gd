@@ -58,6 +58,7 @@ func _ida_e_volta() -> void:
 	Jogo.tempo_jogado = 3661.5
 	Jogo.upgrades_comprados = ["instinto_digitador", "dedos_mais_ageis"] as Array[String]
 	Jogo.marcos_alcancados = ["primeira_palavra"] as Array[String]
+	Jogo.descobertas = ["um_poema"] as Array[String]
 
 	ok(Save.gravar(), "gravou")
 	ok(Save.existe(), "e o arquivo esta la")
@@ -93,6 +94,8 @@ func _ida_e_volta() -> void:
 	igual(Jogo.upgrades_comprados.size(), 2, "os dois upgrades voltaram")
 	ok(Jogo.upgrades_comprados.has("dedos_mais_ageis"), "e com os ids certos")
 	igual(Jogo.marcos_alcancados.size(), 1, "o marco alcancado voltou")
+	igual(Jogo.descobertas.size(), 1, "a descoberta encontrada voltou")
+	ok(Jogo.descobertas.has("um_poema"), "e com o id certo")
 
 
 ## Save escrito a mao, sem versao e sem metade dos campos -- e o formato de um jogo mais
@@ -172,6 +175,7 @@ func _guardar_o_jogo() -> Dictionary:
 		"tempo_jogado": Jogo.tempo_jogado,
 		"upgrades_comprados": Jogo.upgrades_comprados.duplicate(),
 		"marcos_alcancados": Jogo.marcos_alcancados.duplicate(),
+		"descobertas": Jogo.descobertas.duplicate(),
 	}
 
 
@@ -188,3 +192,4 @@ func _devolver_o_jogo(guardado: Dictionary) -> void:
 	Jogo.tempo_jogado = guardado["tempo_jogado"]
 	Jogo.upgrades_comprados = guardado["upgrades_comprados"]
 	Jogo.marcos_alcancados = guardado["marcos_alcancados"]
+	Jogo.descobertas = guardado["descobertas"]

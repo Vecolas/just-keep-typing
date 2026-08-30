@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "uma_historia_curta"
+nome = "Uma História Curta"
+texto = "Começo, meio e fim. O fim é sobre bananas."
+categoria = 1
+chance_base = 3e-06
+bonus = 1.25

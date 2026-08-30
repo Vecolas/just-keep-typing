@@ -50,6 +50,9 @@ func _pintar() -> void:
 	%ValorCaracteres.text = Formatador.formatar(Jogo.total_caracteres)
 	%ValorPorSegundo.text = Formatador.formatar(Jogo.caracteres_por_segundo)
 	%ValorDinheiro.text = Formatador.formatar(Jogo.dinheiro)
+	%ValorDescobertas.text = Formatador.formatar(
+		Grande.de_float(float(Descobertas.quantas_encontradas()))
+	)
 	%ValorMacacos.text = Formatador.formatar(Jogo.macacos)
 
 	%CustoMacaco.text = "%s %s" % [
@@ -166,6 +169,7 @@ func _ligar_botoes() -> void:
 		botao.pressed.connect(Economia.comprar_macacos.bind(lote))
 	%ComprarMaximo.pressed.connect(_ao_comprar_maximo)
 	%BotaoPanorama.pressed.connect(EventBus.panorama_pedido.emit)
+	%BotaoDescobertas.pressed.connect(EventBus.descobertas_pedidas.emit)
 	%BotaoMaquina.pressed.connect(_ao_comprar_maquina)
 	%BotaoSala.pressed.connect(_ao_expandir_sala)
 
@@ -174,7 +178,7 @@ func _ligar_botoes() -> void:
 	# em compra de macaco pelo resto da partida
 	for botao in [
 		%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo,
-		%BotaoPanorama, %BotaoMaquina, %BotaoSala,
+		%BotaoPanorama, %BotaoDescobertas, %BotaoMaquina, %BotaoSala,
 	]:
 		botao.focus_mode = Control.FOCUS_NONE
 
@@ -225,7 +229,7 @@ func _estilizar() -> void:
 	%ValorCaracteres.add_theme_font_size_override("font_size", Tema.CONTADOR)
 	%ValorCaracteres.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
 
-	for grande in [%ValorPorSegundo, %ValorDinheiro, %ValorMacacos]:
+	for grande in [%ValorPorSegundo, %ValorDinheiro, %ValorMacacos, %ValorDescobertas]:
 		grande.add_theme_font_size_override("font_size", Tema.DESTAQUE)
 		grande.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
 
@@ -236,7 +240,7 @@ func _estilizar() -> void:
 
 	for legenda in [
 		%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco,
-		%NomeMaquina, %NomeSala,
+		%NomeMaquina, %NomeSala, %NomeDescobertas,
 	]:
 		legenda.add_theme_font_size_override("font_size", Tema.TITULO)
 		legenda.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
