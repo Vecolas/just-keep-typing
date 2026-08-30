@@ -27,7 +27,9 @@ extends Node
 ## 4: entra `descobertas`, os ids ja encontrados (issue #16).
 ## 5: entram os campos de estatistica -- recorde, macacos comprados, offline
 ## acumulado, prestigios e tempo da run (issue #21).
-const VERSAO: int = 5
+## 6: entram os Pontos de Teorema ganhos na vida, os niveis da Arvore e o recorde
+## de total (issues #24 e #25).
+const VERSAO: int = 6
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -59,6 +61,9 @@ func gravar() -> bool:
 		"maquina_atual": Jogo.maquina_atual,
 		"sala_atual": Jogo.sala_atual,
 		"pontos_de_teorema": Jogo.pontos_de_teorema.para_texto(),
+		"pontos_totais": Jogo.pontos_totais.para_texto(),
+		"recorde_de_total": Jogo.recorde_de_total.para_texto(),
+		"teoremas": Jogo.teoremas,
 		"fragmentos": Jogo.fragmentos.para_texto(),
 		"multiplicador_global": Jogo.multiplicador_global,
 		"tempo_jogado": Jogo.tempo_jogado,
@@ -151,6 +156,9 @@ const _PADROES := {
 	"maquina_atual": "",
 	"sala_atual": "",
 	"pontos_de_teorema": "0",
+	"pontos_totais": "0",
+	"recorde_de_total": "0",
+	"teoremas": {},
 	"fragmentos": "0",
 	"multiplicador_global": 1.0,
 	"tempo_jogado": 0.0,
@@ -173,6 +181,9 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.maquina_atual = str(dados["maquina_atual"])
 	Jogo.sala_atual = str(dados["sala_atual"])
 	Jogo.pontos_de_teorema = Grande.de_texto(str(dados["pontos_de_teorema"]))
+	Jogo.pontos_totais = Grande.de_texto(str(dados["pontos_totais"]))
+	Jogo.recorde_de_total = Grande.de_texto(str(dados["recorde_de_total"]))
+	Jogo.teoremas = _niveis_de(dados["teoremas"])
 	Jogo.fragmentos = Grande.de_texto(str(dados["fragmentos"]))
 	Jogo.multiplicador_global = float(dados["multiplicador_global"])
 	Jogo.tempo_jogado = float(dados["tempo_jogado"])
@@ -184,6 +195,17 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.upgrades_comprados = _lista_de_texto(dados["upgrades_comprados"])
 	Jogo.marcos_alcancados = _lista_de_texto(dados["marcos_alcancados"])
 	Jogo.descobertas = _lista_de_texto(dados["descobertas"])
+
+
+## O JSON devolve numero como float e nivel e int. Converter aqui e o que impede um
+## nivel virar 3.0000000001 depois de uma ida e volta pelo save.
+static func _niveis_de(cru: Variant) -> Dictionary:
+	var niveis := {}
+	if typeof(cru) != TYPE_DICTIONARY:
+		return niveis
+	for chave in cru:
+		niveis[str(chave)] = int(cru[chave])
+	return niveis
 
 
 ## O JSON devolve Array solto; o Jogo guarda Array[String]. Converter aqui e o que impede

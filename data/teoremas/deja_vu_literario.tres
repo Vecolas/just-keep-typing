@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DadosTeorema" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_teorema.gd" id="1_dados_teorema"]
+
+[resource]
+script = ExtResource("1_dados_teorema")
+id = "deja_vu_literario"
+nome = "Déjà Vu Literário"
+descricao = "Alguém já digitou isso antes. Dobra a chance de descoberta por nível."
+tipo_de_efeito = 1
+custo = 3.0
+crescimento_custo = 2.2
+niveis = 5
+valor = 2.0
+pre_requisitos = PackedStringArray("memoria_genetica")

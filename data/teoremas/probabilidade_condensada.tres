@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DadosTeorema" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_teorema.gd" id="1_dados_teorema"]
+
+[resource]
+script = ExtResource("1_dados_teorema")
+id = "probabilidade_condensada"
+nome = "Probabilidade Condensada"
+descricao = "Cada ordem de grandeza já atingida vira um pequeno multiplicador permanente."
+tipo_de_efeito = 5
+custo = 8.0
+crescimento_custo = 2.4
+niveis = 4
+valor = 1.02
+pre_requisitos = PackedStringArray("producao_offline")

@@ -64,7 +64,11 @@ func quantas_encontradas() -> int:
 func chance_de(descoberta: DadosDescoberta, produzido: Grande) -> float:
 	if descoberta.chance_base <= 0.0 or produzido.sinal() <= 0:
 		return 0.0
-	var bruta := produzido.vezes(Grande.de_float(descoberta.chance_base))
+	# Deja Vu Literario (GDD §19) entra aqui e nao no .tres: a chance base e balanceamento
+	# e o bonus e progressao, e misturar os dois faria uma sessao de tuning apagar a
+	# arvore sem perceber
+	var bonus := Teoremas.bonus_de(DadosTeorema.Efeito.DEJA_VU_LITERARIO)
+	var bruta := produzido.vezes(Grande.de_float(descoberta.chance_base * bonus))
 	# comparar em Grande antes de converter: para_float() de 10^400 vira INF, e INF
 	# clampado ainda e 1 -- mas por acidente, e nao por decisao
 	if not bruta.menor_que(Grande.um()):

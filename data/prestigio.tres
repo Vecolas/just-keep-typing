@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="DadosPrestigio" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_prestigio.gd" id="1_dados_prestigio"]
+
+[resource]
+script = ExtResource("1_dados_prestigio")
+limite_inicial = 1000000.0
+ganho_por_ponto = 0.15
+pontos_minimos = 1.0

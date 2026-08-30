@@ -373,9 +373,10 @@ func multiplicador_de_descobertas() -> float:
 	return total
 
 
-## Vale 1.0 ate a issue #24 trazer os Teoremas (GDD §17-18).
+## O multiplicador dos Pontos de Teorema ja ganhados mais a Probabilidade Condensada
+## (GDD §18 e §19). Quem calcula e o autoload Teoremas -- aqui so entra na formula.
 func multiplicador_de_prestigio() -> float:
-	return 1.0
+	return Teoremas.multiplicador()
 
 
 ## Caracteres por segundo de UM macaco, ja com os upgrades de velocidade.
@@ -383,7 +384,14 @@ func producao_por_macaco() -> float:
 	var macaco := macaco_padrao()
 	if macaco == null:
 		return 0.0
-	return macaco.producao_base * bonus_de(DadosUpgrade.Efeito.VELOCIDADE_DO_MACACO)
+	# Memoria Genetica multiplica a velocidade do MACACO e nao a producao global, porque
+	# e isso que o GDD §19 diz que ela faz -- e a diferenca aparece assim que existir um
+	# multiplicador que so vale para um tier de macaco
+	return (
+		macaco.producao_base
+		* bonus_de(DadosUpgrade.Efeito.VELOCIDADE_DO_MACACO)
+		* Teoremas.bonus_de(DadosTeorema.Efeito.MEMORIA_GENETICA)
+	)
 
 
 ## Caracteres por segundo agora. Zero enquanto ninguem acendeu a producao automatica --
@@ -399,7 +407,15 @@ func producao_por_segundo() -> Grande:
 
 
 ## Teto da producao offline em segundos. Zero significa sem limite (GDD §38).
+##
+## A ARVORE MANDA QUANDO ELA JA MEXEU NISSO. O no Producao Offline destrava a escada de
+## 8, 12, 24, 72 horas e sem limite, e este teto LE a arvore em vez de guardar uma copia
+## propria dos numeros (cuidado da issue #25). Sem no comprado, quem manda e o
+## data/offline.tres da issue #9.
 func teto_offline_segundos() -> float:
+	var da_arvore := Teoremas.teto_offline_horas()
+	if da_arvore >= 0.0:
+		return da_arvore * 3600.0
 	return _offline.teto_segundos() if _offline != null else 0.0
 
 
@@ -446,6 +462,8 @@ func acumular(delta: float) -> void:
 	# recorde antes da checagem de delta: ele e sobre a producao, e nao sobre o tempo
 	if Jogo.caracteres_por_segundo.maior_que(Jogo.recorde_por_segundo):
 		Jogo.recorde_por_segundo = Jogo.caracteres_por_segundo
+	if Jogo.total_caracteres.maior_que(Jogo.recorde_de_total):
+		Jogo.recorde_de_total = Jogo.total_caracteres
 	if delta <= 0.0:
 		return
 	Jogo.tempo_jogado += delta

@@ -23,6 +23,7 @@ Save="*res://src/autoload/save.gd"
 Economia="*res://src/autoload/economia.gd"
 Marcos="*res://src/autoload/marcos.gd"
 Descobertas="*res://src/autoload/descobertas.gd"
+Teoremas="*res://src/autoload/teoremas.gd"
 MCPGameBridge="res://addons/godot_mcp/game_bridge/mcp_game_bridge.gd"
 
 [display]

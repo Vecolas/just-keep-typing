@@ -73,7 +73,16 @@ func _ready() -> void:
 		TranslationServer.set_locale(idioma)
 
 	var cenario := _cenario()
-	if cenario.begins_with("letras"):
+	if cenario == "teoremas":
+		Economia.digitar(1000000000000)
+		Jogo.pontos_de_teorema = Grande.de_float(30.0)
+		Jogo.pontos_totais = Grande.de_float(30.0)
+		Teoremas.comprar("memoria_genetica")
+		Teoremas.comprar("producao_offline")
+		EventBus.teoremas_pedidos.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+	elif cenario.begins_with("letras"):
 		# a producao entra pelo caminho de verdade: a Partida recalcula o cps todo quadro
 		# e um valor cravado seria apagado antes de as letras lerem
 		var alvo := _argumento("producao", 5.0)

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DadosTeorema" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_teorema.gd" id="1_dados_teorema"]
+
+[resource]
+script = ExtResource("1_dados_teorema")
+id = "conhecimento_acumulado"
+nome = "Conhecimento Acumulado"
+descricao = "Cada run começa com os upgrades básicos já comprados. Um por nível."
+tipo_de_efeito = 2
+custo = 5.0
+crescimento_custo = 2.5
+niveis = 5
+valor = 1.0
+pre_requisitos = PackedStringArray("memoria_genetica")
