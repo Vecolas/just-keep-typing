@@ -74,3 +74,9 @@ signal teoremas_pedidos()
 ## Emitido quando a producao cruza para a era visual seguinte (GDD §6). A era nao muda
 ## conta nenhuma -- quem escuta so desenha.
 signal era_mudou(era: DadosEra)
+
+## Emitido quando um evento aleatorio comeca (GDD §22).
+signal evento_comecou(evento: DadosEvento)
+
+## Emitido quando um evento termina, por tempo ou porque o jogador resolveu.
+signal evento_terminou(id: String)

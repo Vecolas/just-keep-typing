@@ -331,7 +331,8 @@ func comprar_macacos(quantos: int) -> int:
 ## dia um deles passar de 10^308, ai sim ele vira Grande -- e a conta muda de forma.
 func multiplicador_total() -> float:
 	return (
-		bonus_de(DadosUpgrade.Efeito.PRODUCAO_GLOBAL)
+		Eventos.multiplicador_de_producao()
+		* bonus_de(DadosUpgrade.Efeito.PRODUCAO_GLOBAL)
 		* multiplicador_de_descobertas()
 		* multiplicador_de_maquina()
 		* multiplicador_de_sala()

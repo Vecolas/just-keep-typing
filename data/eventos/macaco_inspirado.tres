@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosEvento" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_evento.gd" id="1_dados_evento"]
+
+[resource]
+script = ExtResource("1_dados_evento")
+id = "macaco_inspirado"
+nome = "Macaco Inspirado"
+descricao = "Um macaco entrou em estado de inspiração. Ninguém sabe explicar."
+multiplicador_producao = 10.0
+multiplicador_descoberta = 1.0
+duracao = 20.0
+peso = 2.0
+resolve_com_clique = false

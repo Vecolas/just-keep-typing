@@ -20,6 +20,10 @@
 ## nao e numero de balanceamento (docs/ARTE.md, secao 6).
 extends Control
 
+## id do evento -> o rotulo que mostra o relogio dele. Guardado na montagem para o quadro
+## nao ter que procurar nada na arvore.
+var _relogios: Dictionary = {}
+
 ## Quantidades do GDD §32. Comprar Maximo e a entrada 0, resolvida na hora do clique.
 const LOTES: Array[int] = [1, 10, 100]
 
@@ -34,6 +38,8 @@ func _ready() -> void:
 	_ligar_botoes()
 	_montar_upgrades()
 
+	EventBus.evento_comecou.connect(_ao_mudar_eventos)
+	EventBus.evento_terminou.connect(_ao_mudar_eventos)
 	EventBus.voltou_do_offline.connect(_ao_voltar_do_offline)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
@@ -69,6 +75,7 @@ func _pintar() -> void:
 	%ComprarMaximo.disabled = Economia.macacos_que_cabem() <= 0
 	_pintar_maquina()
 	_pintar_sala()
+	_pintar_relogio_dos_eventos()
 	%BotaoTeoremas.visible = Teoremas.pode_provar() or Jogo.prestigios > 0
 
 	for botao in %ListaUpgrades.get_children():
@@ -102,6 +109,56 @@ func _pintar_sala() -> void:
 	var vagas := Economia.vagas_livres()
 	%VagasMacaco.text = tr("Sala cheia") if vagas.e_zero() else ""
 	%VagasMacaco.visible = vagas.e_zero()
+
+
+## Um cartao por evento ativo (GDD §22). Remontado so quando um evento comeca ou acaba,
+## nunca por quadro: o relogio de cada um e atualizado no cartao que ja existe.
+##
+## A saida pela acao do jogador vira BOTAO, e nao um clique escondido no cartao: punicao
+## que exige o jogador adivinhar onde clicar e a mesma punicao, com um passo a mais.
+func _montar_eventos() -> void:
+	_relogios.clear()
+	for antigo in %Eventos.get_children():
+		%Eventos.remove_child(antigo)
+		antigo.queue_free()
+
+	for id in Eventos.ativos():
+		var dados := Eventos.de(id)
+		if dados == null:
+			continue
+		var moldura := PanelContainer.new()
+		moldura.add_theme_stylebox_override("panel", Tema.painel(
+			Paleta.MECHANICAL_GOLD if not dados.e_punicao() else Paleta.MAGENTA_COSMICO, true
+		))
+		var margem := MarginContainer.new()
+		for lado in ["left", "top", "right", "bottom"]:
+			margem.add_theme_constant_override("margin_" + lado, 10)
+		moldura.add_child(margem)
+
+		var linha := HBoxContainer.new()
+		linha.add_theme_constant_override("separation", 12)
+		margem.add_child(linha)
+
+		var rotulo := Label.new()
+		rotulo.text = tr(dados.nome)
+		rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		rotulo.add_theme_color_override(
+			"font_color",
+			Paleta.MAGENTA_COSMICO if dados.e_punicao() else Paleta.BANANA_GOLD,
+		)
+		linha.add_child(rotulo)
+		# guardado por id em vez de procurado na arvore: find_child devolve o primeiro
+		# descendente com o nome pedido, e o primeiro aqui e o container, nao o rotulo --
+		# foi assim que o relogio dos eventos nasceu invisivel
+		_relogios[id] = rotulo
+
+		if dados.resolve_com_clique:
+			var botao := Button.new()
+			botao.text = tr("Resolver")
+			botao.focus_mode = Control.FOCUS_NONE
+			botao.pressed.connect(_ao_resolver.bind(id))
+			linha.add_child(botao)
+		%Eventos.add_child(moldura)
 
 
 ## A maquina em uso e a proxima da escada do GDD §13. No topo o botao some, em vez de
@@ -194,6 +251,24 @@ func _ao_comprar_maximo() -> void:
 
 func _ao_comprar(id: String) -> void:
 	Economia.comprar_upgrade(id)
+
+
+## So o relogio, todo quadro. O cartao inteiro so e remontado quando a lista muda.
+func _pintar_relogio_dos_eventos() -> void:
+	for id in _relogios:
+		var dados := Eventos.de(id)
+		var rotulo: Label = _relogios[id]
+		if dados != null and is_instance_valid(rotulo):
+			# "%s  %ds" e marca de formato, nao texto
+			rotulo.text = "%s  %ds" % [tr(dados.nome), int(ceil(Eventos.restante(id)))]
+
+
+func _ao_mudar_eventos(_qualquer: Variant) -> void:
+	_montar_eventos()
+
+
+func _ao_resolver(id: String) -> void:
+	Eventos.resolver(id)
 
 
 func _ao_comprar_maquina() -> void:
