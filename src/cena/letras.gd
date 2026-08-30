@@ -90,6 +90,16 @@ func vivos() -> int:
 	return _vivos.size()
 
 
+## Devolve a piscina inteira. Publica para a regua medir_quadro comecar cada linha do
+## zero -- sem isto os rotulos de uma linha morrem dentro da amostra da seguinte, e a
+## linha reporta custo que nao e dela.
+func limpar() -> void:
+	for rotulo in _vivos:
+		rotulo.visible = false
+		_livres.append(rotulo)
+	_vivos.clear()
+
+
 ## Publica para a regua medir_quadro conseguir SATURAR a piscina. O jogo nunca chama --
 ## ele so deixa o _process nascer no ritmo de POR_SEGUNDO. Sem isto o teto seria um numero
 ## que se diz medido sem nunca ter sido tocado por uma medicao.

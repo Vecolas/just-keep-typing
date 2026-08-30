@@ -10,3 +10,5 @@ nome = "Cidade dos Macacos"
 descricao = "Uma cidade inteira digitando. Apartamentos. Fábricas. Bibliotecas."
 requisito = "5e15"
 maquinas_visiveis = 64
+abstrata = false
+unidade = "macacos"

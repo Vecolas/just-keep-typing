@@ -10,3 +10,5 @@ nome = "A Mesa"
 descricao = "Um macaco. Uma máquina. Uma sala pequena."
 requisito = "0"
 maquinas_visiveis = 1
+abstrata = false
+unidade = "macacos"

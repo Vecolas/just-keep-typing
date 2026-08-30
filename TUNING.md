@@ -75,7 +75,43 @@ Mede o efeito de letras (issue #22) nas três escalas de produção do GDD §26 
 quarta linha com a piscina de rótulos **saturada** — sem ela o teto seria um número que se
 diz medido sem nunca ter sido tocado por uma medição.
 
-Primeira medição, orçamento de 16,67 ms:
+⚠️ **Cada linha começa do zero — e isso teve que ser aprendido.** Duas vezes a régua
+mentiu por herdar o estado da linha anterior: a era 14 reportou 23 ms que eram dos rótulos
+da linha saturada morrendo dentro da amostra, e as linhas depois dela mediram a era 14
+achando que mediam a própria. **Ordem de medição é parte da medição.**
+
+Medição depois da caça de custos da issue #30, orçamento de 16,67 ms:
+
+```text
+producao/s       rotulos  maquinas media     p95       perdidos
+5                14       1        11,2 ms   13,9 ms   0 de 240
+500 mil          13       4        11,9 ms   16,3 ms   0 de 240
+5e17             14       100      10,9 ms   12,7 ms   0 de 240
+SATURADO         64       100       9,4 ms   10,1 ms   0 de 240
+ERA 14           14       16       15,7 ms   30,8 ms   77 de 240
+```
+
+### Três custos que esta régua achou, e que nenhum teste acharia
+
+**1. `Marcos.verificar()` era O(n²) por quadro.** Ele percorria os noventa marcos chamando
+`Array.has()` em cada um, e `has()` é busca linear. Com 66 marcos cruzados isso dava mais
+de dois mil comparações de texto **por quadro**. Virou dicionário mais índice do próximo:
+um marco por quadro no caso comum.
+
+**2. A troca de era reaplicava estilo em 225 rótulos.** Texto e dois overrides de tema por
+rótulo, a cada troca — 675 operações num quadro, e override de tema invalida cache. As
+faixas que atravessavam era mediam 30 ms; as que não atravessavam, 8 ms. Agora o estilo só
+é reaplicado quando a **metáfora** troca, uma vez por partida.
+
+**3. Glifo que falta na fonte custa mais que o desenho.** A era 14 usava `∑ Ω ◇ ✦` e media
+22 ms com dezesseis rótulos, contra 14 ms da era 7 com **seis vezes mais**. Glifo ausente
+faz o Godot percorrer a cadeia de fallback a cada desenho. Trocados por glifos que a fonte
+monoespaçada tem, a era caiu para 13–16 ms.
+
+⚠️ **A era 14 continua sendo a linha mais cara** e o p95 dela fica acima do orçamento. A
+média cabe; os picos não. Fica registrado como o próximo lugar a olhar.
+
+Primeira medição, antes de tudo isso:
 
 ```text
 producao/s       rotulos  media     p95       p99       perdidos

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosEra" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/cena/dados_era.gd" id="1_dados_era"]
+
+[resource]
+script = ExtResource("1_dados_era")
+numero = 14
+id = "biblioteca_do_infinito"
+nome = "Biblioteca do Infinito"
+descricao = "A quantidade de macacos deixou de fazer sentido. Resta a probabilidade — e um macaco."
+requisito = "1e1000"
+maquinas_visiveis = 16
+abstrata = true
+unidade = "possibilidades"

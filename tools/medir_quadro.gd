@@ -65,10 +65,14 @@ func _ready() -> void:
 	for escala in ESCALAS:
 		await _medir(letras, escala)
 	await _medir(letras, ESCALAS[ESCALAS.size() - 1], true)
+	# a era 14 nao e alcancada acumulando: 10^1000 nao cai em 240 quadros (issue #30).
+	await _medir(letras, ESCALAS[ESCALAS.size() - 1], false, "1e1000")
 	get_tree().quit(0)
 
 
-func _medir(letras: Node, producao: float, saturar: bool = false) -> void:
+func _medir(
+	letras: Node, producao: float, saturar: bool = false, era_forcada: String = ""
+) -> void:
 	# monta a producao pelo caminho de verdade, e nao escrevendo o cps na mao: a Partida
 	# recalcula caracteres_por_segundo todo quadro, e um valor cravado seria apagado antes
 	# de as letras lerem -- foi assim que a primeira medicao saiu com zero rotulos
@@ -83,12 +87,25 @@ func _medir(letras: Node, producao: float, saturar: bool = false) -> void:
 	Jogo.sala_atual = ""
 	Jogo.macacos = Grande.de_float(10.0)
 	Jogo.multiplicador_global = producao / (10.0 * maxf(Economia.producao_por_macaco(), 1.0))
+	# CADA LINHA COMECA DO ZERO. Sem isto a medicao herda o que a anterior deixou: os
+	# rotulos ainda vivos morrendo dentro da amostra, e o total de caracteres que ja tinha
+	# levado a cena para outra era. As duas coisas ja fizeram esta regua mentir -- a era 14
+	# reportou 23 ms que eram da linha anterior, e as linhas depois dela mediram a era 14
+	# achando que mediam a propria.
+	letras.call("limpar")
+	Jogo.total_caracteres = (
+		Grande.de_texto(era_forcada) if not era_forcada.is_empty() else Grande.zero()
+	)
 	for i in AQUECIMENTO:
+		if not era_forcada.is_empty():
+			Jogo.total_caracteres = Grande.de_texto(era_forcada)
 		await get_tree().process_frame
 
 	var amostras: PackedFloat64Array = PackedFloat64Array()
 	for i in QUADROS:
 		await get_tree().process_frame
+		if not era_forcada.is_empty():
+			Jogo.total_caracteres = Grande.de_texto(era_forcada)
 		if saturar:
 			# enche a piscina a cada quadro: e o unico jeito de o teto ser medido em vez
 			# de suposto, ja que o regime permanente do jogo nem chega perto dele
@@ -106,7 +123,8 @@ func _medir(letras: Node, producao: float, saturar: bool = false) -> void:
 			perdidos += 1
 
 	print("%-16s %-8d %-8d %-9s %-9s %-9s %d de %d" % [
-		("SATURADO" if saturar else Formatador.formatar(Grande.de_float(producao))),
+		("SATURADO" if saturar else ("ERA 14" if not era_forcada.is_empty()
+			else Formatador.formatar(Grande.de_float(producao)))),
 		letras.call("vivos"),
 		_eras.call("visiveis"),
 		"%.3f ms" % (soma / float(amostras.size())),

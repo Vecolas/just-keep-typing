@@ -64,6 +64,10 @@ func _pintar() -> void:
 		Grande.de_float(float(Descobertas.quantas_encontradas()))
 	)
 	%ValorMacacos.text = Formatador.formatar(Jogo.macacos)
+	# a unidade vem da ERA, e nao esta escrita aqui: na era 14 a contagem de macacos
+	# deixa de fazer sentido e o jogador passa a manipular possibilidades (GDD §6).
+	# Trocar so o fundo contaria metade da historia.
+	%TituloMacacos.text = tr(%Eras.unidade()).to_upper()
 
 	%CustoMacaco.text = "%s %s" % [
 		Formatador.formatar(Economia.custo_de_macacos(1)), tr("para o próximo"),

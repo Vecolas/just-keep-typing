@@ -4,11 +4,11 @@
 
 [resource]
 script = ExtResource("1_dados_era")
-numero = 7
-id = "planeta_tipografico"
-nome = "Planeta Tipográfico"
-descricao = "O planeta inteiro virou uma máquina de produzir texto."
-requisito = "5e18"
-maquinas_visiveis = 100
+numero = 11
+id = "universo_observavel"
+nome = "Universo Observável"
+descricao = "Toda matéria disponível está gerando combinações."
+requisito = "5e40"
+maquinas_visiveis = 225
 abstrata = false
 unidade = "macacos"

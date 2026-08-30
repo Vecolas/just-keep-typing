@@ -27,6 +27,22 @@ extends Resource
 ## unico jeito de um incremental mostrar escala sem ser pelo numero (GDD §27).
 @export_range(1, 400) var maquinas_visiveis: int = 1
 
+## A CAMERA NAO AFASTA PARA SEMPRE. Em algum ponto a metafora troca: na era 14 a contagem
+## de macacos deixa de fazer sentido e o jogador passa a manipular probabilidade,
+## informacao e possibilidade (GDD §6). Era abstrata para de desenhar a grade de maquinas
+## e desenha simbolos -- afastar mais seria so deixar tudo menor, e menor nao e "outra
+## coisa".
+##
+## ⚠️ Mesmo abstrata, O MACACO CONTINUA LA. O docs/ARTE.md secao 10 e categorico: no fim
+## do universo ainda existe um macaco digitando, e isso nao e negociavel.
+@export var abstrata: bool = false
+
+## Como o jogo chama a unidade que o jogador acumula nesta era. "macacos" ate a metafora
+## trocar; depois vira o que a era manipula. A UI le daqui em vez de ter a palavra
+## escrita: a issue #30 pede que a troca de unidade apareca na interface, e nao so no
+## fundo.
+@export var unidade: String = "macacos"
+
 ## Arte da era. O asset entra quando existir; ate la a cena desenha com o que tem.
 @export var arte: Texture2D
 

@@ -14,6 +14,18 @@ const PASTA := "res://data/marcos"
 ## Ordenados do menor requisito para o maior. Publico por leitura -- o Panorama percorre.
 var _marcos: Array[DadosMarco] = []
 
+## Espelho de Jogo.marcos_alcancados como DICIONARIO, e o indice do primeiro marco ainda
+## nao cruzado.
+##
+## Existem porque a regua medir_quadro achou o preco da versao ingenua: verificar()
+## percorria os noventa marcos por quadro chamando Array.has() em cada um, e Array.has() e
+## busca linear. Com 66 marcos cruzados isso dava mais de dois mil comparacoes de texto
+## POR QUADRO -- 30 ms de tempo de processo onde o orcamento inteiro e 16,67 ms.
+##
+## Com o dicionario e o indice, verificar() olha UM marco por quadro no caso comum.
+var _alcancados: Dictionary = {}
+var _proximo: int = 0
+
 
 func _ready() -> void:
 	for caminho in _listar_tres(PASTA):
@@ -36,38 +48,50 @@ func de(id: String) -> DadosMarco:
 
 
 func alcancado(id: String) -> bool:
-	return Jogo.marcos_alcancados.has(id)
+	_conferir_espelho()
+	return _alcancados.has(id)
+
+
+## O espelho e reconstruido quando a lista do Jogo muda por fora -- carregar um save,
+## provar o Teorema, ou a suite mexendo direto. Comparar o tamanho e barato e pega todos
+## esses casos; comparar item a item seria pagar de novo o que este espelho evita.
+func _conferir_espelho() -> void:
+	if _alcancados.size() == Jogo.marcos_alcancados.size():
+		return
+	_alcancados.clear()
+	for id in Jogo.marcos_alcancados:
+		_alcancados[id] = true
+	_proximo = 0
+	while _proximo < _marcos.size() and _alcancados.has(_marcos[_proximo].id):
+		_proximo += 1
 
 
 ## O ultimo marco ja cruzado -- o que a tela mostra em destaque. Nulo no comeco do jogo,
 ## que e um estado legitimo e nao um erro.
 func atual() -> DadosMarco:
-	var ultimo: DadosMarco = null
-	for marco in _marcos:
-		if alcancado(marco.id):
-			ultimo = marco
-	return ultimo
+	_conferir_espelho()
+	return _marcos[_proximo - 1] if _proximo > 0 else null
 
 
 ## O primeiro ainda nao cruzado -- o que a tela mostra em silhueta. Nulo quando o jogador
 ## alcancou todos, o que na v0.1 acontece rapido e na v0.4 e o fim do jogo.
 func proximo() -> DadosMarco:
-	for marco in _marcos:
-		if not alcancado(marco.id):
-			return marco
-	return null
+	_conferir_espelho()
+	return _marcos[_proximo] if _proximo < _marcos.size() else null
 
 
 ## Cruza quem tiver de ser cruzado. Percorre a lista inteira em vez de olhar so o proximo
 ## porque a producao offline pode pular varios marcos de uma vez -- voltar depois de
 ## quatro horas e atravessar tres faixas de escala e o caso comum, nao o raro.
 func verificar() -> void:
-	for marco in _marcos:
-		if alcancado(marco.id):
-			continue
+	_conferir_espelho()
+	while _proximo < _marcos.size():
+		var marco := _marcos[_proximo]
 		if marco.requisito_grande().maior_que(Jogo.total_caracteres):
 			# a lista esta ordenada: daqui para a frente e tudo mais caro
 			return
+		_proximo += 1
+		_alcancados[marco.id] = true
 		Jogo.marcos_alcancados.append(marco.id)
 		EventBus.marco_alcancado.emit(marco)
 

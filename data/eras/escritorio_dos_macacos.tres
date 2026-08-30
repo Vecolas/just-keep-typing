@@ -10,3 +10,5 @@ nome = "Escritório dos Macacos"
 descricao = "Centenas de máquinas. Esteiras levando papel. Alguém administrando páginas."
 requisito = "5e6"
 maquinas_visiveis = 16
+abstrata = false
+unidade = "macacos"
