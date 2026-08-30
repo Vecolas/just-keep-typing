@@ -1,6 +1,6 @@
 ## Gera a galeria VERSIONADA de capturas, uma por era (issue #26).
 ##
-##   godot --path . tools/gerar_galeria.tscn --resolution 1920x1080
+##   godot --path . tools/gerar_galeria.tscn
 ##
 ## SEM --headless: headless nao renderiza. Ver CONVENCOES.md.
 ##
@@ -13,6 +13,15 @@
 extends Node
 
 const PASTA := "res://docs/capturas"
+
+## ⚠️ O TAMANHO E CRAVADO AQUI, e nao vem do --resolution. Estas imagens estao no git, e o
+## diff delas so vale se duas geracoes do mesmo commit derem o mesmo arquivo -- galeria que
+## muda de tamanho conforme quem rodou acusaria uma mudanca de arte que nunca houve.
+##
+## A primeira tentativa de conserto leu get_window().size, que o Config ja tinha reduzido
+## para 1280x720 durante os autoloads. Ler o tamanho da janela e perguntar ao Config; o
+## numero tem que ser dito.
+const TAMANHO := Vector2i(1920, 1080)
 const FRAMES_ATE_ESTABILIZAR := 40
 
 func _ready() -> void:
@@ -23,6 +32,12 @@ func _ready() -> void:
 
 	Save.caminho = "user://galeria_save.json"
 	Save.apagar()
+
+	# a galeria nao usa as opcoes de quem desenvolve, e nem o tamanho que elas pedem
+	Config.caminho = "user://galeria_opcoes.json"
+	Config.modelo_de_slot = "user://galeria_save_%d.json"
+	DisplayServer.window_set_size(TAMANHO)
+	get_window().content_scale_size = TAMANHO
 	var empacotada := load(ProjectSettings.get_setting("application/run/main_scene", "")) as PackedScene
 	var raiz := empacotada.instantiate()
 	add_child(raiz)
