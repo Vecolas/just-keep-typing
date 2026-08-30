@@ -236,15 +236,26 @@ func _ready() -> void:
 	await get_tree().process_frame
 
 	# 9. um evento dispara, mexe na producao e a producao volta ao normal (issue #27)
-	Jogo.total_caracteres = Grande.new(1.0, 10)
+	#
+	# ⚠️ SEM await ENTRE LIMPAR E MEDIR. A Partida sorteia evento todo quadro, e a
+	# primeira versao deste bloco mediu a producao com uma Tecla Presa que tinha nascido
+	# sozinha no meio -- razao 25 onde se esperava 1. Evento aleatorio dentro de uma
+	# medicao e a mesma armadilha da semente da descoberta, com outro nome.
+	# o total vai a ZERO de proposito durante este bloco: abaixo do requisito de eventos o
+	# sorteio nao roda, e a run controla quais eventos existem. Sem isso, tique() com um
+	# delta grande expira o evento E sorteia outro no mesmo passo -- inclusive o mesmo que
+	# acabou de expirar -- e a afirmacao vira cara ou coroa.
+	var total_antes_dos_eventos := Jogo.total_caracteres
+	Jogo.total_caracteres = Grande.zero()
 	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
 	Jogo.macacos = Grande.de_float(10.0)
+	Eventos.limpar()
 	var producao_normal := Economia.producao_por_segundo()
+
 	var inspirado := Eventos.de("macaco_inspirado")
 	if inspirado == null or not Eventos.comecar(inspirado.id):
 		_falhar("nao deu para disparar o Macaco Inspirado")
 		return
-	await get_tree().process_frame
 	if not Economia.producao_por_segundo().maior_que(producao_normal):
 		_falhar("o evento nao mexeu na producao")
 		return
@@ -267,11 +278,40 @@ func _ready() -> void:
 	if not Eventos.resolver(banana.id):
 		_falhar("clicar na banana nao resolveu o problema")
 		return
+	Eventos.limpar()
 	if not Economia.producao_por_segundo().igual_a(producao_normal):
 		_falhar("resolver o evento nao devolveu a producao")
 		return
+	Jogo.total_caracteres = total_antes_dos_eventos
 
-	# 10. o prestigio: o Teorema e provado e um no da Arvore muda a run seguinte
+	# 10. uma run com TUDO automatizado, sem travar (issue #28)
+	Jogo.total_caracteres = Grande.new(1.0, 20)
+	Jogo.dinheiro = Grande.new(1.0, 20)
+	for dados in Automacao.todas():
+		if not Automacao.comprar(dados.id):
+			_falhar("nao deu para comprar a automacao %s" % dados.id)
+			return
+		if not Automacao.ligada(dados.id):
+			_falhar("a automacao %s nao nasceu ligada" % dados.id)
+			return
+	Eventos.comecar("banana_na_maquina")
+	var macacos_antes_da_automacao := Jogo.macacos
+	for i in FRAMES:
+		Automacao.tique(1.0)
+		await get_tree().process_frame
+	if not Jogo.macacos.maior_que(macacos_antes_da_automacao):
+		_falhar("a run automatizada nao comprou macaco nenhum")
+		return
+	if Eventos.ativo("banana_na_maquina"):
+		_falhar("o Diretor nao resolveu a punicao")
+		return
+	for dados in Automacao.todas():
+		Automacao.alternar(dados.id)
+		if Automacao.ligada(dados.id):
+			_falhar("a automacao %s nao desligou" % dados.id)
+			return
+
+	# 11. o prestigio: o Teorema e provado e um no da Arvore muda a run seguinte
 	#    (issues #24 e #25)
 	var teoremas := raiz.find_child("TeoremasTela", true, false) as Control
 	if teoremas == null:
@@ -309,7 +349,7 @@ func _ready() -> void:
 		_falhar("o no da Arvore nao mudou a producao da run seguinte")
 		return
 
-	# 11. a sala enche e a expansao libera vaga (issue #15)
+	# 12. a sala enche e a expansao libera vaga (issue #15)
 	var sala := Economia.sala_atual()
 	Economia.digitar(100000)
 	Economia.comprar_macacos(Economia.macacos_que_cabem())
@@ -333,7 +373,7 @@ func _ready() -> void:
 		_falhar("expandir liberou %s vagas em vez de %s" % [liberou, diferenca])
 		return
 
-	# 12. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	# 13. gravar, sujar tudo e carregar: o estado tem que voltar identico
 	var total_antes := Jogo.total_caracteres
 	var macacos_no_save := Jogo.macacos
 	var upgrades_antes := Jogo.upgrades_comprados.size()
@@ -365,7 +405,7 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 13. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 14. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)

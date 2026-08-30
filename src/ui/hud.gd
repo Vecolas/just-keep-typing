@@ -37,7 +37,10 @@ func _ready() -> void:
 	_estilizar()
 	_ligar_botoes()
 	_montar_upgrades()
+	_montar_automacao()
 
+	EventBus.automacao_comprada.connect(_ao_mudar_automacao)
+	EventBus.automacao_alternada.connect(_ao_alternar_automacao)
 	EventBus.evento_comecou.connect(_ao_mudar_eventos)
 	EventBus.evento_terminou.connect(_ao_mudar_eventos)
 	EventBus.voltou_do_offline.connect(_ao_voltar_do_offline)
@@ -80,6 +83,17 @@ func _pintar() -> void:
 
 	for botao in %ListaUpgrades.get_children():
 		var dados: DadosUpgrade = Economia.upgrade_de(botao.get_meta("id"))
+		if dados != null:
+			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+
+	for botao in %ListaAutomacao.get_children():
+		var id: String = botao.get_meta("id")
+		# a comprada nunca fica desabilitada: e o botao de desligar, e desligar tem que
+		# funcionar mesmo sem um centavo no saldo
+		if Automacao.comprada(id):
+			botao.disabled = false
+			continue
+		var dados := Automacao.de(id)
 		if dados != null:
 			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
 
@@ -180,6 +194,54 @@ func _pintar_maquina() -> void:
 	]
 	%BotaoMaquina.tooltip_text = tr(proxima.descricao)
 	%BotaoMaquina.disabled = Grande.de_float(proxima.custo).maior_que(Jogo.dinheiro)
+
+
+## Um cartao por automacao ja disponivel (GDD §16). A comprada vira botao de LIGAR e
+## DESLIGAR, e nao some da tela: automacao e sempre desligavel, e o botao que desliga
+## precisa continuar existindo para isso ser verdade.
+func _montar_automacao() -> void:
+	for antigo in %ListaAutomacao.get_children():
+		%ListaAutomacao.remove_child(antigo)
+		antigo.queue_free()
+
+	var alguma := false
+	for dados in Automacao.todas():
+		if not Automacao.comprada(dados.id) and not Automacao.disponivel(dados.id):
+			continue
+		alguma = true
+		var botao := Button.new()
+		botao.focus_mode = Control.FOCUS_NONE
+		botao.tooltip_text = tr(dados.descricao)
+		botao.set_meta("id", dados.id)
+		if Automacao.comprada(dados.id):
+			# "%s — %s" e marca de formato, nao texto
+			botao.text = "%s — %s" % [
+				tr(dados.nome), tr("Ligada") if Automacao.ligada(dados.id) else tr("Desligada"),
+			]
+			botao.pressed.connect(_ao_alternar.bind(dados.id))
+		else:
+			botao.text = "%s — %s" % [
+				tr(dados.nome), Formatador.formatar(Grande.de_float(dados.custo)),
+			]
+			botao.pressed.connect(_ao_comprar_automacao.bind(dados.id))
+		%ListaAutomacao.add_child(botao)
+	%TituloAutomacao.visible = alguma
+
+
+func _ao_mudar_automacao(_id: String) -> void:
+	_montar_automacao()
+
+
+func _ao_alternar_automacao(_id: String, _ligada: bool) -> void:
+	_montar_automacao()
+
+
+func _ao_alternar(id: String) -> void:
+	Automacao.alternar(id)
+
+
+func _ao_comprar_automacao(id: String) -> void:
+	Automacao.comprar(id)
 
 
 ## Um botao por upgrade ainda nao comprado e ja desbloqueado. Limpa antes de montar.
@@ -325,7 +387,9 @@ func _estilizar() -> void:
 		legenda.add_theme_font_size_override("font_size", Tema.TITULO)
 		legenda.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
 
-	for titulo in [%TituloMacacos, %TituloUpgrades, %TituloMaquina, %TituloSala]:
+	for titulo in [
+		%TituloMacacos, %TituloUpgrades, %TituloMaquina, %TituloSala, %TituloAutomacao,
+	]:
 		titulo.add_theme_font_size_override("font_size", Tema.TITULO)
 		titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
 

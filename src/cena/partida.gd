@@ -31,6 +31,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	Eventos.tique(delta)
+	Automacao.tique(delta)
 	Economia.acumular(delta)
 	Marcos.verificar()
 

@@ -29,7 +29,8 @@ extends Node
 ## acumulado, prestigios e tempo da run (issue #21).
 ## 6: entram os Pontos de Teorema ganhos na vida, os niveis da Arvore e o recorde
 ## de total (issues #24 e #25).
-const VERSAO: int = 6
+## 7: entram as automacoes compradas e o estado ligado de cada uma (issue #28).
+const VERSAO: int = 7
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -64,6 +65,7 @@ func gravar() -> bool:
 		"pontos_totais": Jogo.pontos_totais.para_texto(),
 		"recorde_de_total": Jogo.recorde_de_total.para_texto(),
 		"teoremas": Jogo.teoremas,
+		"automacoes": Jogo.automacoes,
 		"fragmentos": Jogo.fragmentos.para_texto(),
 		"multiplicador_global": Jogo.multiplicador_global,
 		"tempo_jogado": Jogo.tempo_jogado,
@@ -159,6 +161,7 @@ const _PADROES := {
 	"pontos_totais": "0",
 	"recorde_de_total": "0",
 	"teoremas": {},
+	"automacoes": {},
 	"fragmentos": "0",
 	"multiplicador_global": 1.0,
 	"tempo_jogado": 0.0,
@@ -184,6 +187,7 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.pontos_totais = Grande.de_texto(str(dados["pontos_totais"]))
 	Jogo.recorde_de_total = Grande.de_texto(str(dados["recorde_de_total"]))
 	Jogo.teoremas = _niveis_de(dados["teoremas"])
+	Jogo.automacoes = _ligadas_de(dados["automacoes"])
 	Jogo.fragmentos = Grande.de_texto(str(dados["fragmentos"]))
 	Jogo.multiplicador_global = float(dados["multiplicador_global"])
 	Jogo.tempo_jogado = float(dados["tempo_jogado"])
@@ -195,6 +199,16 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.upgrades_comprados = _lista_de_texto(dados["upgrades_comprados"])
 	Jogo.marcos_alcancados = _lista_de_texto(dados["marcos_alcancados"])
 	Jogo.descobertas = _lista_de_texto(dados["descobertas"])
+
+
+## A chave existir significa comprada; o valor diz se esta ligada.
+static func _ligadas_de(cru: Variant) -> Dictionary:
+	var ligadas := {}
+	if typeof(cru) != TYPE_DICTIONARY:
+		return ligadas
+	for chave in cru:
+		ligadas[str(chave)] = bool(cru[chave])
+	return ligadas
 
 
 ## O JSON devolve numero como float e nivel e int. Converter aqui e o que impede um

@@ -115,6 +115,20 @@ func tique(delta: float) -> void:
 	_talvez_sortear(delta)
 
 
+## Encerra tudo que estiver ativo, sem sortear nada. Para suite e ferramenta -- o jogo
+## nunca chama.
+##
+## Existe porque o atalho obvio nao funciona: tique() com um delta enorme expira tudo E
+## sorteia um evento novo, porque a chance por quadro e delta/intervalo e um delta enorme
+## da chance 1. As duas primeiras versoes da suite e do teste de fumaca usaram esse atalho
+## e falharam com "nao deu para disparar a Banana" -- a vaga do teto de simultaneos ja
+## estava ocupada por um evento que a propria limpeza tinha criado.
+func limpar() -> void:
+	for id in _ativos.keys():
+		_ativos.erase(id)
+		EventBus.evento_terminou.emit(id)
+
+
 ## Comeca um evento na marra. E o que a suite e o teste de fumaca usam -- o jogo nunca
 ## chama, ele so deixa o sorteio acontecer.
 func comecar(id: String) -> bool:

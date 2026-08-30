@@ -212,10 +212,7 @@ func _sortear_com(semente: int) -> Array:
 
 
 func _limpar() -> void:
-	for id in Eventos.ativos():
-		Eventos.tique(1e9)
-		break
-	Eventos.tique(1e9)
+	Eventos.limpar()
 
 
 func _guardar() -> Dictionary:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosAutomacao" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_automacao.gd" id="1_dados_automacao"]
+
+[resource]
+script = ExtResource("1_dados_automacao")
+id = "diretor_de_probabilidades"
+nome = "Diretor de Probabilidades"
+descricao = "Resolve sozinho o que estiver atrapalhando as descobertas."
+tarefa = 3
+custo = 5000000000000.0
+requisito = 2000000000000.0
+intervalo = 1.0
