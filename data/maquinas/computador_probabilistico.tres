@@ -9,4 +9,4 @@ nome = "Computador Probabilístico"
 descricao = "Ele não digita: ele calcula o que teria sido digitado."
 tier = 9
 multiplicador = 1000000000.0
-custo = 50000000000000.0
+custo = 6.43667e+17

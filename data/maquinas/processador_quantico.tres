@@ -9,4 +9,4 @@ nome = "Processador Quântico"
 descricao = "Digita todas as letras ao mesmo tempo até alguém olhar."
 tier = 8
 multiplicador = 1000000.0
-custo = 100000000000.0
+custo = 1.99526e+14

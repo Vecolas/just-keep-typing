@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c0m3d1r3c0n0m"]
+
+[ext_resource type="Script" path="res://tools/medir_economia.gd" id="1_medir_economia"]
+
+[node name="MedirEconomia" type="Node"]
+script = ExtResource("1_medir_economia")

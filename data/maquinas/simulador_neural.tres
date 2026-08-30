@@ -9,4 +9,4 @@ nome = "Simulador Neural"
 descricao = "Ele imagina as teclas antes de o macaco apertar."
 tier = 7
 multiplicador = 10000.0
-custo = 2500000000.0
+custo = 1.64938e+12

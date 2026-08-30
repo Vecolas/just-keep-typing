@@ -34,6 +34,7 @@ Régua não aprova nem reprova: ela **mede**. Ver [`TUNING.md`](TUNING.md).
 ```bash
 godot --headless --path . tools/medir_ritmo.tscn                  # tempo até cada marco
 godot --path . tools/medir_quadro.tscn --resolution 1920x1080     # tempo de quadro
+godot --headless --path . tools/medir_economia.tscn               # quando prestigiar vale
 ```
 
 `medir_quadro` precisa de janela: headless não renderiza.
