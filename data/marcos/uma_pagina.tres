@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "uma_pagina"
+requisito = "1800"
+titulo = "Uma Página"
+texto = "Você já digitou caracteres suficientes para encher uma página inteira. Ninguém vai ler."
+categoria = 1
+era = 1

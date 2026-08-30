@@ -25,10 +25,13 @@ func _ready() -> void:
 		# o relogio entra AQUI e nao dentro da conta: a conta e pura para poder ser
 		# testada em 4 horas sem ninguem esperar 4 horas (issue #9)
 		Economia.creditar_offline(Time.get_unix_time_from_system() - gravado_em)
+	# quatro horas fora podem atravessar tres faixas de escala de uma vez
+	Marcos.verificar()
 
 
 func _process(delta: float) -> void:
 	Economia.acumular(delta)
+	Marcos.verificar()
 
 	_ate_gravar -= delta
 	if _ate_gravar <= 0.0:
