@@ -12,6 +12,7 @@ extends Node
 const SUITES: Array = [
 	preload("res://tools/testes/teste_scripts.gd"),
 	preload("res://tools/testes/teste_grande.gd"),
+	preload("res://tools/testes/teste_formatador.gd"),
 ]
 
 func _ready() -> void:
