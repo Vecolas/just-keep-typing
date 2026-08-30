@@ -316,6 +316,10 @@ func _ligar_botoes() -> void:
 	%BotaoEstatisticas.pressed.connect(EventBus.estatisticas_pedidas.emit)
 	%BotaoTeoremas.pressed.connect(EventBus.teoremas_pedidos.emit)
 	%BotaoOpcoes.pressed.connect(EventBus.opcoes_pedidas.emit)
+	# ⚠️ SAI PELO Cenas, e nao emitindo sinal: voltar ao menu GRAVA antes de sair
+	# (issue #37), e um sinal que qualquer um pode escutar seria um segundo caminho
+	# de saida -- um deles sem gravar.
+	%BotaoMenu.pressed.connect(Cenas.voltar_ao_menu)
 	%BotaoMaquina.pressed.connect(_ao_comprar_maquina)
 	%BotaoSala.pressed.connect(_ao_expandir_sala)
 
@@ -324,6 +328,7 @@ func _ligar_botoes() -> void:
 	# em compra de macaco pelo resto da partida
 	for botao in [
 		%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo, %BotaoOpcoes,
+		%BotaoMenu,
 		%BotaoPanorama, %BotaoDescobertas, %BotaoEstatisticas, %BotaoTeoremas,
 		%BotaoMaquina, %BotaoSala,
 	]:

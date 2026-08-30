@@ -1,6 +1,29 @@
-[gd_scene format=3 uid="uid://cp4rt1d4jkt00"]
+[gd_scene load_steps=9 format=3 uid="uid://cp4rt1d4jkt00"]
 
 [ext_resource type="Script" path="res://src/cena/partida.gd" id="1_partida"]
+[ext_resource type="PackedScene" uid="uid://cl3tr4ssub1nd0" path="res://src/cena/letras.tscn" id="6_letras"]
+[ext_resource type="PackedScene" uid="uid://ck3ttg32a6emh" path="res://src/ui/hud.tscn" id="2_hud"]
+[ext_resource type="PackedScene" uid="uid://cp4n0r4m4jkt0" path="res://src/ui/panorama.tscn" id="3_panorama"]
+[ext_resource type="PackedScene" uid="uid://cd3sc0b3rt4s00" path="res://src/ui/descobertas_tela.tscn" id="4_descobertas"]
+[ext_resource type="PackedScene" uid="uid://c35t4t1st1c4s0" path="res://src/ui/estatisticas_tela.tscn" id="5_estatisticas"]
+[ext_resource type="PackedScene" uid="uid://ct30r3m4st3l4" path="res://src/ui/teoremas_tela.tscn" id="7_teoremas"]
+[ext_resource type="PackedScene" uid="uid://cd3s0pc0e5000" path="res://src/ui/opcoes_tela.tscn" id="8_opcoes"]
 
-[node name="Partida" type="Node"]
+[node name="Partida" type="Node2D"]
 script = ExtResource("1_partida")
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="HUD" parent="Interface" instance=ExtResource("2_hud")]
+
+[node name="Panorama" parent="Interface" instance=ExtResource("3_panorama")]
+
+[node name="DescobertasTela" parent="Interface" instance=ExtResource("4_descobertas")]
+
+[node name="EstatisticasTela" parent="Interface" instance=ExtResource("5_estatisticas")]
+
+[node name="TeoremasTela" parent="Interface" instance=ExtResource("7_teoremas")]
+
+[node name="OpcoesTela" parent="Interface" instance=ExtResource("8_opcoes")]
+
+[node name="Letras" parent="Interface" instance=ExtResource("6_letras")]

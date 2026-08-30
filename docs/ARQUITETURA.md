@@ -16,36 +16,51 @@ os que vieram antes dele.
 |---|---|---|---|
 | 1 | `EventBus` | `src/autoload/event_bus.gd` | Só sinais. Não guarda estado, não tem lógica. |
 | 2 | `Jogo` | `src/autoload/jogo.gd` | Só estado da partida. Não calcula, não desenha, não tem `_process`. |
-| 3 | `MCPGameBridge` | `addons/godot_mcp/game_bridge/…` | Ponte do editor ao vivo. Ferramenta, não jogo. |
+| 3 | `Save` | `src/autoload/save.gd` | Grava, carrega, migra, verifica e guarda backup. |
+| 4 | `Economia` | `src/autoload/economia.gd` | Produção, custo, compra. Só calcula. |
+| 5 | `Marcos` | `src/autoload/marcos.gd` | O Panorama: quando um número ganha significado. |
+| 6 | `Descobertas` | `src/autoload/descobertas.gd` | A chance por caractere e as sete categorias. |
+| 7 | `Teoremas` | `src/autoload/teoremas.gd` | O primeiro prestígio e a Árvore. |
+| 8 | `Eventos` | `src/autoload/eventos.gd` | Os eventos aleatórios. |
+| 9 | `Automacao` | `src/autoload/automacao.gd` | Gerente, técnico, administrador e diretor. |
+| 10 | `Fragmentos` | `src/autoload/fragmentos.gd` | O segundo prestígio. |
+| 11 | `Config` | `src/autoload/config.gd` | As opções da **instalação**, e onde cada slot mora. |
+| 12 | `Autosave` | `src/autoload/autosave.gd` | **Quando** gravar. Quem grava é o `Save`. |
+| 13 | `Cenas` | `src/autoload/cenas.gd` | O caminho Boot → Menu → Arquivos → Partida → Menu. |
+| 14 | `MCPGameBridge` | `addons/godot_mcp/game_bridge/…` | Ponte do editor ao vivo. Ferramenta, não jogo. |
 
-`Jogo` está logo depois do `EventBus` porque `Config` e `Save` ainda não existem — quando
-entrarem, os dois se encaixam antes dele, sem que `Jogo` precise mudar de lugar.
-
-`EventBus` é o primeiro de propósito: qualquer autoload futuro vai querer emitir nele já no
-`_ready`.
-
-**Ordem planejada**, conforme os autoloads entrarem (ver `PLANO.md`):
-
-```text
-EventBus → Config → Save → Jogo → Economia → Marcos → Descobertas → Teoremas → MCPGameBridge
-```
-
-O motivo de cada posição:
-
-- `Config` antes de `Save` porque idioma e opções são da **instalação**, não da partida, e
-  precisam existir antes de qualquer coisa formatar texto ou número
-- `Save` antes de `Jogo` porque `Jogo` nasce do que foi carregado
-- `Jogo` antes de `Economia` porque `Economia` só calcula: quem guarda estado é o `Jogo`
-- `Marcos`, `Descobertas` e `Teoremas` por último entre os do jogo — todos leem produção,
-  nenhum é lido por ela
-
-Os nomes vêm de [`decisoes/0002-codigo-em-portugues.md`](decisoes/0002-codigo-em-portugues.md),
-que traduz a estrutura em inglês sugerida pelo GDD §28–§30.
+`Autosave` e `Cenas` são os dois últimos do jogo porque são os únicos que **mandam** nos
+outros: um chama `Save.gravar()`, o outro chama `Config`, `Save` e `Economia` em ordem.
+Autoload que orquestra vem depois de tudo que ele orquestra.
 
 ⚠️ **Autoload novo exige reabrir o editor.** O Godot lê `[autoload]` uma vez, no boot. Se o
 `project.godot` for editado por fora com o editor aberto, o editor continua sem conhecer o
 identificador e acusa `Identifier not found` em todo script que o mencione — com o código
 perfeito. Detalhes e como não cair na armadilha ao diagnosticar: `../CONVENCOES.md`.
+
+---
+
+## 1.1. O caminho das cenas
+
+```text
+main.tscn (Boot)  ──>  Menu  ──>  Arquivos  ──>  Partida  ──>  Menu
+```
+
+`main.tscn` **não é mais a partida** (issue #38). Ele é o Boot: não desenha nada, segura o
+nó do grupo `raiz_de_cena` e pede o menu ao `Cenas`. Quem monta e desmonta cena é o
+`Cenas`, e sempre no mesmo nó de grupo.
+
+Três regras que valem ouro aqui, e as três já custaram um bug:
+
+- **Monta em nó de grupo, não com `change_scene_to_packed`.** Trocar a cena da árvore
+  libera a cena atual — e a cena atual, quando a fumaça roda, é a própria fumaça.
+- **Tira da árvore antes de liberar.** `queue_free()` sozinho deixa a cena velha viva até o
+  fim do quadro: duas Partidas com `_process` mexendo no mesmo `Jogo`.
+- **Quem carrega o save é o `Cenas`, não a `Partida`.** Carregar nos dois creditaria a
+  produção offline duas vezes.
+
+O relógio da produção offline para no instante em que o **jogo** abre, e não no instante em
+que a partida abre — ver [decisão 0005](decisoes/0005-o-relogio-do-offline.md).
 
 ---
 
@@ -57,8 +72,8 @@ perfeito. Detalhes e como não cair na armadilha ao diagnosticar: `../CONVENCOES
 | `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`. Testável headless. |
 | `src/producao/` | Macacos, máquinas, salas — quem gera caractere |
 | `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) |
-| `src/ui/` | Telas: HUD, Panorama, Descobertas, Estatísticas, Opções |
-| `src/cena/` | A cena das eras e a câmera que se afasta |
+| `src/ui/` | Telas: Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções |
+| `src/cena/` | O Boot, a Partida, a cena das eras e a câmera que se afasta |
 | `data/` | `.tres` de balanceamento — nenhum código |
 | `i18n/` | `textos.csv`: `keys,pt_BR,en`. A chave É o texto em português. |
 | `tools/` | Testes, réguas e capturas. Nada daqui entra no build. |

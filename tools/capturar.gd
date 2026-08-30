@@ -88,13 +88,23 @@ func _ready() -> void:
 	for i in FRAMES_ATE_ESTABILIZAR:
 		await get_tree().process_frame
 
+	# ⚠️ O main.tscn ABRE NO MENU desde a issue #38. Os cenarios de menu param aqui; todos
+	# os outros sao fotos de dentro da partida, e sem entrar nela sairiam com o menu na
+	# frente -- inclusive os catorze da galeria.
+	var cenario := _cenario()
+	if cenario == "arquivos":
+		Cenas.ir_para_arquivos()
+	elif cenario != "menu":
+		Cenas.comecar_partida(1)
+	for i in FRAMES_ATE_ESTABILIZAR:
+		await get_tree().process_frame
+
 	# a captura em outra lingua e o unico jeito de ver texto estourando botao: caractere
 	# nao e pixel, e "Comprar Maximo" e "Buy Max" nao ocupam a mesma largura
 	var idioma := _texto_do_argumento("idioma", "")
 	if not idioma.is_empty():
 		TranslationServer.set_locale(idioma)
 
-	var cenario := _cenario()
 	if cenario == "eventos":
 		Economia.digitar(50000)
 		Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]

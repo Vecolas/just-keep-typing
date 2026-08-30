@@ -43,13 +43,29 @@ func _ready() -> void:
 	add_child(raiz)
 	await get_tree().process_frame
 
+	DirAccess.make_dir_recursive_absolute(PASTA)
+
+	# ⚠️ O main.tscn ABRE NO MENU desde a issue #38, e as duas telas do caminho entram na
+	# galeria ANTES de a partida abrir -- e o unico momento em que elas estao no ar.
+	#
+	# Elas sao feias de proposito (issue #38 e a Fase 2 do plano: fluxo solido com interface
+	# temporaria), e e exatamente por isso que valem uma imagem versionada: quando a arte
+	# chegar na issue #46, o diff destes dois arquivos vai mostrar o antes e o depois.
+	if not await _fotografar("menu_rascunho"):
+		return
+	Cenas.ir_para_arquivos()
+	if not await _fotografar("arquivos_rascunho"):
+		return
+
+	Cenas.comecar_partida(1)
+	await get_tree().process_frame
+
 	var eras := raiz.find_child("Eras", true, false)
 	if eras == null:
 		printerr("FALHA  a cena principal nao tem o no Eras")
 		get_tree().quit(1)
 		return
 
-	DirAccess.make_dir_recursive_absolute(PASTA)
 	var quantas := 0
 	for era in _eras_ordenadas():
 		# entra na era pelo caminho de verdade -- escrevendo o total, que e o que a cena le
@@ -70,6 +86,20 @@ func _ready() -> void:
 
 	print("galeria com %d eras em %s" % [quantas, ProjectSettings.globalize_path(PASTA)])
 	get_tree().quit(0)
+
+
+## Espera assentar e salva. Devolve se deu certo -- a galeria para no primeiro erro em vez
+## de terminar com um arquivo faltando e mesmo assim dizer que gerou.
+func _fotografar(nome_do_arquivo: String) -> bool:
+	for i in FRAMES_ATE_ESTABILIZAR:
+		await get_tree().process_frame
+	var destino := PASTA.path_join(nome_do_arquivo + ".png")
+	if get_viewport().get_texture().get_image().save_png(destino) != OK:
+		printerr("FALHA  nao salvou %s" % destino)
+		get_tree().quit(1)
+		return false
+	print("%-30s %s" % [nome_do_arquivo, destino])
+	return true
 
 
 func _eras_ordenadas() -> Array[DadosEra]:
