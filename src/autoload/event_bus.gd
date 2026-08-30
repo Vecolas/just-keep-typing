@@ -14,3 +14,8 @@ extends Node
 ## formatador de numero ou catalogo em constante) tem que escutar: o Godot
 ## retraduz sozinho apenas o text que veio da cena.
 signal idioma_mudou(codigo: String)
+
+## Emitido depois que a compra ja aconteceu -- o dinheiro saiu e o id ja esta em
+## Jogo.upgrades_comprados. Quem escuta repinta; ninguem precisa perguntar de volta se
+## deu certo.
+signal upgrade_comprado(id: String)

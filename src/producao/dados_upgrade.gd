@@ -20,9 +20,14 @@ extends Resource
 ## Mais Ageis" mexe na velocidade de cada macaco, "Duas Maos" multiplica o resultado
 ## inteiro. Tipo novo entra junto do sistema que le ele -- capacidade com as salas
 ## (issue #15), e nao antes: entrada de enum que ninguem le e cerimonia.
+## LIGA_PRODUCAO_AUTOMATICA nao multiplica nada: e um interruptor. O macaco comeca sem
+## saber digitar sozinho (GDD §3) e um upgrade acende a producao automatica. Fica aqui, e
+## nao numa flag no Jogo, porque assim o gameplay continua perguntando pelo TIPO de efeito
+## e nunca por um id -- trocar qual upgrade acende a producao nao mexe em codigo nenhum.
 enum Efeito {
 	VELOCIDADE_DO_MACACO,
 	PRODUCAO_GLOBAL,
+	LIGA_PRODUCAO_AUTOMATICA,
 }
 
 ## snake_case sem acento: vai para o save e para chave de dicionario (decisao 0002).
@@ -42,6 +47,10 @@ enum Efeito {
 ## Multiplicador, nunca soma: "+50% velocidade" do GDD §4 se escreve 1.5, e "x2 producao"
 ## se escreve 2.0. Multiplicador compoe em qualquer ordem; soma nao, e a ordem de compra
 ## acabaria mudando o resultado.
+##
+## Efeito de interruptor (LIGA_PRODUCAO_AUTOMATICA) ignora este campo, e a suite exige
+## que ele fique em 1.0 ali: numero solto num campo que ninguem le faz a proxima pessoa
+## procurar um multiplicador que nao existe.
 @export var valor: float = 1.0
 
 ## Quantos caracteres totais fazem este upgrade aparecer na loja. Zero aparece desde o

@@ -29,6 +29,7 @@ func executar() -> void:
 	_serie_geometrica()
 	_compra_maxima()
 	_producao()
+	_compra_de_upgrade()
 	_entradas_invalidas()
 
 
@@ -136,13 +137,7 @@ func _invariantes_do_maximo(base: Grande, quantidade: float, disponivel: Grande)
 
 
 func _producao() -> void:
-	var macacos_originais := Jogo.macacos
-	var multiplicador_original := Jogo.multiplicador_global
-	var total_original := Jogo.total_caracteres
-	var run_original := Jogo.caracteres_da_run
-	var cps_original := Jogo.caracteres_por_segundo
-	var dinheiro_original := Jogo.dinheiro
-	var tempo_original := Jogo.tempo_jogado
+	var guardado := _guardar_o_jogo()
 
 	Jogo.macacos = Grande.de_float(10.0)
 	Jogo.multiplicador_global = 2.0
@@ -150,53 +145,154 @@ func _producao() -> void:
 	Jogo.caracteres_da_run = Grande.zero()
 	Jogo.dinheiro = Grande.zero()
 	Jogo.tempo_jogado = 0.0
+	Jogo.upgrades_comprados = [] as Array[String]
 
-	perto(Economia.multiplicador_total(), 2.0, 1e-12, "so o multiplicador global esta ligado")
-	_vale(Economia.producao_por_segundo(1.5), 30.0, "10 macacos x 1,5 x 2")
+	# o macaco comeca sem saber digitar sozinho (GDD §3): a producao automatica esta
+	# apagada mesmo com dez macacos na sala
+	ok(not Economia.producao_automatica(), "sem upgrade a producao automatica esta apagada")
+	ok(Economia.producao_por_segundo().e_zero(), "e o cps e zero mesmo com dez macacos")
 
-	Economia.acumular(0.5, 1.5)
-	_vale(Jogo.caracteres_por_segundo, 30.0, "acumular grava o cps para a HUD ler")
-	_vale(Jogo.total_caracteres, 15.0, "meio segundo de 30/s soma 15 no total")
-	_vale(Jogo.caracteres_da_run, 15.0, "e soma 15 na run")
+	Economia.acumular(1.0)
+	ok(Jogo.total_caracteres.e_zero(), "um segundo sem producao automatica nao produz nada")
+	perto(Jogo.tempo_jogado, 1.0, 1e-9, "mas o relogio anda: a producao offline depende dele")
+
+	# antes do Instinto Digitador o clique e o unico caminho, e ele passa pelo mesmo
+	# acumulador da producao automatica
+	Economia.digitar(5)
+	_vale(Jogo.total_caracteres, 5.0, "cinco cliques dao cinco caracteres")
+	_vale(Jogo.caracteres_da_run, 5.0, "e entram na run")
 	# decisao 0004: cada caractere digitado vale uma moeda
-	_vale(Jogo.dinheiro, 15.0, "e soma 15 no dinheiro, um caractere por moeda")
-	perto(Jogo.tempo_jogado, 0.5, 1e-9, "o relogio anda meio segundo")
+	_vale(Jogo.dinheiro, 5.0, "e viram cinco moedas")
+	Economia.digitar(0)
+	Economia.digitar(-3)
+	_vale(Jogo.total_caracteres, 5.0, "clique de zero ou negativo nao produz nada")
 
-	Economia.acumular(0.5, 1.5)
-	_vale(Jogo.total_caracteres, 30.0, "o acumulo e cumulativo")
-	_vale(Jogo.dinheiro, 30.0, "o dinheiro tambem acumula")
-	perto(Jogo.tempo_jogado, 1.0, 1e-9, "e o relogio tambem")
+	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+	ok(Economia.producao_automatica(), "o Instinto Digitador acende a producao automatica")
+
+	# o esperado sai do .tres e nao de um literal: uma sessao de tuning em producao_base
+	# nao pode reprovar a formula, que e o que esta sendo testado aqui
+	var por_macaco := Economia.producao_por_macaco()
+	ok(por_macaco > 0.0, "o macaco do .tres produz alguma coisa")
+	perto(Economia.multiplicador_total(), 2.0, 1e-12, "so o multiplicador global esta ligado")
+	_vale(Economia.producao_por_segundo(), 10.0 * por_macaco * 2.0, "10 macacos x producao x 2")
+
+	var por_segundo := 10.0 * por_macaco * 2.0
+	Economia.acumular(0.5)
+	_vale(Jogo.caracteres_por_segundo, por_segundo, "acumular grava o cps para a HUD ler")
+	_vale(Jogo.total_caracteres, 5.0 + por_segundo * 0.5, "meio segundo entra no total")
+	_vale(Jogo.dinheiro, 5.0 + por_segundo * 0.5, "e no dinheiro")
+	perto(Jogo.tempo_jogado, 1.5, 1e-9, "e o relogio anda meio segundo")
+
+	Economia.acumular(0.5)
+	_vale(Jogo.total_caracteres, 5.0 + por_segundo, "o acumulo e cumulativo")
 
 	# a loja gasta so o dinheiro: total_caracteres e o numero do Panorama e nao pode
 	# descer, senao comprar um macaco apagaria um marco ja alcancado
-	Jogo.dinheiro = Jogo.dinheiro.menos(Grande.de_float(20.0))
-	_vale(Jogo.dinheiro, 10.0, "gastar desce o dinheiro")
-	_vale(Jogo.total_caracteres, 30.0, "e nao encosta no total do Panorama")
+	var total_antes := Jogo.total_caracteres
+	Jogo.dinheiro = Jogo.dinheiro.menos(Grande.de_float(4.0))
+	_vale(Jogo.dinheiro, 1.0 + por_segundo, "gastar desce o dinheiro")
+	ok(Jogo.total_caracteres.igual_a(total_antes), "e nao encosta no total do Panorama")
 
 	# delta nao positivo nao produz, mas o cps continua sendo atualizado: deixar o valor
 	# velho na tela mostraria producao que acabou de ser zerada
-	Economia.acumular(0.0, 1.5)
-	_vale(Jogo.total_caracteres, 30.0, "delta zero nao produz nada")
-	_vale(Jogo.caracteres_por_segundo, 30.0, "e mesmo assim atualiza o cps")
-	perto(Jogo.tempo_jogado, 1.0, 1e-9, "delta zero nao mexe no relogio")
+	Economia.acumular(0.0)
+	ok(Jogo.total_caracteres.igual_a(total_antes), "delta zero nao produz nada")
+	_vale(Jogo.caracteres_por_segundo, por_segundo, "e mesmo assim atualiza o cps")
+	perto(Jogo.tempo_jogado, 2.0, 1e-9, "delta zero nao mexe no relogio")
 
 	Jogo.macacos = Grande.zero()
-	Economia.acumular(1.0, 1.5)
+	Economia.acumular(1.0)
 	ok(Jogo.caracteres_por_segundo.e_zero(), "sem macaco o cps zera de verdade")
-	_vale(Jogo.total_caracteres, 30.0, "sem macaco nada e produzido")
-	_vale(Jogo.dinheiro, 10.0, "e nada e ganho")
+	ok(Jogo.total_caracteres.igual_a(total_antes), "sem macaco nada e produzido")
 	# o tempo passa mesmo sem producao: a producao offline da issue #9 e uma conta sobre
 	# esse relogio, e ele parar com zero macaco quebraria a conta
-	perto(Jogo.tempo_jogado, 2.0, 1e-9, "mas o relogio anda mesmo sem macaco")
+	perto(Jogo.tempo_jogado, 3.0, 1e-9, "mas o relogio anda mesmo sem macaco")
 
-	Jogo.macacos = macacos_originais
-	Jogo.multiplicador_global = multiplicador_original
-	Jogo.total_caracteres = total_original
-	Jogo.caracteres_da_run = run_original
-	Jogo.caracteres_por_segundo = cps_original
-	Jogo.dinheiro = dinheiro_original
-	Jogo.tempo_jogado = tempo_original
-	ok(Jogo.macacos == macacos_originais, "a suite devolveu o estado do Jogo")
+	_devolver_o_jogo(guardado)
+	ok(Jogo.macacos == guardado["macacos"], "a suite devolveu o estado do Jogo")
+
+
+## A compra recusa em silencio o que e jogada invalida -- sem dinheiro, ja comprado, ainda
+## nao desbloqueado -- e so grita no que e erro de programa. A diferenca importa: uma
+## dessas tres acontece toda hora com o jogador clicando, e nenhuma delas e bug.
+func _compra_de_upgrade() -> void:
+	var guardado := _guardar_o_jogo()
+	Jogo.upgrades_comprados = [] as Array[String]
+	Jogo.dinheiro = Grande.zero()
+	Jogo.total_caracteres = Grande.zero()
+
+	var instinto := Economia.upgrade_de("instinto_digitador")
+	ok(instinto != null, "o Instinto Digitador esta no catalogo carregado do .tres")
+
+	ok(not Economia.comprar_upgrade("instinto_digitador"), "sem dinheiro nao compra")
+	ok(Jogo.upgrades_comprados.is_empty(), "e a compra recusada nao deixa rastro")
+
+	# o sinal e emitido depois de a compra ja ter acontecido: quem escuta repinta e nao
+	# precisa perguntar de volta se deu certo
+	var recebidos: Array[String] = []
+	var ouvinte := func(id: String) -> void: recebidos.append(id)
+	EventBus.upgrade_comprado.connect(ouvinte)
+
+	Jogo.dinheiro = Grande.de_float(instinto.custo)
+	ok(Economia.comprar_upgrade("instinto_digitador"), "com o dinheiro exato, compra")
+	ok(Jogo.dinheiro.e_zero(), "e o custo sai do saldo")
+	ok(Jogo.upgrades_comprados.has("instinto_digitador"), "o id entra na lista do save")
+	igual(recebidos.size(), 1, "o EventBus avisou uma vez")
+	igual(recebidos[0] if not recebidos.is_empty() else "", "instinto_digitador", "com o id certo")
+
+	Jogo.dinheiro = Grande.de_float(1e6)
+	ok(not Economia.comprar_upgrade("instinto_digitador"), "comprar de novo nao acontece")
+	igual(recebidos.size(), 1, "e nao emite sinal de novo")
+	EventBus.upgrade_comprado.disconnect(ouvinte)
+
+	# requisito ainda nao atingido: o upgrade existe, da para pagar, e mesmo assim nao
+	var dedos := Economia.upgrade_de("dedos_mais_ageis")
+	ok(dedos != null and dedos.requisito > 0.0, "o outro upgrade tem requisito para testar")
+	Jogo.total_caracteres = Grande.zero()
+	ok(not Economia.comprar_upgrade("dedos_mais_ageis"), "requisito nao atingido nao compra")
+	Jogo.total_caracteres = Grande.de_float(dedos.requisito)
+	ok(Economia.comprar_upgrade("dedos_mais_ageis"), "atingido o requisito, compra")
+
+	# e o bonus entra por TIPO, nunca pelo id de quem foi comprado
+	perto(
+		Economia.bonus_de(DadosUpgrade.Efeito.VELOCIDADE_DO_MACACO),
+		dedos.valor,
+		1e-12,
+		"o bonus de velocidade e o valor do upgrade comprado",
+	)
+	perto(
+		Economia.bonus_de(DadosUpgrade.Efeito.PRODUCAO_GLOBAL),
+		1.0,
+		1e-12,
+		"e o de producao global continua neutro, sem upgrade desse tipo",
+	)
+
+	_devolver_o_jogo(guardado)
+
+
+func _guardar_o_jogo() -> Dictionary:
+	return {
+		"macacos": Jogo.macacos,
+		"multiplicador_global": Jogo.multiplicador_global,
+		"total_caracteres": Jogo.total_caracteres,
+		"caracteres_da_run": Jogo.caracteres_da_run,
+		"caracteres_por_segundo": Jogo.caracteres_por_segundo,
+		"dinheiro": Jogo.dinheiro,
+		"tempo_jogado": Jogo.tempo_jogado,
+		"upgrades_comprados": Jogo.upgrades_comprados.duplicate(),
+	}
+
+
+func _devolver_o_jogo(guardado: Dictionary) -> void:
+	Jogo.macacos = guardado["macacos"]
+	Jogo.multiplicador_global = guardado["multiplicador_global"]
+	Jogo.total_caracteres = guardado["total_caracteres"]
+	Jogo.caracteres_da_run = guardado["caracteres_da_run"]
+	Jogo.caracteres_por_segundo = guardado["caracteres_por_segundo"]
+	Jogo.dinheiro = guardado["dinheiro"]
+	Jogo.tempo_jogado = guardado["tempo_jogado"]
+	Jogo.upgrades_comprados = guardado["upgrades_comprados"]
 
 
 ## Crescimento que nao cresce e o erro de tuning que permite compra infinita. As linhas
@@ -218,6 +314,8 @@ func _entradas_invalidas() -> void:
 		0,
 		"custo zerado nao vira compra infinita",
 	)
+	# id que nao existe e erro de programa, nao jogada: aqui a Economia grita
+	ok(not Economia.comprar_upgrade("upgrade_que_nao_existe"), "upgrade inexistente nao compra")
 
 
 func _somar_uma_a_uma(quantidade: float, quantos: int) -> Grande:

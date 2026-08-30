@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
-id = "dedos_mais_ageis"
-nome = "Dedos Mais Ágeis"
-descricao = "O macaco passa a errar as teclas 50% mais rápido."
-custo = 100.0
-tipo_de_efeito = 0
-valor = 1.5
-requisito = 50.0
+id = "instinto_digitador"
+nome = "Instinto Digitador"
+descricao = "O macaco começa a pressionar teclas sozinho. É aqui que o jogo vira um incremental."
+custo = 10.0
+tipo_de_efeito = 2
+valor = 1.0
+requisito = 0.0

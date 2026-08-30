@@ -82,8 +82,14 @@ func _upgrades() -> void:
 		_texto_preenchido(dados.nome, dados.descricao, caminho)
 
 		ok(dados.custo > 0.0, "%s -- custo %s e maior que zero" % [caminho, dados.custo])
-		# valor 1 e upgrade que nao faz nada: o jogador paga e nao ve diferenca
-		ok(dados.valor > 1.0, "%s -- valor %s multiplica alguma coisa" % [caminho, dados.valor])
+
+		if dados.tipo_de_efeito == DadosUpgrade.Efeito.LIGA_PRODUCAO_AUTOMATICA:
+			# interruptor nao multiplica nada, e numero solto num campo que ninguem le
+			# faz a proxima pessoa procurar um multiplicador que nao existe
+			perto(dados.valor, 1.0, 0.0, "%s -- interruptor tem valor neutro" % caminho)
+		else:
+			# valor 1 e upgrade que nao faz nada: o jogador paga e nao ve diferenca
+			ok(dados.valor > 1.0, "%s -- valor %s multiplica alguma coisa" % [caminho, dados.valor])
 		ok(dados.requisito >= 0.0, "%s -- requisito nao e negativo" % caminho)
 		ok(
 			dados.tipo_de_efeito in DadosUpgrade.Efeito.values(),

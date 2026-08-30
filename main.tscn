@@ -1,3 +1,7 @@
-[gd_scene format=3 uid="uid://bmnk0infmonkey"]
+[gd_scene load_steps=2 format=3 uid="uid://bmnk0infmonkey"]
+
+[ext_resource type="PackedScene" uid="uid://cp4rt1d4jkt00" path="res://src/cena/partida.tscn" id="1_partida"]
 
 [node name="Main" type="Node2D"]
+
+[node name="Partida" parent="." instance=ExtResource("1_partida")]
