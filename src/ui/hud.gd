@@ -1,0 +1,244 @@
+## A interface principal: recursos a esquerda, cena no centro, loja a direita (GDD §25).
+##
+## Versao minima de proposito -- so os botoes que existem. Panorama, Descobertas e
+## Prestigio entram com os sistemas deles, e botao que abre tela vazia ensina o jogador a
+## ignorar a barra de cima.
+##
+## ⚠️ ESCUTA EventBus.idioma_mudou, e tem que escutar: o Godot retraduz sozinho apenas o
+## text que veio da CENA. Os botoes de upgrade sao montados em codigo, com tr(), e sem
+## isto o nome do upgrade ficaria em portugues no meio de uma interface ja em ingles --
+## sem quebrar nada, sem imprimir erro, sumindo sozinho na proxima vez que alguem mexesse
+## naquele rotulo. Ver CONVENCOES.md.
+##
+## _montar_upgrades() limpa antes de montar: repintar nao e reexecutar, e chamar de novo
+## nao pode empilhar dez copias do mesmo botao so porque a pessoa mexeu nas opcoes.
+##
+## Nao guarda numero nenhum. Le Jogo e Economia no quadro em que desenha, que e a regra 2
+## de arquitetura -- assim um bonus novo aparece na tela sem ninguem avisar a HUD.
+##
+## As cores vem de Paleta e o tema e montado em codigo, nao num .tres: cor de identidade
+## nao e numero de balanceamento (docs/ARTE.md, secao 6).
+extends Control
+
+## Fontes monoespacadas do sistema, na ordem de preferencia. A tipografia de interface do
+## docs/ARTE.md pede maquina de escrever -- monoespacada, serifada, MUITO legivel, porque
+## este e um jogo de ler numero. Fonte propria entra quando houver asset; ate la o sistema
+## resolve, e sem versionar arquivo binario nenhum.
+const FONTES: PackedStringArray = [
+	"Consolas", "Courier New", "DejaVu Sans Mono", "Liberation Mono", "monospace",
+]
+
+const CORPO: int = 18
+const TITULO: int = 15
+const CONTADOR: int = 44
+const DESTAQUE: int = 26
+const BOTAO_DIGITAR: int = 34
+
+## Quantidades do GDD §32. Comprar Maximo e a entrada 0, resolvida na hora do clique.
+const LOTES: Array[int] = [1, 10, 100]
+
+
+func _ready() -> void:
+	theme = _montar_tema()
+	%Fundo.color = Paleta.INK_BROWN.darkened(0.4)
+
+	_liberar_clique(self)
+	_estilizar()
+	_ligar_botoes()
+	_montar_upgrades()
+
+	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
+
+
+func _process(_delta: float) -> void:
+	_pintar()
+
+
+# --- pintura --------------------------------------------------------------------------
+
+## Numeros e estado dos botoes, todo quadro. E barato e evita a familia inteira de bug em
+## que a tela mostra um valor que o jogo ja mudou.
+func _pintar() -> void:
+	%ValorCaracteres.text = Formatador.formatar(Jogo.total_caracteres)
+	%ValorPorSegundo.text = Formatador.formatar(Jogo.caracteres_por_segundo)
+	%ValorDinheiro.text = Formatador.formatar(Jogo.dinheiro)
+	%ValorMacacos.text = Formatador.formatar(Jogo.macacos)
+
+	%CustoMacaco.text = "%s %s" % [
+		Formatador.formatar(Economia.custo_de_macacos(1)), tr("para o próximo"),
+	]
+
+	for lote in LOTES:
+		var botao: Button = get_node("%Comprar" + str(lote))
+		botao.disabled = Economia.custo_de_macacos(lote).maior_que(Jogo.dinheiro)
+	%ComprarMaximo.disabled = Economia.macacos_que_cabem() <= 0
+
+	for botao in %ListaUpgrades.get_children():
+		var dados: DadosUpgrade = Economia.upgrade_de(botao.get_meta("id"))
+		if dados != null:
+			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+
+
+## Um botao por upgrade ainda nao comprado e ja desbloqueado. Limpa antes de montar.
+func _montar_upgrades() -> void:
+	for antigo in %ListaUpgrades.get_children():
+		%ListaUpgrades.remove_child(antigo)
+		antigo.queue_free()
+
+	for dados in Economia.upgrades():
+		if Jogo.upgrades_comprados.has(dados.id):
+			continue
+		if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
+			continue
+
+		var botao := Button.new()
+		# "%s — %s" e marca de formato, nao texto: nao passa por traducao. O que traduz e
+		# o nome, e o tr() vem ANTES da substituicao (CONVENCOES.md, regra 2 de idioma)
+		botao.text = "%s — %s" % [tr(dados.nome), Formatador.formatar(Grande.de_float(dados.custo))]
+		botao.tooltip_text = tr(dados.descricao)
+		botao.focus_mode = Control.FOCUS_NONE
+		botao.set_meta("id", dados.id)
+		botao.pressed.connect(_ao_comprar.bind(dados.id))
+		%ListaUpgrades.add_child(botao)
+
+
+# --- reacoes --------------------------------------------------------------------------
+
+## Tudo que nao e botao deixa o clique passar adiante. A HUD cobre a tela inteira e o
+## mouse_filter padrao de Control e STOP, entao sem isto ela comeria todo clique que nao
+## caisse num botao -- e clicar no meio da tela, que e o gesto natural do genero, nao
+## digitaria nada. Botao continua STOP: clicar em "Comprar" compra e nao digita.
+##
+## O teste de fumaca pegou este bug com o contador em 6 de 12: metade dos cliques dele e
+## por mouse.
+func _liberar_clique(no: Node) -> void:
+	if no is Control and not (no is Button):
+		(no as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for filho in no.get_children():
+		_liberar_clique(filho)
+
+
+func _ligar_botoes() -> void:
+	%BotaoDigitar.pressed.connect(Economia.digitar.bind(1))
+	for lote in LOTES:
+		var botao: Button = get_node("%Comprar" + str(lote))
+		botao.pressed.connect(Economia.comprar_macacos.bind(lote))
+	%ComprarMaximo.pressed.connect(_ao_comprar_maximo)
+
+	# nenhum botao pega foco: com foco, a barra de espaco aciona o botao focado em vez de
+	# digitar, e um "Comprar Maximo" clicado uma vez transformaria toda tecla de digitar
+	# em compra de macaco pelo resto da partida
+	for botao in [%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo]:
+		botao.focus_mode = Control.FOCUS_NONE
+
+
+func _ao_comprar_maximo() -> void:
+	Economia.comprar_macacos(Economia.macacos_que_cabem())
+
+
+func _ao_comprar(id: String) -> void:
+	Economia.comprar_upgrade(id)
+
+
+## O upgrade comprado sai da lista, e um requisito recem-atingido pode ter trazido outro.
+func _ao_comprar_upgrade(_id: String) -> void:
+	_montar_upgrades()
+
+
+func _ao_mudar_idioma(_codigo: String) -> void:
+	_montar_upgrades()
+
+
+# --- aparencia ------------------------------------------------------------------------
+
+func _montar_tema() -> Theme:
+	var fonte := SystemFont.new()
+	fonte.font_names = FONTES
+
+	var tema := Theme.new()
+	tema.default_font = fonte
+	tema.default_font_size = CORPO
+	tema.set_color("font_color", "Label", Paleta.PAPER_CREAM)
+	tema.set_stylebox("panel", "PanelContainer", _painel())
+
+	# botao secundario: marrom com borda de bronze (docs/ARTE.md, secao 9)
+	tema.set_color("font_color", "Button", Paleta.PAPER_CREAM)
+	tema.set_color("font_hover_color", "Button", Paleta.BANANA_GOLD)
+	tema.set_color("font_disabled_color", "Button", Paleta.MONKEY_BROWN)
+	tema.set_stylebox("normal", "Button", _botao(Paleta.MONKEY_BROWN.darkened(0.55)))
+	tema.set_stylebox("hover", "Button", _botao(Paleta.MONKEY_BROWN.darkened(0.35)))
+	tema.set_stylebox("pressed", "Button", _botao(Paleta.MONKEY_BROWN.darkened(0.7)))
+	tema.set_stylebox("disabled", "Button", _botao(Paleta.INK_BROWN, Paleta.MONKEY_BROWN))
+	tema.set_stylebox("focus", "Button", StyleBoxEmpty.new())
+	return tema
+
+
+## O contador e a coisa mais importante da tela e nao compete com nada: e o maior corpo,
+## na cor de producao, e todo o resto fica pequeno e creme.
+func _estilizar() -> void:
+	%ValorCaracteres.add_theme_font_size_override("font_size", CONTADOR)
+	%ValorCaracteres.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+
+	for grande in [%ValorPorSegundo, %ValorDinheiro, %ValorMacacos]:
+		grande.add_theme_font_size_override("font_size", DESTAQUE)
+		grande.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
+
+	for legenda in [%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco]:
+		legenda.add_theme_font_size_override("font_size", TITULO)
+		legenda.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
+
+	for titulo in [%TituloMacacos, %TituloUpgrades]:
+		titulo.add_theme_font_size_override("font_size", TITULO)
+		titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+
+	# desenho de posicionamento ate a cena das eras entrar (issue #26): a maquina de
+	# escrever e o ∞ sao dois dos conceitos que a formula visual do ARTE.md exige
+	%Maquina.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.15))
+
+	# o botao principal do docs/ARTE.md, secao 9: dourado, borda grossa, texto escuro
+	%BotaoDigitar.add_theme_font_size_override("font_size", BOTAO_DIGITAR)
+	%BotaoDigitar.add_theme_color_override("font_color", Paleta.INK_BROWN)
+	%BotaoDigitar.add_theme_color_override("font_hover_color", Paleta.INK_BROWN)
+	%BotaoDigitar.add_theme_color_override("font_pressed_color", Paleta.INK_BROWN)
+	%BotaoDigitar.add_theme_stylebox_override("normal", _digitar(Paleta.BANANA_GOLD))
+	%BotaoDigitar.add_theme_stylebox_override("hover", _digitar(Paleta.BANANA_GOLD.lightened(0.15)))
+	%BotaoDigitar.add_theme_stylebox_override("pressed", _digitar(Paleta.MECHANICAL_GOLD))
+
+
+func _painel() -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Paleta.INK_BROWN
+	estilo.border_color = Paleta.MECHANICAL_GOLD.darkened(0.35)
+	estilo.set_border_width_all(2)
+	estilo.set_corner_radius_all(6)
+	estilo.set_content_margin_all(0)
+	return estilo
+
+
+func _botao(fundo: Color, borda: Color = Paleta.MECHANICAL_GOLD.darkened(0.2)) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = fundo
+	estilo.border_color = borda
+	estilo.set_border_width_all(2)
+	estilo.set_corner_radius_all(4)
+	estilo.content_margin_left = 12
+	estilo.content_margin_right = 12
+	estilo.content_margin_top = 8
+	estilo.content_margin_bottom = 8
+	return estilo
+
+
+## Borda grossa e escura porque dourado brilhante sem area escura para contrastar esta na
+## lista do que evitar (docs/ARTE.md, secao 13).
+func _digitar(fundo: Color) -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = fundo
+	estilo.border_color = Paleta.INK_BROWN
+	estilo.set_border_width_all(4)
+	estilo.set_corner_radius_all(8)
+	estilo.content_margin_left = 56
+	estilo.content_margin_right = 56
+	estilo.content_margin_top = 16
+	estilo.content_margin_bottom = 16
+	return estilo

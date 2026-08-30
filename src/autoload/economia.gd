@@ -125,6 +125,54 @@ func comprar_upgrade(id: String) -> bool:
 	return true
 
 
+# --- loja de macacos ------------------------------------------------------------------
+
+## Preco de comprar `quantos` macacos a partir da quantidade atual (GDD §31 e §32).
+##
+## A quantidade que entra na curva inclui o macaco com que o jogo comeca, entao o primeiro
+## COMPRADO ja sai por base x crescimento. Se um dia isso incomodar, e um numero no .tres
+## e nao uma linha aqui.
+func custo_de_macacos(quantos: int) -> Grande:
+	var macaco := macaco_padrao()
+	if macaco == null:
+		return Grande.zero()
+	return custo_de(
+		Grande.de_float(macaco.custo_base),
+		macaco.crescimento_custo,
+		Jogo.macacos.para_float(),
+		quantos,
+	)
+
+
+## Quantos cabem no saldo agora. E o "Comprar Maximo" do GDD §32.
+func macacos_que_cabem() -> int:
+	var macaco := macaco_padrao()
+	if macaco == null:
+		return 0
+	return quantos_cabem(
+		Grande.de_float(macaco.custo_base),
+		macaco.crescimento_custo,
+		Jogo.macacos.para_float(),
+		Jogo.dinheiro,
+	)
+
+
+## Devolve quantos foram comprados de fato -- zero quando nao da, o que e jogada normal e
+## nao erro. Cobra o preco da SERIE inteira de uma vez: comprar 100 num clique tem que
+## custar o mesmo que cem cliques em comprar 1, e e a suite que garante.
+func comprar_macacos(quantos: int) -> int:
+	if quantos <= 0:
+		return 0
+	var custo := custo_de_macacos(quantos)
+	if custo.sinal() <= 0 or custo.maior_que(Jogo.dinheiro):
+		return 0
+
+	Jogo.dinheiro = Jogo.dinheiro.menos(custo)
+	Jogo.macacos = Jogo.macacos.mais(Grande.de_float(float(quantos)))
+	EventBus.macacos_comprados.emit(quantos)
+	return quantos
+
+
 # --- producao -------------------------------------------------------------------------
 
 ## Produto de todos os multiplicadores globais, montado no frame em que e pedido.

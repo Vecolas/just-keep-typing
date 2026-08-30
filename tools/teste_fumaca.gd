@@ -90,6 +90,43 @@ func _ready() -> void:
 		_falhar("o total nao cresceu em %d frames de producao automatica" % FRAMES)
 		return
 
+	# 5. a HUD subiu junto e os botoes dela mexem no jogo de verdade (issue #7)
+	var hud := raiz.find_child("HUD", true, false)
+	if hud == null:
+		_falhar("a HUD nao subiu junto da cena principal")
+		return
+
+	var digitar := hud.find_child("BotaoDigitar", true, false) as Button
+	if digitar == null:
+		_falhar("a HUD nao tem BotaoDigitar")
+		return
+	var antes_do_botao := Jogo.total_caracteres
+	digitar.pressed.emit()
+	if not Jogo.total_caracteres.maior_que(antes_do_botao):
+		_falhar("o botao DIGITAR nao produziu nada")
+		return
+
+	var comprar := hud.find_child("Comprar1", true, false) as Button
+	if comprar == null:
+		_falhar("a loja nao tem o botao Comprar 1")
+		return
+	# saldo suficiente para o macaco, sem depender de quanto a producao ja rendeu
+	Economia.digitar(1000)
+	var macacos_antes := Jogo.macacos
+	var dinheiro_antes := Jogo.dinheiro
+	comprar.pressed.emit()
+	if not Jogo.macacos.maior_que(macacos_antes):
+		_falhar("comprar 1 macaco na loja nao aumentou a contagem")
+		return
+	if not dinheiro_antes.maior_que(Jogo.dinheiro):
+		_falhar("comprar 1 macaco na loja nao cobrou nada")
+		return
+
+	await get_tree().process_frame
+	if not Jogo.caracteres_por_segundo.maior_que(Grande.um()):
+		_falhar("o macaco comprado nao apareceu na producao")
+		return
+
 	print("PASSOU (%d cliques, %s comprado, cps %s)" % [
 		CLIQUES, UPGRADE_INICIAL, Jogo.caracteres_por_segundo.para_texto(),
 	])

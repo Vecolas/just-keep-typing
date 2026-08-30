@@ -1,0 +1,214 @@
+[gd_scene format=3 uid="uid://ck3ttg32a6emh"]
+
+[ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hud")
+
+[node name="Fundo" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margem" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Colunas" type="HBoxContainer" parent="Margem"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Recursos" type="PanelContainer" parent="Margem/Colunas"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+
+[node name="MargemRecursos" type="MarginContainer" parent="Margem/Colunas/Recursos"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ListaRecursos" type="VBoxContainer" parent="Margem/Colunas/Recursos/MargemRecursos"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ValorCaracteres" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = "0"
+
+[node name="NomeCaracteres" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "caracteres"
+
+[node name="EspacoUm" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="ValorPorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = "0"
+
+[node name="NomePorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "caracteres por segundo"
+
+[node name="EspacoDois" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="ValorDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = "0"
+
+[node name="NomeDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "para gastar"
+
+[node name="Centro" type="PanelContainer" parent="Margem/Colunas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MargemCentro" type="MarginContainer" parent="Margem/Colunas/Centro"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ListaCentro" type="VBoxContainer" parent="Margem/Colunas/Centro/MargemCentro"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 24
+
+[node name="Maquina" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = "   .---------------------.
+  /    _____________    /|
+ /    /   ∞         /  / |
+/    /_____________/  /  |
+|_____________________|  |
+|  [q][w][e][r][t][y]  | /
+|______________________|/"
+horizontal_alignment = 1
+
+[node name="BotaoDigitar" type="Button" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "DIGITAR"
+
+[node name="DicaDigitar" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+1 caractere por clique ou espaço"
+horizontal_alignment = 1
+
+[node name="Loja" type="PanelContainer" parent="Margem/Colunas"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+
+[node name="MargemLoja" type="MarginContainer" parent="Margem/Colunas/Loja"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ListaLoja" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TituloMacacos" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "MACACOS"
+
+[node name="ValorMacacos" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = "1"
+
+[node name="CustoMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = "0"
+
+[node name="BotoesMacaco" type="GridContainer" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="Comprar1" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Comprar 1"
+
+[node name="Comprar10" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Comprar 10"
+
+[node name="Comprar100" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Comprar 100"
+
+[node name="ComprarMaximo" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Comprar Máximo"
+
+[node name="EspacoLoja" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="TituloUpgrades" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "UPGRADES"
+
+[node name="ListaUpgrades" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8

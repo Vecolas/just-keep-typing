@@ -1,7 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://bmnk0infmonkey"]
+[gd_scene load_steps=3 format=3 uid="uid://bmnk0infmonkey"]
 
 [ext_resource type="PackedScene" uid="uid://cp4rt1d4jkt00" path="res://src/cena/partida.tscn" id="1_partida"]
+[ext_resource type="PackedScene" uid="uid://ck3ttg32a6emh" path="res://src/ui/hud.tscn" id="2_hud"]
 
 [node name="Main" type="Node2D"]
 
 [node name="Partida" parent="." instance=ExtResource("1_partida")]
+
+[node name="Interface" type="CanvasLayer" parent="."]
+
+[node name="HUD" parent="Interface" instance=ExtResource("2_hud")]

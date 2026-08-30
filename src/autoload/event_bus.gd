@@ -19,3 +19,7 @@ signal idioma_mudou(codigo: String)
 ## Jogo.upgrades_comprados. Quem escuta repinta; ninguem precisa perguntar de volta se
 ## deu certo.
 signal upgrade_comprado(id: String)
+
+## Emitido depois da compra, com quantos macacos entraram de verdade -- que pode ser menos
+## do que o botao pediu, se o saldo nao cobriu o lote inteiro.
+signal macacos_comprados(quantos: int)
