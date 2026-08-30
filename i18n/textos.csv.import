@@ -6,7 +6,10 @@ uid="uid://dcyhl7u70c48o"
 
 [deps]
 
+files=["res://i18n/textos.pt_BR.translation", "res://i18n/textos.en.translation"]
+
 source_file="res://i18n/textos.csv"
+dest_files=["res://i18n/textos.pt_BR.translation", "res://i18n/textos.en.translation"]
 
 [params]
 
