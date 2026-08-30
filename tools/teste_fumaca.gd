@@ -235,7 +235,43 @@ func _ready() -> void:
 	estatisticas.call("fechar")
 	await get_tree().process_frame
 
-	# 9. o prestigio: o Teorema e provado e um no da Arvore muda a run seguinte
+	# 9. um evento dispara, mexe na producao e a producao volta ao normal (issue #27)
+	Jogo.total_caracteres = Grande.new(1.0, 10)
+	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+	Jogo.macacos = Grande.de_float(10.0)
+	var producao_normal := Economia.producao_por_segundo()
+	var inspirado := Eventos.de("macaco_inspirado")
+	if inspirado == null or not Eventos.comecar(inspirado.id):
+		_falhar("nao deu para disparar o Macaco Inspirado")
+		return
+	await get_tree().process_frame
+	if not Economia.producao_por_segundo().maior_que(producao_normal):
+		_falhar("o evento nao mexeu na producao")
+		return
+
+	Eventos.tique(inspirado.duracao + 1.0)
+	if Eventos.ativo(inspirado.id):
+		_falhar("o evento nao expirou depois da duracao dele")
+		return
+	if not Economia.producao_por_segundo().igual_a(producao_normal):
+		_falhar("a producao nao voltou ao normal: %s contra %s" % [
+			Economia.producao_por_segundo().para_texto(), producao_normal.para_texto(),
+		])
+		return
+
+	# e a saida pela acao do jogador funciona
+	var banana := Eventos.de("banana_na_maquina")
+	if banana == null or not Eventos.comecar(banana.id):
+		_falhar("nao deu para disparar a Banana na Maquina")
+		return
+	if not Eventos.resolver(banana.id):
+		_falhar("clicar na banana nao resolveu o problema")
+		return
+	if not Economia.producao_por_segundo().igual_a(producao_normal):
+		_falhar("resolver o evento nao devolveu a producao")
+		return
+
+	# 10. o prestigio: o Teorema e provado e um no da Arvore muda a run seguinte
 	#    (issues #24 e #25)
 	var teoremas := raiz.find_child("TeoremasTela", true, false) as Control
 	if teoremas == null:
@@ -273,7 +309,7 @@ func _ready() -> void:
 		_falhar("o no da Arvore nao mudou a producao da run seguinte")
 		return
 
-	# 10. a sala enche e a expansao libera vaga (issue #15)
+	# 11. a sala enche e a expansao libera vaga (issue #15)
 	var sala := Economia.sala_atual()
 	Economia.digitar(100000)
 	Economia.comprar_macacos(Economia.macacos_que_cabem())
@@ -297,7 +333,7 @@ func _ready() -> void:
 		_falhar("expandir liberou %s vagas em vez de %s" % [liberou, diferenca])
 		return
 
-	# 11. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	# 12. gravar, sujar tudo e carregar: o estado tem que voltar identico
 	var total_antes := Jogo.total_caracteres
 	var macacos_no_save := Jogo.macacos
 	var upgrades_antes := Jogo.upgrades_comprados.size()
@@ -329,7 +365,7 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 12. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 13. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)

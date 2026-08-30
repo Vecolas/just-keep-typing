@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosEvento" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_evento.gd" id="1_dados_evento"]
+
+[resource]
+script = ExtResource("1_dados_evento")
+id = "banana_na_maquina"
+nome = "Banana na Máquina"
+descricao = "Um macaco parou de trabalhar. Clique na banana para resolver."
+multiplicador_producao = 0.95
+multiplicador_descoberta = 1.0
+duracao = 30.0
+peso = 3.0
+resolve_com_clique = true

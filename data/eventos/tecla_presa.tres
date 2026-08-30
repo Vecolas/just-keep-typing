@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosEvento" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_evento.gd" id="1_dados_evento"]
+
+[resource]
+script = ExtResource("1_dados_evento")
+id = "tecla_presa"
+nome = "Tecla Presa"
+descricao = "Uma máquina só produz a mesma letra. Muito caractere e nenhuma descoberta."
+multiplicador_producao = 25.0
+multiplicador_descoberta = 0.0
+duracao = 15.0
+peso = 2.0
+resolve_com_clique = false

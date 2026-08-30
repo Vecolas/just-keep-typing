@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosEvento" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_evento.gd" id="1_dados_evento"]
+
+[resource]
+script = ExtResource("1_dados_evento")
+id = "critico_literario"
+nome = "Crítico Literário"
+descricao = "Alguém decidiu levar isto a sério. As descobertas valem mais por um tempo."
+multiplicador_producao = 1.0
+multiplicador_descoberta = 3.0
+duracao = 25.0
+peso = 1.5
+resolve_com_clique = false

@@ -73,7 +73,16 @@ func _ready() -> void:
 		TranslationServer.set_locale(idioma)
 
 	var cenario := _cenario()
-	if cenario == "teoremas":
+	if cenario == "eventos":
+		Economia.digitar(50000)
+		Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+		Jogo.macacos = Grande.de_float(10.0)
+		# um de cada lado: a punicao com botao de saida, e a troca sem botao
+		Eventos.comecar("banana_na_maquina")
+		Eventos.comecar("tecla_presa")
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+	elif cenario == "teoremas":
 		Economia.digitar(1000000000000)
 		Jogo.pontos_de_teorema = Grande.de_float(30.0)
 		Jogo.pontos_totais = Grande.de_float(30.0)
