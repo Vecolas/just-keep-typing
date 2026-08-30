@@ -56,5 +56,11 @@ var pontos_de_teorema: Grande = Grande.zero()
 ## Moeda do segundo prestigio (GDD §20). Sobrevive inclusive ao reset dos Teoremas.
 var fragmentos: Grande = Grande.zero()
 
+## Ids dos marcos ja cruzados. Guarda o id e nao o Resource porque isto vai para o save.
+##
+## Marco nao da bonus, da significado (decisao 0003) -- por isso esta lista so serve para
+## a tela saber o que ja foi lido e para o autoload Marcos nao emitir duas vezes.
+var marcos_alcancados: Array[String] = []
+
 ## Segundos de partida acumulados. Float porque e tempo, nao acumulador de recurso.
 var tempo_jogado: float = 0.0

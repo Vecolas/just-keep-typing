@@ -23,3 +23,10 @@ signal upgrade_comprado(id: String)
 ## Emitido depois da compra, com quantos macacos entraram de verdade -- que pode ser menos
 ## do que o botao pediu, se o saldo nao cobriu o lote inteiro.
 signal macacos_comprados(quantos: int)
+
+## Emitido depois de a partida ser gravada em disco com sucesso.
+signal jogo_gravado()
+
+## Emitido depois de um save ja ter sido aplicado no Jogo. Quem escuta pode ler o estado
+## novo direto, sem receber nada por argumento.
+signal jogo_carregado()
