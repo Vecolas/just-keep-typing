@@ -26,6 +26,7 @@ Descobertas="*res://src/autoload/descobertas.gd"
 Teoremas="*res://src/autoload/teoremas.gd"
 Eventos="*res://src/autoload/eventos.gd"
 Automacao="*res://src/autoload/automacao.gd"
+Fragmentos="*res://src/autoload/fragmentos.gd"
 MCPGameBridge="res://addons/godot_mcp/game_bridge/mcp_game_bridge.gd"
 
 [display]

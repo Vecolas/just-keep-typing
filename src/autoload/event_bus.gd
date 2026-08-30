@@ -68,6 +68,10 @@ signal teorema_provado(pontos: Grande)
 ## Emitido depois de um no da Arvore de Teoremas subir de nivel.
 signal teorema_comprado(id: String)
 
+## Emitido depois de o Universo ja ter sido reescrito, com quantos Fragmentos foram
+## ganhos (GDD §20). A partida ja esta reiniciada quando isto chega.
+signal universo_reescrito(fragmentos: Grande)
+
 ## Pedido de abrir a tela de Teoremas.
 signal teoremas_pedidos()
 

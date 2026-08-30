@@ -91,6 +91,19 @@ func _ready() -> void:
 		EventBus.teoremas_pedidos.emit()
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
+	elif cenario == "reescrever":
+		# a mesma tela dos Teoremas, mas no ponto em que o segundo prestigio ja abriu:
+		# a Arvore com nos comprados EM CIMA do bloco que propoe apaga-la (issue #31)
+		Economia.digitar(1000000000000)
+		Jogo.pontos_de_teorema = Grande.de_float(50000.0)
+		Jogo.pontos_totais = Grande.de_float(50000.0)
+		Teoremas.comprar("memoria_genetica")
+		Teoremas.comprar("producao_offline")
+		Jogo.reescritas = 2
+		Jogo.fragmentos = Grande.de_float(2.0)
+		EventBus.teoremas_pedidos.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
 	elif cenario.begins_with("letras"):
 		# a producao entra pelo caminho de verdade: a Partida recalcula o cps todo quadro
 		# e um valor cravado seria apagado antes de as letras lerem

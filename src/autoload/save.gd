@@ -30,7 +30,9 @@ extends Node
 ## 6: entram os Pontos de Teorema ganhos na vida, os niveis da Arvore e o recorde
 ## de total (issues #24 e #25).
 ## 7: entram as automacoes compradas e o estado ligado de cada uma (issue #28).
-const VERSAO: int = 7
+## 8: entra o contador de Universos reescritos (issue #31). Os Fragmentos ja existiam
+## desde a versao 1, guardados e nunca usados -- o campo estava la esperando o sistema.
+const VERSAO: int = 8
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -74,6 +76,7 @@ func gravar() -> bool:
 		"macacos_comprados": Jogo.macacos_comprados.para_texto(),
 		"total_offline": Jogo.total_offline.para_texto(),
 		"prestigios": Jogo.prestigios,
+		"reescritas": Jogo.reescritas,
 		"upgrades_comprados": Jogo.upgrades_comprados,
 		"marcos_alcancados": Jogo.marcos_alcancados,
 		"descobertas": Jogo.descobertas,
@@ -170,6 +173,7 @@ const _PADROES := {
 	"macacos_comprados": "0",
 	"total_offline": "0",
 	"prestigios": 0,
+	"reescritas": 0,
 	"upgrades_comprados": [],
 	"marcos_alcancados": [],
 	"descobertas": [],
@@ -196,6 +200,7 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.macacos_comprados = Grande.de_texto(str(dados["macacos_comprados"]))
 	Jogo.total_offline = Grande.de_texto(str(dados["total_offline"]))
 	Jogo.prestigios = int(dados["prestigios"])
+	Jogo.reescritas = int(dados["reescritas"])
 	Jogo.upgrades_comprados = _lista_de_texto(dados["upgrades_comprados"])
 	Jogo.marcos_alcancados = _lista_de_texto(dados["marcos_alcancados"])
 	Jogo.descobertas = _lista_de_texto(dados["descobertas"])

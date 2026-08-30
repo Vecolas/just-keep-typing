@@ -377,7 +377,9 @@ func multiplicador_de_descobertas() -> float:
 ## O multiplicador dos Pontos de Teorema ja ganhados mais a Probabilidade Condensada
 ## (GDD §18 e §19). Quem calcula e o autoload Teoremas -- aqui so entra na formula.
 func multiplicador_de_prestigio() -> float:
-	return Teoremas.multiplicador()
+	# os dois prestigios multiplicam juntos: o Fragmento nao substitui a Arvore, ele
+	# recomeca por cima dela
+	return Teoremas.multiplicador() * Fragmentos.multiplicador()
 
 
 ## Caracteres por segundo de UM macaco, ja com os upgrades de velocidade.
