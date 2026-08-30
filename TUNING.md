@@ -28,17 +28,32 @@ nenhum teste é escrito antes de existir lógica para testar.
 
 ---
 
-## Réguas previstas
+## Réguas
 
-Nenhuma existe ainda: não há gameplay para medir. Entram nesta ordem, cada uma com o
-sistema correspondente.
-
-| Régua | Mede | Entra com |
+| Régua | Mede | Estado |
 |---|---|---|
-| `medir_quadro` | tempo de quadro: média, p95, p99, frames perdidos | o primeiro sistema com muita coisa em tela |
-| `medir_ritmo` | tempo médio por sala e por andar, por tipo e por tier | o fluxo de salas |
-| `medir_composicao` | custo e variedade dos sorteios de inimigo | o gerador de encontros |
-| `medir_economia` | quanto tempo até cada marco de progressão | a economia |
+| `medir_ritmo` | tempo até cada marco do Panorama, com a produção no momento | **existe** |
+| `medir_quadro` | tempo de quadro: média, p95, p99, frames perdidos | entra com as letras subindo (#22) |
+| `medir_economia` | curva do prestígio: quando vale provar o Teorema | entra com os Teoremas (#29) |
+
+```bash
+godot --headless --path . tools/medir_ritmo.tscn
+```
+
+### `medir_ritmo`
+
+Roda uma partida inteira sem ninguém assistindo e imprime quanto tempo levou até cada
+marco, com a produção naquele instante. Termina em cerca de doze segundos para um dia de
+jogo simulado.
+
+⚠️ **O jogador simulado não é o jogador real.** Ele faz a compra ótima ingênua: gasta em
+upgrade assim que dá, e no resto compra o máximo de macacos que couber; clica a quatro por
+segundo até a produção automática entrar, e depois para. Nenhum humano joga assim. Isso é
+proposital — a régua precisa ser **estável**, para que a diferença entre duas medições
+seja a mudança no `.tres` e não o humor de quem jogou.
+
+A saída é texto alinhado, e não CSV nem JSON, porque o que se faz com ela é `diff` entre
+duas sessões de tuning.
 
 A primeira régua a escrever é sempre a que sustenta a **decisão de design mais cara ainda
 não medida**. Num projeto anterior isso apagou uma suposição inteira: o custo de uma
