@@ -372,6 +372,25 @@ func _aplicar_audio() -> void:
 	AudioServer.set_bus_mute(barramento, volume() <= 0.0)
 
 
+## Aponta o jogo para um slot SEM gravar o que estava aberto, e guarda a escolha.
+##
+## ⚠️ E A DIFERENCA ENTRE O MENU E A TELA DE OPCOES. escolher("slot") grava a partida
+## anterior porque la existe uma partida anterior -- o jogador esta jogando e resolveu dar
+## uma olhada no outro save. Vindo do menu nao ha partida nenhuma aberta: o Jogo esta no
+## estado de partida nova que os autoloads deixaram, e gravar isso seria escrever um
+## Manuscrito VAZIO por cima do Manuscrito de quem so passou pela tela de Arquivos.
+##
+## Quem carrega o save depois disto e o Cenas -- aqui so se aponta o caminho.
+func abrir_slot(numero: int) -> void:
+	if numero < 1 or numero > SLOTS:
+		push_error("Config: nao existe slot %d" % numero)
+		return
+	_opcoes["slot"] = numero
+	Save.caminho = caminho_do_slot(numero)
+	gravar()
+	EventBus.slot_mudou.emit(numero)
+
+
 ## Trocar de slot GRAVA O QUE ESTAVA ABERTO ANTES. Sem isto, mudar de slot so para dar uma
 ## olhada apagaria os minutos desde o ultimo autosave -- e o jogador nao pediu isso.
 ##

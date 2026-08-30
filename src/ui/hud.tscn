@@ -83,6 +83,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "OPÇÕES"
 
+[node name="BotaoMenu" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "MENU"
+
 [node name="EspacoPanorama" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2

@@ -6,23 +6,16 @@
 ## continua sendo o tique dele, como e de Eventos e Automacao.
 ##
 ## E o unico lugar do jogo com _process, e de proposito: Jogo so guarda estado e Economia
-## so calcula, entao alguem precisa ser o tique -- e quem tem quadro e a cena. Pelo mesmo
-## motivo a SEQUENCIA DE ABERTURA mora aqui: carregar o save, creditar o offline e comecar
-## a contar sao tres coisas em ordem, e ordem e responsabilidade de quem orquestra.
+## so calcula, entao alguem precisa ser o tique -- e quem tem quadro e a cena.
+##
+## ⚠️ CARREGAR O SAVE SAIU DAQUI (issue #38). Ela abria a partida sozinha porque ate a v0.4
+## abrir o jogo ERA estar jogando; com menu, quem escolhe o Manuscrito e o jogador, antes
+## de esta cena existir. Carregar de novo aqui creditaria a producao offline DUAS VEZES --
+## uma no Cenas e outra ao montar. Esta cena chega com o Jogo ja pronto.
 ##
 ## Nao desenha nada. A HUD e um irmao no CanvasLayer, ouvindo o EventBus; este script
 ## continua sem saber que ela existe.
 extends Node
-
-func _ready() -> void:
-	var gravado_em := Save.carregar()
-	if gravado_em > 0.0:
-		# o relogio entra AQUI e nao dentro da conta: a conta e pura para poder ser
-		# testada em 4 horas sem ninguem esperar 4 horas (issue #9)
-		Economia.creditar_offline(Time.get_unix_time_from_system() - gravado_em)
-	# quatro horas fora podem atravessar tres faixas de escala de uma vez
-	Marcos.verificar()
-
 
 func _process(delta: float) -> void:
 	Eventos.tique(delta)

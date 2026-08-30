@@ -29,6 +29,7 @@ Automacao="*res://src/autoload/automacao.gd"
 Fragmentos="*res://src/autoload/fragmentos.gd"
 Config="*res://src/autoload/config.gd"
 Autosave="*res://src/autoload/autosave.gd"
+Cenas="*res://src/autoload/cenas.gd"
 MCPGameBridge="res://addons/godot_mcp/game_bridge/mcp_game_bridge.gd"
 
 [display]

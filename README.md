@@ -41,8 +41,10 @@ godot --headless --path . tools/medir_economia.tscn               # quando prest
 
 ## Galeria versionada
 
-Uma captura por era, em `docs/capturas/`. As imagens estão no git de propósito: o diff
-mostra o que mudou na tela.
+Uma captura por era mais o menu e os Arquivos, em `docs/capturas/`. As imagens estão no
+git de propósito: o diff mostra o que mudou na tela — e `menu_rascunho.png` e
+`arquivos_rascunho.png` existem para registrar que a interface do caminho nasceu feia de
+propósito (issue #38), até a arte chegar na #46.
 
 ```bash
 godot --path . tools/gerar_galeria.tscn --resolution 1920x1080
@@ -57,7 +59,8 @@ godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=letras prod
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama idioma=en
 ```
 
-Cenários: `principal`, `panorama`, `descobertas`, `estatisticas`, `letras`. A captura em
+Cenários: `menu`, `arquivos`, `principal`, `panorama`, `descobertas`, `estatisticas`,
+`letras`. Os dois primeiros param no menu; todos os outros entram numa partida. A captura em
 `idioma=en` é o único jeito de ver texto estourando botão — caractere não é pixel.
 
 Precisa de janela — headless não renderiza. Sai em `user://capturas`.

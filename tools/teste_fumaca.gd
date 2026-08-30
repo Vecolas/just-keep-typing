@@ -25,7 +25,6 @@ extends Node
 const FRAMES := 120
 const CLIQUES := 12
 const UPGRADE_INICIAL := "instinto_digitador"
-const CAMINHO_DO_SAVE := "user://teste_fumaca_save.json"
 const HORAS_OFFLINE := 4.0
 
 ## A tela logica do jogo: display/window/size/viewport_* do project.godot.
@@ -42,10 +41,19 @@ func _ready() -> void:
 	var locale_original := TranslationServer.get_locale()
 	TranslationServer.set_locale("pt_BR")
 
-	# arquivo proprio e apagado ANTES de a cena subir: a Partida carrega o save no _ready,
-	# e sem isto a run de fumaca leria -- e sobrescreveria -- a partida de quem desenvolve
-	Save.caminho = CAMINHO_DO_SAVE
-	Save.apagar()
+	# ⚠️ ARQUIVOS PROPRIOS ANTES DE A CENA SUBIR. O caminho inteiro passa pelo Config desde
+	# a issue #38: Cenas.comecar_partida aponta o Save pelo SLOT, entao redirecionar so na
+	# hora da tela de opcoes deixaria a fumaca escrevendo nos arquivos de quem desenvolve
+	# desde o primeiro passo dela.
+	var caminho_de_opcoes := Config.caminho
+	var modelo_de_slot := Config.modelo_de_slot
+	var caminho_de_save := Save.caminho
+	Config.caminho = "user://fumaca_opcoes.json"
+	Config.modelo_de_slot = "user://fumaca_slot_%d.json"
+	for numero in range(1, Config.SLOTS + 1):
+		Save.caminho = Config.caminho_do_slot(numero)
+		Save.apagar()
+	Save.caminho = Config.caminho_do_slot(1)
 
 	var caminho: String = ProjectSettings.get_setting("application/run/main_scene", "")
 	if caminho.is_empty():
@@ -64,6 +72,42 @@ func _ready() -> void:
 
 	add_child(raiz)
 	await get_tree().process_frame
+
+	# 0. o caminho da issue #38: o Boot chega no menu, e do menu se chega a uma partida.
+	#
+	#    Os botoes sao APERTADOS, e nao contornados chamando o Cenas por baixo: o que esta
+	#    sob prova aqui e a ligacao entre a tela e o caminho, e chamar o autoload direto
+	#    provaria o autoload de novo e a tela nunca.
+	if Cenas.atual() != "menu":
+		_falhar("o Boot nao chegou no menu, e sim em %s" % Cenas.atual())
+		return
+	var menu := raiz.find_child("MenuTela", true, false)
+	if menu == null:
+		_falhar("o menu nao foi montado pelo Cenas")
+		return
+	var continuar := menu.find_child("BotaoContinuar", true, false) as Button
+	if continuar == null or not continuar.disabled:
+		_falhar("sem Manuscrito nenhum, o menu ofereceu CONTINUAR")
+		return
+
+	(menu.find_child("BotaoManuscritos", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	if Cenas.atual() != "arquivos":
+		_falhar("MANUSCRITOS nao levou aos Arquivos, e sim a %s" % Cenas.atual())
+		return
+
+	var arquivos := raiz.find_child("ArquivosTela", true, false)
+	if arquivos == null:
+		_falhar("a tela de Arquivos nao foi montada")
+		return
+	(arquivos.find_child("BotaoSlot1", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	if Cenas.atual() != "partida":
+		_falhar("escolher o Manuscrito 1 nao abriu a partida, e sim %s" % Cenas.atual())
+		return
+	if raiz.find_child("MenuTela", true, false) != null:
+		_falhar("o menu continuou montado depois de a partida abrir")
+		return
 
 	# 1. o macaco ainda nao sabe digitar sozinho (GDD §3)
 	if not Jogo.caracteres_por_segundo.e_zero():
@@ -515,12 +559,7 @@ func _ready() -> void:
 		_falhar("a tela de opcoes comecou aberta")
 		return
 
-	var caminho_de_opcoes := Config.caminho
-	var modelo_de_slot := Config.modelo_de_slot
-	var caminho_de_save := Save.caminho
 	var idioma_antes := Config.idioma()
-	Config.caminho = "user://fumaca_opcoes.json"
-	Config.modelo_de_slot = "user://fumaca_slot_%d.json"
 
 	EventBus.opcoes_pedidas.emit()
 	await get_tree().process_frame
@@ -565,16 +604,6 @@ func _ready() -> void:
 	if opcoes.visible:
 		_falhar("a tela de opcoes nao fechou")
 		return
-
-	for numero in range(1, Config.SLOTS + 1):
-		var caminho_do_slot := Config.caminho_do_slot(numero)
-		if FileAccess.file_exists(caminho_do_slot):
-			DirAccess.remove_absolute(caminho_do_slot)
-	if FileAccess.file_exists(Config.caminho):
-		DirAccess.remove_absolute(Config.caminho)
-	Config.caminho = caminho_de_opcoes
-	Config.modelo_de_slot = modelo_de_slot
-	Save.caminho = caminho_de_save
 
 	# 16. ⚠️ NADA VAZA PARA FORA DA TELA, com a loja no pior caso que o jogo produz.
 	#
@@ -634,7 +663,54 @@ func _ready() -> void:
 		_falhar("o credito offline nao bateu com o total")
 		return
 
-	Save.apagar()
+	# 18. e o caminho fecha: o botao MENU grava e sai, e o CONTINUAR traz a partida de
+	#     volta. E o unico jeito de provar que a saida da issue #37 e a entrada da #38 sao
+	#     a mesma porta -- sair sem gravar perderia a run inteira que a fumaca acabou de
+	#     jogar, e o teste ainda passaria em tudo que vem antes desta linha.
+	var total_ao_sair := Jogo.total_caracteres
+	var hud_menu := hud.find_child("BotaoMenu", true, false) as Button
+	if hud_menu == null:
+		_falhar("a HUD nao tem o botao de voltar ao menu")
+		return
+	hud_menu.pressed.emit()
+	await get_tree().process_frame
+	if Cenas.atual() != "menu":
+		_falhar("o botao MENU nao saiu da partida, e sim ficou em %s" % Cenas.atual())
+		return
+	if raiz.find_child("HUD", true, false) != null:
+		_falhar("a partida continuou montada depois de voltar ao menu")
+		return
+
+	var menu_de_volta := raiz.find_child("MenuTela", true, false)
+	var continuar_de_volta := menu_de_volta.find_child("BotaoContinuar", true, false) as Button
+	if continuar_de_volta.disabled:
+		_falhar("com Manuscrito gravado, o menu ainda nao oferece CONTINUAR")
+		return
+
+	Jogo.total_caracteres = Grande.zero()
+	continuar_de_volta.pressed.emit()
+
+	# ⚠️ SEM await ANTES DE COMPARAR. Montar a partida e sincrono, mas o primeiro _process
+	# dela ja produz: um quadro de espera aqui somaria producao ao total recem-carregado, e
+	# a afirmacao viraria "voltou parecido" em vez de "voltou identico".
+	if Cenas.atual() != "partida":
+		_falhar("CONTINUAR nao abriu a partida, e sim %s" % Cenas.atual())
+		return
+	if not Jogo.total_caracteres.igual_a(total_ao_sair):
+		_falhar("CONTINUAR trouxe %s no lugar de %s" % [
+			Jogo.total_caracteres.para_texto(), total_ao_sair.para_texto(),
+		])
+		return
+	await get_tree().process_frame
+
+	for numero in range(1, Config.SLOTS + 1):
+		Save.caminho = Config.caminho_do_slot(numero)
+		Save.apagar()
+	if FileAccess.file_exists(Config.caminho):
+		DirAccess.remove_absolute(Config.caminho)
+	Config.caminho = caminho_de_opcoes
+	Config.modelo_de_slot = modelo_de_slot
+	Save.caminho = caminho_de_save
 	TranslationServer.set_locale(locale_original)
 	print("PASSOU (%d cliques, %s comprado, %d marcos, save ida e volta, %s de %.0f h offline)" % [
 		CLIQUES, UPGRADE_INICIAL, Jogo.marcos_alcancados.size(),
