@@ -29,6 +29,14 @@ func _cenario() -> String:
 	return CENARIO_PADRAO
 
 
+## Argumento numerico da linha de comando, no mesmo formato do cenario.
+func _argumento(chave: String, padrao: float) -> float:
+	for argumento in OS.get_cmdline_user_args():
+		if argumento.begins_with(chave + "="):
+			return argumento.trim_prefix(chave + "=").to_float()
+	return padrao
+
+
 func _ready() -> void:
 	if DisplayServer.get_name() == "headless":
 		printerr("FALHA  captura precisa de janela; rode sem --headless")
@@ -52,7 +60,20 @@ func _ready() -> void:
 		await get_tree().process_frame
 
 	var cenario := _cenario()
-	if cenario == "estatisticas":
+	if cenario.begins_with("letras"):
+		# a producao entra pelo caminho de verdade: a Partida recalcula o cps todo quadro
+		# e um valor cravado seria apagado antes de as letras lerem
+		var alvo := _argumento("producao", 5.0)
+		Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+		# dez macacos cabem na Sala Pequena; a escala entra pelo multiplicador global.
+		# Macaco alem da capacidade e cortado pelo multiplicador de sala, e a primeira
+		# versao desta captura saiu com 10/s nas tres escalas por causa disso.
+		Jogo.macacos = Grande.de_float(10.0)
+		Jogo.multiplicador_global = alvo / (10.0 * maxf(Economia.producao_por_macaco(), 1.0))
+		# quadros suficientes para a piscina chegar no regime permanente
+		for i in FRAMES_ATE_ESTABILIZAR * 8:
+			await get_tree().process_frame
+	elif cenario == "estatisticas":
 		Descobertas.gerador.seed = 1
 		Economia.digitar(500000)
 		Economia.comprar_macacos(Economia.macacos_que_cabem())
