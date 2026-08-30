@@ -15,6 +15,11 @@ const PASTA := "res://data/marcos"
 const CSV := "res://i18n/textos.csv"
 const PADRAO_DE_ID := "^[a-z][a-z0-9_]*$"
 
+## Quantas vezes um marco tem que ser maior que o anterior. Nao e regra de gosto: abaixo
+## disto os dois caem no mesmo segundo de jogo e o segundo nao existe para o jogador.
+## Ver TUNING.md, sessao da issue #20.
+const DISTANCIA_MINIMA: float = 1.15
+
 func _init() -> void:
 	nome = "marcos"
 
@@ -61,6 +66,17 @@ func _ordem_estritamente_crescente() -> void:
 			ok(
 				marco.requisito_grande().maior_que(anterior.requisito_grande()),
 				"%s exige mais que %s" % [marco.id, anterior.id],
+			)
+			# e nao so maior: DISTANTE o bastante para nao passar despercebido. Dois
+			# marcos a 1,02x de distancia caem no mesmo segundo de jogo, e o segundo nao
+			# existe para o jogador -- a regua medir_ritmo mostrou vinte e um deles caindo
+			# no mesmo segundo antes desta regra existir (issue #20).
+			var razao := marco.requisito_grande().dividido(anterior.requisito_grande())
+			ok(
+				not razao.menor_que(Grande.de_float(DISTANCIA_MINIMA)),
+				"%s esta longe o bastante de %s (%sx)" % [
+					marco.id, anterior.id, Formatador.formatar(razao),
+				],
 			)
 		anterior = marco
 

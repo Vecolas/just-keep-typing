@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "um_ano_de_conversa"
-requisito = "2e8"
+requisito = "3.33e7"
 titulo = "Um Ano de Conversa"
 texto = "Trezentos e sessenta e cinco dias de você falando."
 categoria = 3
 era = 3
-nota = "16.000 palavras/dia x 365 x 5,7 caracteres, com margem."
+nota = "16.000 palavras/dia x 365 x 5,7 caracteres."

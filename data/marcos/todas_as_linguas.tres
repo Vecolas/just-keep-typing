@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "todas_as_linguas"
-requisito = "3.5e18"
+requisito = "3.9e13"
 titulo = "Todas as Línguas Humanas"
 texto = "Sete mil idiomas. Inclusive os que ninguém fala mais."
 categoria = 3
 era = 5
-nota = "7.000 idiomas x 5e14 caracteres por idioma."
+nota = "7.000 idiomas x 5,5e9 caracteres de corpus por idioma."

@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "um_dia_da_sua_vida"
-requisito = "3.5e7"
+requisito = "9.12e4"
 titulo = "Um Dia da Sua Vida"
 texto = "Tudo que você disse hoje. Inclusive o que você preferia não ter dito."
 categoria = 3
 era = 3
-nota = "16.000 palavras x 5,7 caracteres, multiplicado por 330 para cobrir o dia falado inteiro."
+nota = "16.000 palavras/dia x 5,7 caracteres. Um dia de fala."

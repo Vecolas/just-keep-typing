@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "uma_editora"
-requisito = "2.5e10"
+requisito = "1.75e10"
 titulo = "Um Catálogo de Editora"
 texto = "Cinquenta mil títulos publicados. Nenhum deles passou por revisão."
 categoria = 2
 era = 3
-nota = "50.000 titulos x 500.000 caracteres."
+nota = "35.000 titulos publicados x 500.000 caracteres."

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "um_bairro_num_dia"
-requisito = "1e11"
+requisito = "9.12e7"
 titulo = "Um Bairro em Um Dia"
 texto = "Tudo que um bairro disse hoje. Ninguém percebeu que estava sendo contado."
 categoria = 3
