@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c0capturar0000"]
+
+[ext_resource type="Script" path="res://tools/capturar.gd" id="1_capturar"]
+
+[node name="Capturar" type="Node"]
+script = ExtResource("1_capturar")
