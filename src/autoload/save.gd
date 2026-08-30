@@ -34,7 +34,10 @@ extends Node
 ## desde a versao 1, guardados e nunca usados -- o campo estava la esperando o sistema.
 ## 9: entra o instante da ultima descoberta rara, que espaca uma Lendaria da seguinte
 ## (issue #32). Negativo significa "nenhuma ainda".
-const VERSAO: int = 9
+## 10: entram o nome do Manuscrito, a data de criacao e a producao por segundo do instante
+## da gravacao (issue #35). Os tres existem para o .meta poder ser DERIVADO do save: numero
+## que so morasse no metadado divergiria do save e ninguem notaria.
+const VERSAO: int = 10
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -47,18 +50,29 @@ func existe() -> bool:
 	return FileAccess.file_exists(caminho)
 
 
+## Apaga o save E o metadado dele. Deixar o .meta para tras faria o menu listar um
+## Manuscrito que nao existe mais -- e oferecer "continuar" para um arquivo apagado.
 func apagar() -> void:
 	if existe():
 		DirAccess.remove_absolute(caminho)
+	Manuscrito.apagar_de(caminho)
 
 
 ## Devolve se gravou. O timestamp sai daqui e nao do Jogo: e o relogio do sistema no
 ## instante da gravacao, e a producao offline da issue #9 e a diferenca entre ele e o
 ## relogio da proxima abertura.
 func gravar() -> bool:
+	var agora := Time.get_unix_time_from_system()
+	# a data de nascimento do Manuscrito e carimbada na PRIMEIRA gravacao e nao muda mais.
+	# Partida nova comeca com zero porque ate gravar ela ainda nao aconteceu em disco.
+	if Jogo.criado_em <= 0.0:
+		Jogo.criado_em = agora
+
 	var dados := {
 		"versao": VERSAO,
-		"gravado_em": Time.get_unix_time_from_system(),
+		"gravado_em": agora,
+		"nome": Jogo.nome,
+		"criado_em": Jogo.criado_em,
 		"total_caracteres": Jogo.total_caracteres.para_texto(),
 		"caracteres_da_run": Jogo.caracteres_da_run.para_texto(),
 		"dinheiro": Jogo.dinheiro.para_texto(),
@@ -75,6 +89,7 @@ func gravar() -> bool:
 		"tempo_jogado": Jogo.tempo_jogado,
 		"tempo_da_ultima_rara": Jogo.tempo_da_ultima_rara,
 		"tempo_da_run": Jogo.tempo_da_run,
+		"caracteres_por_segundo": Jogo.caracteres_por_segundo.para_texto(),
 		"recorde_por_segundo": Jogo.recorde_por_segundo.para_texto(),
 		"macacos_comprados": Jogo.macacos_comprados.para_texto(),
 		"total_offline": Jogo.total_offline.para_texto(),
@@ -103,6 +118,13 @@ func gravar() -> bool:
 	if erro != OK:
 		push_error("Save: nao renomeou %s para %s (erro %d)" % [temporario, caminho, erro])
 		return false
+
+	# o metadado vai DEPOIS do save e com o mesmo instante: e uma copia adiantada do que
+	# acabou de ser gravado, e o menu so pode ler adiantado o que ja esta em disco. Falhar
+	# aqui nao invalida a gravacao -- o slot abre igual, reconstruindo o metadado do save.
+	var manuscrito := Manuscrito.do_jogo()
+	manuscrito.ultima_sessao = agora
+	manuscrito.gravar_em(caminho)
 
 	EventBus.jogo_gravado.emit()
 	return true
@@ -168,6 +190,9 @@ func _migrar(dados: Dictionary, de_versao: int) -> Dictionary:
 
 const _PADROES := {
 	"gravado_em": 0.0,
+	"nome": "",
+	"criado_em": 0.0,
+	"caracteres_por_segundo": "0",
 	"total_caracteres": "0",
 	"caracteres_da_run": "0",
 	"dinheiro": "0",
@@ -196,6 +221,11 @@ const _PADROES := {
 
 
 func _aplicar(dados: Dictionary) -> void:
+	Jogo.nome = str(dados["nome"])
+	Jogo.criado_em = float(dados["criado_em"])
+	# a producao volta como estava para o primeiro quadro nao mostrar zero. Economia
+	# reescreve isto no tique seguinte -- guardar aqui e sobre a tela, e nao sobre a conta.
+	Jogo.caracteres_por_segundo = Grande.de_texto(str(dados["caracteres_por_segundo"]))
 	Jogo.total_caracteres = Grande.de_texto(str(dados["total_caracteres"]))
 	Jogo.caracteres_da_run = Grande.de_texto(str(dados["caracteres_da_run"]))
 	Jogo.dinheiro = Grande.de_texto(str(dados["dinheiro"]))

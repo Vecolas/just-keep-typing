@@ -131,3 +131,15 @@ var tempo_da_run: float = 0.0
 
 ## Segundos de partida acumulados. Float porque e tempo, nao acumulador de recurso.
 var tempo_jogado: float = 0.0
+
+## O nome que o jogador deu a este Manuscrito (issue #35). Vazio significa "ainda sem
+## nome", e nao erro: quem escolhe o nome e a tela de Arquivos, que so chega na issue #40.
+##
+## Mora AQUI e nao no .meta de proposito. O metadado e derivado e o save e a fonte -- nome
+## que so existisse no .meta seria nome que o jogo perderia ao reconstruir o metadado de um
+## save antigo, e ninguem notaria ate ja ter perdido.
+var nome: String = ""
+
+## Quando este Manuscrito nasceu, no relogio do sistema. Zero significa "ainda nao
+## gravado": a primeira gravacao carimba a data e ela nao muda mais.
+var criado_em: float = 0.0

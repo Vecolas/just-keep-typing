@@ -21,8 +21,6 @@
 ## iguais -- era que mexe em numero virou upgrade disfarcado de cenario.
 extends Control
 
-const PASTA := "res://data/eras"
-
 ## O desenho que se repete. Vem do mesmo alfabeto do docs/ARTE.md: maquina de escrever,
 ## papel e o infinito.
 const MAQUINA := "  .-----------.\n /  _______  /|\n/  /  ∞    / / \n|__________|/ "
@@ -72,11 +70,10 @@ func _ready() -> void:
 	_grade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_grade)
 
-	for caminho in _listar_tres(PASTA):
-		var era := ResourceLoader.load(caminho) as DadosEra
-		if era != null:
-			_eras.append(era)
-	_eras.sort_custom(func(a: DadosEra, b: DadosEra) -> bool: return a.numero < b.numero)
+	# o catalogo vem de ErasCatalogo, e nao de uma leitura propria: o metadado do
+	# Manuscrito responde a mesma pergunta ("qual era e esta producao?") longe daqui, e
+	# duas copias da regra divergiriam na primeira era nova (issue #35)
+	_eras = ErasCatalogo.todas()
 
 	# a piscina nasce inteira, do tamanho da era mais cheia: alocar Label no meio de uma
 	# transicao seria alocar exatamente no quadro que precisa estar liso
@@ -117,14 +114,9 @@ func _process(delta: float) -> void:
 			_aviso.visible = false
 
 
-## A era atual pela producao. Percorre do fim para o comeco: a primeira que couber e a
-## mais avancada que couber.
+## A era atual pela producao -- a mais avancada que couber. A regra mora no catalogo.
 func _da_producao() -> DadosEra:
-	var escolhida: DadosEra = null
-	for era in _eras:
-		if not era.requisito_grande().maior_que(Jogo.total_caracteres):
-			escolhida = era
-	return escolhida
+	return ErasCatalogo.da_producao(Jogo.total_caracteres)
 
 
 func era_atual() -> DadosEra:
@@ -246,17 +238,3 @@ func _rotulo(cor: Color, corpo: int, pai: Node = null) -> Label:
 	return rotulo
 
 
-static func _listar_tres(pasta: String) -> PackedStringArray:
-	var achados := PackedStringArray()
-	var dir := DirAccess.open(pasta)
-	if dir == null:
-		push_error("Eras: pasta %s nao abriu" % pasta)
-		return achados
-	dir.list_dir_begin()
-	var item := dir.get_next()
-	while item != "":
-		if not dir.current_is_dir() and item.ends_with(".tres"):
-			achados.append(pasta.path_join(item))
-		item = dir.get_next()
-	dir.list_dir_end()
-	return achados

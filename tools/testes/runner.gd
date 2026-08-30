@@ -16,6 +16,7 @@ const SUITES: Array = [
 	preload("res://tools/testes/teste_economia.gd"),
 	preload("res://tools/testes/teste_dados.gd"),
 	preload("res://tools/testes/teste_save.gd"),
+	preload("res://tools/testes/teste_manuscritos.gd"),
 	preload("res://tools/testes/teste_offline.gd"),
 	preload("res://tools/testes/teste_marcos.gd"),
 	preload("res://tools/testes/teste_descobertas.gd"),

@@ -269,6 +269,18 @@ func caminho_do_slot(numero: int) -> String:
 	return modelo_de_slot % clampi(numero, 1, SLOTS)
 
 
+## O cartao de um slot, SEM abrir a partida dele (issue #35). E o que o menu chama para
+## desenhar a lista dos tres Manuscritos: carregar os tres para saber o que mostrar faria
+## cada um creditar a producao offline por cima do outro.
+##
+## Mora aqui porque quem sabe onde cada slot fica e este autoload; o Manuscrito so entende
+## de um caminho por vez, e nao pergunta nada de volta -- ver o aviso la.
+func manuscrito_do_slot(numero: int) -> Manuscrito:
+	var manuscrito := Manuscrito.de_arquivo(caminho_do_slot(numero))
+	manuscrito.slot = clampi(numero, 1, SLOTS)
+	return manuscrito
+
+
 static func _rotulo_de(tamanho: Vector2i) -> String:
 	# marca de formato, nao texto: "1920x1080" nao muda de idioma
 	return "%dx%d" % [tamanho.x, tamanho.y]
