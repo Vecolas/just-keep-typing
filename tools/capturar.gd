@@ -55,6 +55,18 @@ func _ready() -> void:
 	Save.caminho = "user://capturas/save_da_captura.json"
 	Save.apagar()
 
+	# ⚠️ E NEM NAS OPCOES DELE. O Config aplica a resolucao guardada durante os autoloads,
+	# que rodam DEPOIS do --resolution da linha de comando -- a primeira captura desta
+	# ferramenta com o Config no jogo saiu em 1280x720 pedindo 1920x1080. Aqui a linha de
+	# comando volta a mandar, que e o unico jeito de a galeria versionada ter sempre o
+	# mesmo tamanho.
+	Config.caminho = "user://capturas/opcoes_da_captura.json"
+	Config.modelo_de_slot = "user://capturas/save_da_captura_%d.json"
+	DisplayServer.window_set_size(Vector2i(
+		int(_argumento("largura", get_window().size.x)),
+		int(_argumento("altura", get_window().size.y)),
+	))
+
 	var caminho: String = ProjectSettings.get_setting("application/run/main_scene", "")
 	var empacotada := load(caminho) as PackedScene
 	if empacotada == null:
@@ -124,6 +136,13 @@ func _ready() -> void:
 		Marcos.verificar()
 		Economia.acumular(1.0)
 		EventBus.estatisticas_pedidas.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+	elif cenario == "opcoes":
+		# a captura que a issue #34 pede: em ingles, para conferir que nenhum rotulo estoura
+		# o botao. "Fullscreen" e "Save slot" sao mais longos que os originais.
+		Economia.digitar(20000)
+		EventBus.opcoes_pedidas.emit()
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
 	elif cenario == "fim":

@@ -32,6 +32,8 @@ extends Node
 ## 7: entram as automacoes compradas e o estado ligado de cada uma (issue #28).
 ## 8: entra o contador de Universos reescritos (issue #31). Os Fragmentos ja existiam
 ## desde a versao 1, guardados e nunca usados -- o campo estava la esperando o sistema.
+## 9: entra o instante da ultima descoberta rara, que espaca uma Lendaria da seguinte
+## (issue #32). Negativo significa "nenhuma ainda".
 const VERSAO: int = 9
 
 const CAMINHO_PADRAO := "user://save.json"
@@ -108,6 +110,17 @@ func gravar() -> bool:
 
 ## Devolve o timestamp da gravacao, ou 0.0 quando nao havia save para carregar. E esse
 ## numero que a producao offline usa; devolver 0.0 e o jeito de dizer "partida nova".
+## Partida nova, sem tocar em arquivo nenhum. Sai do MESMO dicionario que a migracao usa
+## para preencher campo que falta: duas definicoes de "partida nova" divergiriam na
+## primeira issue que acrescentasse um campo.
+##
+## Existe para o slot vazio (issue #34) -- o jogo nunca chamava isto porque abrir sem save
+## era so nao carregar nada.
+func recomecar() -> void:
+	_aplicar(_PADROES.duplicate(true))
+	EventBus.jogo_carregado.emit()
+
+
 func carregar() -> float:
 	if not existe():
 		return 0.0
