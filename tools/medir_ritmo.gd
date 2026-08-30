@@ -101,6 +101,7 @@ func _zerar_a_partida() -> void:
 	Jogo.tempo_jogado = 0.0
 	Jogo.upgrades_comprados = [] as Array[String]
 	Jogo.marcos_alcancados = [] as Array[String]
+	Jogo.descobertas = [] as Array[String]
 
 
 ## Texto, e nao CSV nem JSON, porque a saida de uma regua serve para dar DIFF entre duas

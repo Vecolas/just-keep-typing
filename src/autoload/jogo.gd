@@ -71,5 +71,9 @@ var fragmentos: Grande = Grande.zero()
 ## a tela saber o que ja foi lido e para o autoload Marcos nao emitir duas vezes.
 var marcos_alcancados: Array[String] = []
 
+## Ids das descobertas ja encontradas. O bonus delas e derivado desta lista e calculado
+## na hora de usar, nunca guardado ja multiplicado (CONVENCOES.md, regra 2).
+var descobertas: Array[String] = []
+
 ## Segundos de partida acumulados. Float porque e tempo, nao acumulador de recurso.
 var tempo_jogado: float = 0.0

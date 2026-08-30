@@ -24,7 +24,8 @@ extends Node
 ## 2: `maquinas`, que era contagem e nunca chegou a ser escrita por ninguem, virou
 ## `maquina_atual`, que e o id do tier em uso (issue #14).
 ## 3: entra `sala_atual`, o id da sala em uso (issue #15).
-const VERSAO: int = 3
+## 4: entra `descobertas`, os ids ja encontrados (issue #16).
+const VERSAO: int = 4
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -61,6 +62,7 @@ func gravar() -> bool:
 		"tempo_jogado": Jogo.tempo_jogado,
 		"upgrades_comprados": Jogo.upgrades_comprados,
 		"marcos_alcancados": Jogo.marcos_alcancados,
+		"descobertas": Jogo.descobertas,
 	}
 
 	var temporario := caminho + ".tmp"
@@ -147,6 +149,7 @@ const _PADROES := {
 	"tempo_jogado": 0.0,
 	"upgrades_comprados": [],
 	"marcos_alcancados": [],
+	"descobertas": [],
 }
 
 
@@ -163,6 +166,7 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.tempo_jogado = float(dados["tempo_jogado"])
 	Jogo.upgrades_comprados = _lista_de_texto(dados["upgrades_comprados"])
 	Jogo.marcos_alcancados = _lista_de_texto(dados["marcos_alcancados"])
+	Jogo.descobertas = _lista_de_texto(dados["descobertas"])
 
 
 ## O JSON devolve Array solto; o Jogo guarda Array[String]. Converter aqui e o que impede

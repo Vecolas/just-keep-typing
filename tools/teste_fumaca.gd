@@ -185,7 +185,27 @@ func _ready() -> void:
 		_falhar("o Panorama nao fechou")
 		return
 
-	# 7. a sala enche e a expansao libera vaga (issue #15)
+	# 7. a tela de Descobertas abre com o catalogo inteiro -- achadas e buracos (issue #17)
+	var tela := raiz.find_child("DescobertasTela", true, false) as Control
+	if tela == null:
+		_falhar("a tela de Descobertas nao subiu junto da cena principal")
+		return
+	if tela.visible:
+		_falhar("a tela de Descobertas comecou aberta")
+		return
+	EventBus.descobertas_pedidas.emit()
+	await get_tree().process_frame
+	if not tela.visible:
+		_falhar("a tela de Descobertas nao abriu com o pedido do EventBus")
+		return
+	var catalogo := tela.find_child("Lista", true, false) as Control
+	if catalogo == null or catalogo.get_child_count() != Descobertas.todas().size():
+		_falhar("a tela nao listou o catalogo inteiro, com achadas e buracos")
+		return
+	tela.call("fechar")
+	await get_tree().process_frame
+
+	# 8. a sala enche e a expansao libera vaga (issue #15)
 	var sala := Economia.sala_atual()
 	Economia.digitar(100000)
 	Economia.comprar_macacos(Economia.macacos_que_cabem())
@@ -209,7 +229,7 @@ func _ready() -> void:
 		_falhar("expandir liberou %s vagas em vez de %s" % [liberou, diferenca])
 		return
 
-	# 8. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	# 9. gravar, sujar tudo e carregar: o estado tem que voltar identico
 	var total_antes := Jogo.total_caracteres
 	var macacos_no_save := Jogo.macacos
 	var upgrades_antes := Jogo.upgrades_comprados.size()
@@ -241,7 +261,7 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 9. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 10. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)

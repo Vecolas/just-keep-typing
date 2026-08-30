@@ -68,3 +68,35 @@ Não há mais prédio: há bairros inteiros digitando.,Não há mais prédio: h�
 SALA,SALA,ROOM
 Sala cheia,Sala cheia,Room is full
 %s de %s macacos,%s de %s macacos,%s of %s monkeys
+Primeira Palavra,Primeira Palavra,First Word
+Um macaco produziu acidentalmente uma palavra válida. Era “banana”.,Um macaco produziu acidentalmente uma palavra válida. Era “banana”.,A monkey accidentally produced a valid word. It was “banana”.
+Uma Expressão,Uma Expressão,A Phrase
+Duas palavras que fazem sentido juntas. O macaco não soube explicar como.,Duas palavras que fazem sentido juntas. O macaco não soube explicar como.,Two words that make sense together. The monkey could not explain how.
+Uma Pequena Frase,Uma Pequena Frase,A Short Sentence
+Sujeito e verbo no mesmo lugar. Ninguém estava olhando na hora.,Sujeito e verbo no mesmo lugar. Ninguém estava olhando na hora.,Subject and verb in the same place. Nobody was watching at the time.
+Uma Frase Completa,Uma Frase Completa,A Complete Sentence
+Começa com maiúscula e termina com ponto. O macaco parece orgulhoso.,Começa com maiúscula e termina com ponto. O macaco parece orgulhoso.,Starts with a capital and ends with a period. The monkey looks proud.
+Um Parágrafo,Um Parágrafo,A Paragraph
+Cinco frases seguidas sobre o mesmo assunto. Isso já é quase intenção.,Cinco frases seguidas sobre o mesmo assunto. Isso já é quase intenção.,Five sentences in a row about the same subject. That is almost intent.
+Uma História Curta,Uma História Curta,A Short Story
+"Começo, meio e fim. O fim é sobre bananas.","Começo, meio e fim. O fim é sobre bananas.","A beginning, a middle and an end. The end is about bananas."
+Um Poema,Um Poema,A Poem
+Rima. Não deveria rimar. Rimou.,Rima. Não deveria rimar. Rimou.,It rhymes. It should not rhyme. It rhymes.
+Um Artigo Científico,Um Artigo Científico,A Scientific Paper
+Com metodologia e referências. As referências também foram digitadas por macacos.,Com metodologia e referências. As referências também foram digitadas por macacos.,With methodology and references. The references were also typed by monkeys.
+Uma Peça de Teatro,Uma Peça de Teatro,A Stage Play
+Três atos. Nenhum ator. O macaco fez todos os papéis em silêncio.,Três atos. Nenhum ator. O macaco fez todos os papéis em silêncio.,Three acts. No actors. The monkey played every part in silence.
+Uma Grande Obra,Uma Grande Obra,A Great Work
+Algo que um editor publicaria sem perguntar quem escreveu.,Algo que um editor publicaria sem perguntar quem escreveu.,Something an editor would publish without asking who wrote it.
+DESCOBERTAS,DESCOBERTAS,DISCOVERIES
+Comum,Comum,Common
+Incomum,Incomum,Uncommon
+Raro,Raro,Rare
+Épico,Épico,Epic
+Lendário,Lendário,Legendary
+Impossível,Impossível,Impossible
+Paradoxal,Paradoxal,Paradoxical
+Ainda não descoberto.,Ainda não descoberto.,Not discovered yet.
+%s descobertas de %s,%s descobertas de %s,%s discoveries of %s
+descobertas,descobertas,discoveries
+%s descoberta de %s,%s descoberta de %s,%s discovery of %s

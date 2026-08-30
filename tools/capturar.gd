@@ -52,7 +52,14 @@ func _ready() -> void:
 		await get_tree().process_frame
 
 	var cenario := _cenario()
-	if cenario == "panorama":
+	if cenario == "descobertas":
+		# uma achada e o resto em silhueta: e a leitura inteira da tela numa foto so
+		Descobertas.gerador.seed = 1
+		Economia.digitar(20000)
+		EventBus.descobertas_pedidas.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+	elif cenario == "panorama":
 		# caracteres suficientes para cruzar os dois primeiros marcos e deixar o terceiro
 		# em silhueta -- e a leitura inteira da tela numa foto so
 		Economia.digitar(2000)

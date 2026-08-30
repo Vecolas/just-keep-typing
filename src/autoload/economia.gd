@@ -323,6 +323,7 @@ func comprar_macacos(quantos: int) -> int:
 func multiplicador_total() -> float:
 	return (
 		bonus_de(DadosUpgrade.Efeito.PRODUCAO_GLOBAL)
+		* multiplicador_de_descobertas()
 		* multiplicador_de_maquina()
 		* multiplicador_de_sala()
 		* multiplicador_de_prestigio()
@@ -349,6 +350,18 @@ func multiplicador_de_sala() -> float:
 	if Jogo.macacos.sinal() <= 0 or not Jogo.macacos.maior_que(cabem):
 		return 1.0
 	return cabem.dividido(Jogo.macacos).para_float()
+
+
+## O produto do bonus de todas as descobertas ja encontradas (GDD §9 e §11): a primeira
+## palavra da +10%, o Hamlet da x10. Calculado na hora e nunca guardado multiplicado, para
+## que uma descoberta nova valha no mesmo quadro em que sai.
+func multiplicador_de_descobertas() -> float:
+	var total := 1.0
+	for id in Jogo.descobertas:
+		var dados := Descobertas.de(id)
+		if dados != null:
+			total *= dados.bonus
+	return total
 
 
 ## Vale 1.0 ate a issue #24 trazer os Teoremas (GDD §17-18).
@@ -436,6 +449,9 @@ func _creditar(produzido: Grande) -> void:
 	Jogo.total_caracteres = Jogo.total_caracteres.mais(produzido)
 	Jogo.caracteres_da_run = Jogo.caracteres_da_run.mais(produzido)
 	Jogo.dinheiro = Jogo.dinheiro.mais(produzido)
+	# descoberta entra pelo mesmo caminho do caractere, pelo mesmo motivo: um sorteio
+	# separado para o clique e outro para o quadro seriam dois lugares para esquecer
+	Descobertas.sortear(produzido)
 
 
 # --- custo ----------------------------------------------------------------------------
