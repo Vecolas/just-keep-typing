@@ -50,7 +50,7 @@ func _ida_e_volta() -> void:
 	Jogo.caracteres_da_run = Grande.new(1.25, 12)
 	Jogo.dinheiro = Grande.new(9.87654321, 140)
 	Jogo.macacos = Grande.de_float(1234.0)
-	Jogo.maquinas = Grande.de_float(7.0)
+	Jogo.maquina_atual = "maquina_eletrica"
 	Jogo.pontos_de_teorema = Grande.new(3.5, 8)
 	Jogo.fragmentos = Grande.zero()
 	Jogo.multiplicador_global = 2.75
@@ -66,7 +66,7 @@ func _ida_e_volta() -> void:
 	Jogo.caracteres_da_run = Grande.zero()
 	Jogo.dinheiro = Grande.zero()
 	Jogo.macacos = Grande.zero()
-	Jogo.maquinas = Grande.zero()
+	Jogo.maquina_atual = ""
 	Jogo.pontos_de_teorema = Grande.zero()
 	Jogo.fragmentos = Grande.de_float(999.0)
 	Jogo.multiplicador_global = 1.0
@@ -82,7 +82,7 @@ func _ida_e_volta() -> void:
 	_exato(Jogo.caracteres_da_run, Grande.new(1.25, 12), "caracteres da run")
 	_exato(Jogo.dinheiro, Grande.new(9.87654321, 140), "dinheiro")
 	_exato(Jogo.macacos, Grande.de_float(1234.0), "macacos")
-	_exato(Jogo.maquinas, Grande.de_float(7.0), "maquinas")
+	igual(Jogo.maquina_atual, "maquina_eletrica", "o tier de maquina voltou")
 	_exato(Jogo.pontos_de_teorema, Grande.new(3.5, 8), "pontos de teorema")
 	ok(Jogo.fragmentos.e_zero(), "fragmentos zerados continuam zerados")
 	perto(Jogo.multiplicador_global, 2.75, 0.0, "multiplicador global")
@@ -161,7 +161,7 @@ func _guardar_o_jogo() -> Dictionary:
 		"caracteres_da_run": Jogo.caracteres_da_run,
 		"dinheiro": Jogo.dinheiro,
 		"macacos": Jogo.macacos,
-		"maquinas": Jogo.maquinas,
+		"maquina_atual": Jogo.maquina_atual,
 		"pontos_de_teorema": Jogo.pontos_de_teorema,
 		"fragmentos": Jogo.fragmentos,
 		"multiplicador_global": Jogo.multiplicador_global,
@@ -176,7 +176,7 @@ func _devolver_o_jogo(guardado: Dictionary) -> void:
 	Jogo.caracteres_da_run = guardado["caracteres_da_run"]
 	Jogo.dinheiro = guardado["dinheiro"]
 	Jogo.macacos = guardado["macacos"]
-	Jogo.maquinas = guardado["maquinas"]
+	Jogo.maquina_atual = guardado["maquina_atual"]
 	Jogo.pontos_de_teorema = guardado["pontos_de_teorema"]
 	Jogo.fragmentos = guardado["fragmentos"]
 	Jogo.multiplicador_global = guardado["multiplicador_global"]

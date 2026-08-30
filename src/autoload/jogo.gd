@@ -42,9 +42,11 @@ var macacos: Grande = Grande.um()
 ## ouro.
 var upgrades_comprados: Array[String] = []
 
-## Quantas maquinas de escrever. Conta unica por enquanto; a issue #14 traz os dez tiers
-## do GDD §13 e troca isto por contagem por tier.
-var maquinas: Grande = Grande.zero()
+## Id do tier de maquina em uso. Maquina e TIER e nao quantidade: a formula do GDD §30 tem
+## um multiplicador de maquina no singular, e o jogador troca a maquina em vez de acumular.
+##
+## Vazio significa a mais barata da lista -- e o estado de partida nova, e nao um erro.
+var maquina_atual: String = ""
 
 ## Multiplicador que vale para tudo. Continua float de proposito: multiplicador cabe no
 ## double sem perda, e Grande so paga a pena em acumulador (decisao 0001).

@@ -13,6 +13,7 @@ extends TesteBase
 
 const PASTA_MACACOS := "res://data/macacos"
 const PASTA_UPGRADES := "res://data/upgrades"
+const PASTA_MAQUINAS := "res://data/maquinas"
 
 ## O id vai para o save e para chave de dicionario, entao so minuscula, numero e
 ## sublinhado -- acento em chave de save e fonte de bug de codificacao (decisao 0002).
@@ -25,6 +26,7 @@ func _init() -> void:
 func executar() -> void:
 	_macacos()
 	_upgrades()
+	_maquinas()
 
 
 func _macacos() -> void:
@@ -95,6 +97,52 @@ func _upgrades() -> void:
 			dados.tipo_de_efeito in DadosUpgrade.Efeito.values(),
 			"%s -- tipo_de_efeito e um valor do enum" % caminho,
 		)
+
+
+## A escada do GDD §13. Tier, multiplicador e custo tem que subir JUNTOS: uma maquina que
+## custa mais e multiplica menos e dinheiro jogado fora, e o jogador so descobre depois de
+## pagar. E o tipo de erro que nao aparece em lugar nenhum a nao ser aqui.
+func _maquinas() -> void:
+	var caminhos := _listar_tres(PASTA_MAQUINAS)
+	ok(not caminhos.is_empty(), "encontrou algum .tres em %s" % PASTA_MAQUINAS)
+
+	var ids := {}
+	var tiers := {}
+	var por_tier := {}
+	for caminho in caminhos:
+		var dados := ResourceLoader.load(caminho) as DadosMaquina
+		ok(dados != null, "%s carrega como DadosMaquina" % caminho)
+		if dados == null:
+			continue
+
+		_id_valido(dados.id, ids, caminho)
+		_texto_preenchido(dados.nome, dados.descricao, caminho)
+		ok(dados.multiplicador >= 1.0, "%s -- multiplicador %s nao encolhe a producao" % [
+			caminho, dados.multiplicador,
+		])
+		ok(dados.custo >= 0.0, "%s -- custo nao e negativo" % caminho)
+		ok(not tiers.has(dados.tier), "%s -- tier %d nao repete" % [caminho, dados.tier])
+		tiers[dados.tier] = true
+		por_tier[dados.tier] = dados
+
+	var ordenados := por_tier.keys()
+	ordenados.sort()
+	igual(ordenados[0], 1, "a escada comeca no tier 1")
+	var anterior: DadosMaquina = null
+	for tier in ordenados:
+		var atual: DadosMaquina = por_tier[tier]
+		if anterior != null:
+			igual(tier, anterior.tier + 1, "o tier %d nao pula nenhum degrau" % tier)
+			ok(
+				atual.multiplicador > anterior.multiplicador,
+				"%s multiplica mais que %s" % [atual.id, anterior.id],
+			)
+			ok(atual.custo > anterior.custo, "%s custa mais que %s" % [atual.id, anterior.id])
+		anterior = atual
+
+	# a primeira e a que o jogador ja tem: cobrar por ela seria cobrar pelo estado inicial
+	igual(por_tier[1].custo, 0.0, "a maquina do tier 1 e a que vem com o macaco, e nao custa")
+	igual(por_tier[1].multiplicador, 1.0, "e ela e o multiplicador neutro")
 
 
 func _id_valido(id: String, ja_vistos: Dictionary, caminho: String) -> void:

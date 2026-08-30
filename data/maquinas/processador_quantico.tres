@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosMaquina" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_maquina.gd" id="1_dados_maquina"]
+
+[resource]
+script = ExtResource("1_dados_maquina")
+id = "processador_quantico"
+nome = "Processador Quântico"
+descricao = "Digita todas as letras ao mesmo tempo até alguém olhar."
+tier = 8
+multiplicador = 1000000.0
+custo = 100000000000.0
