@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosEra" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/cena/dados_era.gd" id="1_dados_era"]
+
+[resource]
+script = ExtResource("1_dados_era")
+numero = 1
+id = "a_mesa"
+nome = "A Mesa"
+descricao = "Um macaco. Uma máquina. Uma sala pequena."
+requisito = "0"
+maquinas_visiveis = 1

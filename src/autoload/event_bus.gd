@@ -70,3 +70,7 @@ signal teorema_comprado(id: String)
 
 ## Pedido de abrir a tela de Teoremas.
 signal teoremas_pedidos()
+
+## Emitido quando a producao cruza para a era visual seguinte (GDD §6). A era nao muda
+## conta nenhuma -- quem escuta so desenha.
+signal era_mudou(era: DadosEra)

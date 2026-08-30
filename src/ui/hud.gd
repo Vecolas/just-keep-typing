@@ -28,6 +28,7 @@ func _ready() -> void:
 	theme = Tema.montar()
 	%Fundo.color = Paleta.INK_BROWN.darkened(0.4)
 
+	# a cena das eras desenha sozinha e nao pode ser repintada como rotulo da HUD
 	_liberar_clique(self)
 	_estilizar()
 	_ligar_botoes()
@@ -252,10 +253,6 @@ func _estilizar() -> void:
 	for titulo in [%TituloMacacos, %TituloUpgrades, %TituloMaquina, %TituloSala]:
 		titulo.add_theme_font_size_override("font_size", Tema.TITULO)
 		titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
-
-	# desenho de posicionamento ate a cena das eras entrar (issue #26): a maquina de
-	# escrever e o ∞ sao dois dos conceitos que a formula visual do ARTE.md exige
-	%Maquina.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.15))
 
 	# o botao principal do docs/ARTE.md, secao 9: dourado, borda grossa, texto escuro
 	%BotaoDigitar.add_theme_font_size_override("font_size", Tema.BOTAO_GRANDE)

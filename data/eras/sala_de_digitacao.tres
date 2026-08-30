@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosEra" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/cena/dados_era.gd" id="1_dados_era"]
+
+[resource]
+script = ExtResource("1_dados_era")
+numero = 2
+id = "sala_de_digitacao"
+nome = "Sala de Digitação"
+descricao = "Dezenas de macacos ao mesmo tempo. As máquinas começam a ocupar tudo."
+requisito = "5e3"
+maquinas_visiveis = 4
