@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 EventBus="*res://src/autoload/event_bus.gd"
 Jogo="*res://src/autoload/jogo.gd"
+Economia="*res://src/autoload/economia.gd"
 MCPGameBridge="res://addons/godot_mcp/game_bridge/mcp_game_bridge.gd"
 
 [editor_plugins]
