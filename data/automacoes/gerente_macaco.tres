@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosAutomacao" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_automacao.gd" id="1_dados_automacao"]
+
+[resource]
+script = ExtResource("1_dados_automacao")
+id = "gerente_macaco"
+nome = "Gerente Macaco"
+descricao = "Contrata macacos sozinho. Ele nunca pergunta o orçamento."
+tarefa = 0
+custo = 5000000.0
+requisito = 2000000.0
+intervalo = 2.0

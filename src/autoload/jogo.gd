@@ -104,6 +104,13 @@ var total_offline: Grande = Grande.zero()
 ## Quantas vezes o Teorema foi provado (GDD §17). Fica em zero ate a issue #24.
 var prestigios: int = 0
 
+## id da automacao -> se esta LIGADA. A chave existir significa comprada; o valor diz se
+## esta agindo. Sao duas coisas diferentes de proposito: desligar nao devolve o dinheiro
+## nem apaga a compra (GDD §16).
+##
+## Sobrevive ao prestigio: automacao comprada e conquista de vida, e nao de run.
+var automacoes: Dictionary = {}
+
 ## Segundos desta run, que zeram no prestigio. tempo_jogado nao zera.
 var tempo_da_run: float = 0.0
 

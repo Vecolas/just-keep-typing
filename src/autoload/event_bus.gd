@@ -80,3 +80,9 @@ signal evento_comecou(evento: DadosEvento)
 
 ## Emitido quando um evento termina, por tempo ou porque o jogador resolveu.
 signal evento_terminou(id: String)
+
+## Emitido quando uma automacao e comprada (GDD §16).
+signal automacao_comprada(id: String)
+
+## Emitido quando o jogador liga ou desliga uma automacao. Ela e sempre desligavel.
+signal automacao_alternada(id: String, ligada: bool)

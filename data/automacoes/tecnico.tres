@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosAutomacao" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_automacao.gd" id="1_dados_automacao"]
+
+[resource]
+script = ExtResource("1_dados_automacao")
+id = "tecnico"
+nome = "Técnico"
+descricao = "Troca a máquina pela seguinte assim que dá."
+tarefa = 1
+custo = 500000000.0
+requisito = 200000000.0
+intervalo = 5.0

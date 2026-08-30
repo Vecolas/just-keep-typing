@@ -107,6 +107,7 @@ func _zerar_a_partida() -> void:
 	Jogo.pontos_totais = Grande.zero()
 	Jogo.recorde_de_total = Grande.zero()
 	Jogo.teoremas = {}
+	Jogo.automacoes = {}
 	Jogo.upgrades_comprados = [] as Array[String]
 	Jogo.marcos_alcancados = [] as Array[String]
 	Jogo.descobertas = [] as Array[String]
