@@ -17,8 +17,26 @@ os que vieram antes dele.
 | 1 | `EventBus` | `src/autoload/event_bus.gd` | Só sinais. Não guarda estado, não tem lógica. |
 | 2 | `MCPGameBridge` | `addons/godot_mcp/game_bridge/…` | Ponte do editor ao vivo. Ferramenta, não jogo. |
 
-`EventBus` é o primeiro de propósito: qualquer autoload futuro (`Save`, `Config`,
-`Deterioracao`, `Audio`) vai querer emitir nele já no `_ready`.
+`EventBus` é o primeiro de propósito: qualquer autoload futuro vai querer emitir nele já no
+`_ready`.
+
+**Ordem planejada**, conforme os autoloads entrarem (ver `PLANO.md`):
+
+```text
+EventBus → Config → Save → Jogo → Economia → Marcos → Descobertas → Teoremas → MCPGameBridge
+```
+
+O motivo de cada posição:
+
+- `Config` antes de `Save` porque idioma e opções são da **instalação**, não da partida, e
+  precisam existir antes de qualquer coisa formatar texto ou número
+- `Save` antes de `Jogo` porque `Jogo` nasce do que foi carregado
+- `Jogo` antes de `Economia` porque `Economia` só calcula: quem guarda estado é o `Jogo`
+- `Marcos`, `Descobertas` e `Teoremas` por último entre os do jogo — todos leem produção,
+  nenhum é lido por ela
+
+Os nomes vêm de [`decisoes/0002-codigo-em-portugues.md`](decisoes/0002-codigo-em-portugues.md),
+que traduz a estrutura em inglês sugerida pelo GDD §28–§30.
 
 ⚠️ **Autoload novo exige reabrir o editor.** O Godot lê `[autoload]` uma vez, no boot. Se o
 `project.godot` for editado por fora com o editor aberto, o editor continua sem conhecer o
@@ -32,10 +50,11 @@ perfeito. Detalhes e como não cair na armadilha ao diagnosticar: `../CONVENCOES
 | Pasta | Conteúdo |
 |---|---|
 | `src/autoload/` | Autoloads. Um arquivo por autoload. |
-| `src/player/`, `src/weapons/` | Jogador e armas |
-| `src/enemies/` | Inimigos e chefe |
-| `src/mapa/`, `src/ui/` | Andar, salas e interface |
-| `src/items/` | Itens e loot |
+| `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`. Testável headless. |
+| `src/producao/` | Macacos, máquinas, salas — quem gera caractere |
+| `src/progressao/` | Marcos, descobertas, teoremas |
+| `src/ui/` | Telas: HUD, Panorama, Descobertas, Estatísticas, Opções |
+| `src/cena/` | A cena das eras e a câmera que se afasta |
 | `data/` | `.tres` de balanceamento — nenhum código |
 | `i18n/` | `textos.csv`: `keys,pt_BR,en`. A chave É o texto em português. |
 | `tools/` | Testes, réguas e capturas. Nada daqui entra no build. |
