@@ -15,6 +15,12 @@ extends Node
 ## retraduz sozinho apenas o text que veio da cena.
 signal idioma_mudou(codigo: String)
 
+## O jogador trocou de slot de save: a partida na memoria agora e outra.
+signal slot_mudou(numero: int)
+
+## A tela de opcoes foi pedida.
+signal opcoes_pedidas
+
 ## Emitido depois que a compra ja aconteceu -- o dinheiro saiu e o id ja esta em
 ## Jogo.upgrades_comprados. Quem escuta repinta; ninguem precisa perguntar de volta se
 ## deu certo.

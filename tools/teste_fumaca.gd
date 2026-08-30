@@ -461,7 +461,81 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 15. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 15. a tela de opcoes troca idioma e resolucao SEM ERRO (issue #34)
+	#
+	#     A suite ja prova as regras do Config. O que so a fumaca prova e que a tela existe,
+	#     abre, e que mexer nela mexe no jogo -- e que a HUD atras dela sobrevive a troca de
+	#     idioma, que e o momento em que rotulo montado em codigo fica para tras.
+	var opcoes := raiz.find_child("OpcoesTela", true, false) as Control
+	if opcoes == null:
+		_falhar("a tela de opcoes nao subiu junto da cena principal")
+		return
+	if opcoes.visible:
+		_falhar("a tela de opcoes comecou aberta")
+		return
+
+	var caminho_de_opcoes := Config.caminho
+	var modelo_de_slot := Config.modelo_de_slot
+	var caminho_de_save := Save.caminho
+	var idioma_antes := Config.idioma()
+	Config.caminho = "user://fumaca_opcoes.json"
+	Config.modelo_de_slot = "user://fumaca_slot_%d.json"
+
+	EventBus.opcoes_pedidas.emit()
+	await get_tree().process_frame
+	if not opcoes.visible:
+		_falhar("a tela de opcoes nao abriu com o pedido do EventBus")
+		return
+
+	var campos := opcoes.find_child("Lista", true, false) as Control
+	# um bloco por campo de lista, mais o volume
+	if campos == null or campos.get_child_count() != Config.CAMPOS.size() + 1:
+		_falhar("a tela de opcoes montou %s blocos para %d campos" % [
+			"nenhum" if campos == null else str(campos.get_child_count()),
+			Config.CAMPOS.size() + 1,
+		])
+		return
+
+	# trocar de idioma pelos botoes da tela, e a HUD atras tem que acompanhar
+	var destino := 1 if Config.idioma() == "pt_BR" else 0
+	Config.escolher("idioma", destino)
+	await get_tree().process_frame
+	if TranslationServer.get_locale() == idioma_antes:
+		_falhar("escolher outro idioma nao mudou o locale")
+		return
+	if hud.find_child("BotaoOpcoes", true, false) == null:
+		_falhar("a HUD perdeu o botao de opcoes depois da troca de idioma")
+		return
+
+	# e trocar de resolucao nao pode oferecer nada maior que o monitor
+	var monitor := DisplayServer.screen_get_size(DisplayServer.window_get_current_screen())
+	for tamanho in Config.resolucoes():
+		if monitor.x > 0 and (tamanho.x > monitor.x or tamanho.y > monitor.y):
+			_falhar("a tela ofereceu %dx%d num monitor de %dx%d" % [
+				tamanho.x, tamanho.y, monitor.x, monitor.y,
+			])
+			return
+	Config.escolher("resolucao", 0)
+	Config.escolher("idioma", 0 if idioma_antes == "pt_BR" else 1)
+	await get_tree().process_frame
+
+	opcoes.call("fechar")
+	await get_tree().process_frame
+	if opcoes.visible:
+		_falhar("a tela de opcoes nao fechou")
+		return
+
+	for numero in range(1, Config.SLOTS + 1):
+		var caminho_do_slot := Config.caminho_do_slot(numero)
+		if FileAccess.file_exists(caminho_do_slot):
+			DirAccess.remove_absolute(caminho_do_slot)
+	if FileAccess.file_exists(Config.caminho):
+		DirAccess.remove_absolute(Config.caminho)
+	Config.caminho = caminho_de_opcoes
+	Config.modelo_de_slot = modelo_de_slot
+	Save.caminho = caminho_de_save
+
+	# 16. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)
