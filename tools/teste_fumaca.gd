@@ -296,6 +296,7 @@ func _ready() -> void:
 		return
 
 	Save.apagar()
+	TranslationServer.set_locale(locale_original)
 	print("PASSOU (%d cliques, %s comprado, %d marcos, save ida e volta, %s de %.0f h offline)" % [
 		CLIQUES, UPGRADE_INICIAL, Jogo.marcos_alcancados.size(),
 		Formatador.formatar(creditado), HORAS_OFFLINE,
