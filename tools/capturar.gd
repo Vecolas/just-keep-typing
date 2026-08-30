@@ -30,6 +30,13 @@ func _cenario() -> String:
 
 
 ## Argumento numerico da linha de comando, no mesmo formato do cenario.
+func _texto_do_argumento(chave: String, padrao: String) -> String:
+	for argumento in OS.get_cmdline_user_args():
+		if argumento.begins_with(chave + "="):
+			return argumento.trim_prefix(chave + "=")
+	return padrao
+
+
 func _argumento(chave: String, padrao: float) -> float:
 	for argumento in OS.get_cmdline_user_args():
 		if argumento.begins_with(chave + "="):
@@ -58,6 +65,12 @@ func _ready() -> void:
 	add_child(empacotada.instantiate())
 	for i in FRAMES_ATE_ESTABILIZAR:
 		await get_tree().process_frame
+
+	# a captura em outra lingua e o unico jeito de ver texto estourando botao: caractere
+	# nao e pixel, e "Comprar Maximo" e "Buy Max" nao ocupam a mesma largura
+	var idioma := _texto_do_argumento("idioma", "")
+	if not idioma.is_empty():
+		TranslationServer.set_locale(idioma)
 
 	var cenario := _cenario()
 	if cenario.begins_with("letras"):
@@ -100,7 +113,7 @@ func _ready() -> void:
 
 	DirAccess.make_dir_recursive_absolute(PASTA)
 	var imagem := get_viewport().get_texture().get_image()
-	var destino := PASTA.path_join(cenario + ".png")
+	var destino := PASTA.path_join(cenario + ("_" + idioma if not idioma.is_empty() else "") + ".png")
 	var erro := imagem.save_png(destino)
 	if erro != OK:
 		printerr("FALHA  nao salvou %s (erro %d)" % [destino, erro])

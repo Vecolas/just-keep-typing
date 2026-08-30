@@ -44,3 +44,7 @@ bind_mode=0
 custom_bind_ip=""
 port_override_enabled=false
 port_override=6550
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://i18n/textos.pt_BR.translation", "res://i18n/textos.en.translation")

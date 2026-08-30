@@ -32,15 +32,23 @@ Os dois precisam imprimir `PASSOU`.
 Régua não aprova nem reprova: ela **mede**. Ver [`TUNING.md`](TUNING.md).
 
 ```bash
-godot --headless --path . tools/medir_ritmo.tscn     # tempo até cada marco
+godot --headless --path . tools/medir_ritmo.tscn                  # tempo até cada marco
+godot --path . tools/medir_quadro.tscn --resolution 1920x1080     # tempo de quadro
 ```
+
+`medir_quadro` precisa de janela: headless não renderiza.
 
 ## Capturas
 
 ```bash
 godot --path . tools/capturar.tscn --resolution 1920x1080
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama
+godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=letras producao=5e17
+godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama idioma=en
 ```
+
+Cenários: `principal`, `panorama`, `descobertas`, `estatisticas`, `letras`. A captura em
+`idioma=en` é o único jeito de ver texto estourando botão — caractere não é pixel.
 
 Precisa de janela — headless não renderiza. Sai em `user://capturas`.
 

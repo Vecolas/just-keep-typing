@@ -55,6 +55,7 @@ func _ready() -> void:
 	_gerador.randomize()
 	# a piscina nasce inteira: criar Label no meio da producao e alocar no pior momento,
 	# que e exatamente quando o efeito esta mais denso
+	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 	for i in TETO:
 		var rotulo := Label.new()
 		rotulo.visible = false
@@ -72,6 +73,16 @@ func _process(delta: float) -> void:
 		return
 	_ate_nascer = 1.0 / POR_SEGUNDO
 	_nascer(Jogo.caracteres_por_segundo.vezes(Grande.de_float(1.0 / POR_SEGUNDO)))
+
+
+## Rotulo vivo carrega numero ja formatado, e a virgula decimal muda com a lingua. Em vez
+## de reescrever cada um, apaga: eles vivem 1,6 s e a proxima leva nasce na lingua nova.
+## Repintar nao e reexecutar -- apagar nao devolve caractere nenhum ao jogador.
+func _ao_mudar_idioma(_codigo: String) -> void:
+	for rotulo in _vivos:
+		rotulo.visible = false
+		_livres.append(rotulo)
+	_vivos.clear()
 
 
 ## Quantos rotulos estao vivos agora. A regua medir_quadro le isto.
