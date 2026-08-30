@@ -11,9 +11,11 @@
 ##
 ## O que a tela nao consegue quebrar, porque nao esta na mao dela:
 ##
-##   ⚠️ A LISTA DE RESOLUCOES E FILTRADA PELO MONITOR. Oferecer 2560x1440 a quem tem 1080p
-##   cria uma janela maior que a tela, com a barra de titulo acima da area visivel -- e a
-##   pessoa nao tem como voltar as opcoes para desfazer. Nao ha "cancelar" para isso.
+##   ⚠️ A LISTA DE RESOLUCOES E FILTRADA PELA JANELA INTEIRA, e nao pelo monitor. Oferecer
+##   2560x1440 a quem tem 1080p cria uma janela maior que a tela, com a barra de titulo
+##   acima da area visivel -- e a pessoa nao tem como voltar as opcoes para desfazer. Nao ha
+##   "cancelar" para isso. Filtrar pelo tamanho do monitor nao bastava: a moldura do sistema
+##   come 16x39 pixels, entao a maior da lista tambem nao cabia (ver area_util).
 ##
 ##   ⚠️ TELA CHEIA SEM EXCLUSIVIDADE. WINDOW_MODE_FULLSCREEN, nunca EXCLUSIVE: no Windows a
 ##   exclusiva pisca a tela inteira a cada alt-tab, e este e um jogo que fica aberto atras
@@ -218,20 +220,67 @@ func apagado(campo: String) -> bool:
 
 # ------------------------------------------------------------------------------ consultas
 
-## O que cabe NESTE monitor. Nunca volta vazia: a menor do catalogo fica de qualquer jeito,
-## porque uma lista vazia deixaria a pessoa sem campo nenhum.
+## O que cabe NESTE monitor, com a JANELA INTEIRA em conta. Nunca volta vazia: a menor do
+## catalogo fica de qualquer jeito, porque uma lista vazia deixaria a pessoa sem campo
+## nenhum.
+##
 ## ⚠️ Monitor de tamanho desconhecido (0x0 -- headless, ou o DisplayServer ainda subindo)
 ## cai no MENOR do catalogo, e nao no maior. Errar para o lado pequeno da uma janela menor
 ## que o necessario; errar para o grande da uma janela sem barra de titulo alcancavel.
 func resolucoes() -> Array[Vector2i]:
-	var tela := DisplayServer.screen_get_size(DisplayServer.window_get_current_screen())
+	var area := area_util()
 	var cabem: Array[Vector2i] = []
 	for tamanho in RESOLUCOES:
-		if tamanho.x <= tela.x and tamanho.y <= tela.y:
+		if tamanho.x <= area.x and tamanho.y <= area.y:
 			cabem.append(tamanho)
 	if cabem.is_empty():
 		cabem.append(RESOLUCOES[0])
 	return cabem
+
+
+## O maior tamanho de AREA DE CLIENTE que cabe neste monitor: o retangulo util (sem a barra
+## de tarefas) menos a moldura que o sistema desenha em volta da janela.
+##
+## ⚠️ SEM DESCONTAR AS DUAS, A MAIOR RESOLUCAO DA LISTA NUNCA CABE. Medido nesta maquina:
+## monitor de 1920x1080, janela de cliente 1920x1080, moldura de 16x39 -- a janela inteira
+## pede 1936x1119 e sobra para fora da tela em todas as direcoes. Era o que fazia o jogo
+## aparecer cortado nas bordas e com botao que nao da para alcancar.
+##
+## A lista so vale em janela: em tela cheia o campo fica apagado (apagado("resolucao")), e
+## la o jogo usa o monitor inteiro sem passar por aqui.
+func area_util() -> Vector2i:
+	var tela := DisplayServer.window_get_current_screen()
+	var util := DisplayServer.screen_get_usable_rect(tela).size
+	return util - moldura_da_janela()
+
+
+## O que a moldura do sistema come de largura e de altura. Zero quando nao ha janela.
+func moldura_da_janela() -> Vector2i:
+	var com := DisplayServer.window_get_size_with_decorations()
+	var sem := DisplayServer.window_get_size()
+	return Vector2i(maxi(com.x - sem.x, 0), maxi(com.y - sem.y, 0))
+
+
+## Onde por uma janela deste tamanho: centralizada na area, e nunca com a barra de titulo
+## fora dela.
+##
+## ⚠️ REDIMENSIONAR SEM REPOSICIONAR E METADE DO ESTRAGO. window_set_size cresce a janela a
+## partir do canto onde ela ja estava: medido nesta maquina, escolher 1920x1080 com a janela
+## no lugar padrao deixou o canto em (320, 180) e a janela terminando em (2240, 1260) --
+## trezentos e vinte pixels de jogo fora da tela, do lado direito, sem barra de rolagem
+## nenhuma para alcancar.
+##
+## Pura e estatica para a suite poder afirmar isto sem monitor (headless nao tem tela).
+static func posicao_centralizada(
+	tamanho: Vector2i, area: Rect2i, moldura: Vector2i
+) -> Vector2i:
+	var livre := area.size - tamanho - moldura
+	return Vector2i(
+		area.position.x + maxi(livre.x, 0) / 2 + moldura.x / 2,
+		# a barra de titulo mora ACIMA da area de cliente: sem descer a altura dela, o
+		# unico jeito de mover ou fechar a janela fica fora da tela
+		area.position.y + maxi(livre.y, 0) / 2 + moldura.y,
+	)
 
 
 func idioma() -> String:
@@ -305,7 +354,14 @@ func _aplicar_video() -> void:
 		return
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	var lista := resolucoes()
-	DisplayServer.window_set_size(lista[indice_de("resolucao")])
+	var tamanho := lista[indice_de("resolucao")]
+	DisplayServer.window_set_size(tamanho)
+	# e reposiciona: crescer a janela a partir do canto onde ela estava joga o lado direito
+	# e o rodape para fora da tela, e nao ha rolagem que alcance isso
+	var tela := DisplayServer.window_get_current_screen()
+	DisplayServer.window_set_position(posicao_centralizada(
+		tamanho, DisplayServer.screen_get_usable_rect(tela), moldura_da_janela()
+	))
 
 
 func _aplicar_audio() -> void:
