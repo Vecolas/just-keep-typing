@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "cem_idiomas"
-requisito = "5e16"
+requisito = "5.5e11"
 titulo = "Cem Idiomas"
 texto = "Cem línguas humanas inteiras. Nenhuma delas foi escrita de propósito."
 categoria = 3
 era = 5
-nota = "100 x o corpus completo de um idioma vivo."
+nota = "100 x o corpus de referencia de um idioma vivo."

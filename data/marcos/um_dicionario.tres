@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "um_dicionario"
-requisito = "6e13"
+requisito = "1.2e8"
 titulo = "Um Dicionário Inteiro"
 texto = "Todas as palavras e todos os significados. Fora de ordem."
 categoria = 3
 era = 4
-nota = "400.000 verbetes x 300 caracteres x 500.000 copias."
+nota = "400.000 verbetes x 300 caracteres de definicao."

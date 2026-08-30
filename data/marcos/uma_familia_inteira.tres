@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "uma_familia_inteira"
-requisito = "8e10"
+requisito = "6.4e10"
 titulo = "Uma Família Inteira"
 texto = "Todas as conversas de uma família durante gerações. Inclusive as brigas."
 categoria = 3

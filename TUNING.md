@@ -55,6 +55,19 @@ seja a mudança no `.tres` e não o humor de quem jogou.
 A saída é texto alinhado, e não CSV nem JSON, porque o que se faz com ela é `diff` entre
 duas sessões de tuning.
 
+### O que a primeira sessão de tuning descobriu (issue #20)
+
+A régua achou **dezesseis marcos cujo requisito não batia com a própria nota** — um deles
+errado por 1096×. É o defeito que o campo `nota` do `DadosMarco` existe para pegar, e ele
+pagou por si no primeiro uso: sem a conta escrita ao lado do número, ninguém conferiria.
+
+Ela também achou algo que **não se conserta espaçando marco**: vinte e um marcos caindo no
+mesmo segundo de jogo, porque a economia atravessa sete ordens de grandeza naquele
+instante. A distância entre eles em magnitude está certa; o que corre demais é a produção.
+Marco tão perto do anterior que passa despercebido virou regra de suíte
+(`DISTANCIA_MINIMA`, 1,15×), mas a avalanche do meio da curva é assunto de economia, e
+espera decisão de design.
+
 A primeira régua a escrever é sempre a que sustenta a **decisão de design mais cara ainda
 não medida**. Num projeto anterior isso apagou uma suposição inteira: o custo de uma
 máscara pintável não estava no upload de textura (0.079 ms, irrelevante) mas no laço por

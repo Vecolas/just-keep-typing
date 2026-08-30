@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "a_lingua_portuguesa"
-requisito = "5e14"
+requisito = "5.5e9"
 titulo = "A Língua Portuguesa"
 texto = "Caracteres suficientes para representar o vocabulário inteiro de um idioma vivo."
 categoria = 3
 era = 4
-nota = "Corpus de referencia: 1 bilhao de palavras x 5,5 caracteres x 90 copias."
+nota = "Corpus de referencia do portugues: 1 bilhao de palavras x 5,5 caracteres."

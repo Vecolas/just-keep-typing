@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "uma_vida_de_conversa"
-requisito = "1.5e10"
+requisito = "2.66e9"
 titulo = "Uma Vida de Conversa"
 texto = "Oitenta anos falando sem parar. Alguém teria reclamado."
 categoria = 3

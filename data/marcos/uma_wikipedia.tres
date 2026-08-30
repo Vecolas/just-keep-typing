@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "uma_wikipedia"
-requisito = "4.9e10"
+requisito = "2.8e10"
 titulo = "Uma Wikipédia"
 texto = "Sete milhões de artigos escritos por voluntários. E agora por um macaco."
 categoria = 4
 era = 3
-nota = "7 milhoes de artigos x 7.000 caracteres."
+nota = "7 milhoes de artigos x 4.000 caracteres de prosa por artigo."

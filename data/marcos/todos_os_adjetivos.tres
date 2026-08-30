@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_dados_marco")
 id = "todos_os_adjetivos"
-requisito = "3e13"
+requisito = "2.26e12"
 titulo = "Todos os Adjetivos"
 texto = "Cada adjetivo do português apareceu em algum lugar dessa pilha. Estatisticamente."
 categoria = 3
 era = 4
-nota = "20.000 adjetivos x 9 letras x 1,7e8 repeticoes para cobertura provavel."
+nota = "Espaco de 27^8 sequencias de oito letras x 8 caracteres: cobre todo adjetivo de ate oito letras."
