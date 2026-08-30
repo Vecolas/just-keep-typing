@@ -29,7 +29,18 @@ var dinheiro: Grande = Grande.zero()
 
 ## Quantos macacos digitam. Grande e nao int porque o endgame chama O MACACO INFINITO --
 ## a contagem cresce sem teto de design como qualquer outro acumulador.
-var macacos: Grande = Grande.zero()
+##
+## Comeca em 1: o GDD §3 abre a partida com o jogador vendo um macaco, uma maquina e uma
+## folha. Ele so nao sabe digitar sozinho ainda -- quem acende isso e o Instinto Digitador.
+var macacos: Grande = Grande.um()
+
+## Ids dos upgrades ja comprados. Guarda o id e nao o Resource porque isto vai para o save
+## (issue #8), e id em snake_case sobrevive a renomear arquivo (decisao 0002).
+##
+## Ninguem le esta lista procurando um id especifico: quem pergunta usa
+## Economia.bonus_de(tipo) ou tem_efeito(tipo). Ver CONVENCOES.md, o corolario que vale
+## ouro.
+var upgrades_comprados: Array[String] = []
 
 ## Quantas maquinas de escrever. Conta unica por enquanto; a issue #14 traz os dez tiers
 ## do GDD §13 e troca isto por contagem por tier.

@@ -1,8 +1,8 @@
 ## Quem faz as contas da producao e do custo. Nome traduzido do EconomyManager do GDD
 ## §30 -- ver docs/decisoes/0002-codigo-em-portugues.md.
 ##
-## SO CALCULA. O estado e do Jogo, e a unica coisa que esta classe escreve la e o
-## resultado de acumular(): os acumuladores e o cps que a HUD le.
+## SO CALCULA. O estado e do Jogo, e o que esta classe escreve la e o resultado da conta:
+## os acumuladores, o cps que a HUD le e a lista de upgrades comprados.
 ##
 ##   cps   = macacos x velocidade x mult_maquina x mult_sala x mult_prestigio x mult_global
 ##   custo = base x crescimento^quantidade
@@ -11,26 +11,118 @@
 ## importam, para que um bonus novo valha inclusive para o que ja esta em jogo
 ## (CONVENCOES.md, regra 2 de arquitetura).
 ##
-## NENHUM numero de balanceamento mora aqui (GDD §36). Base, crescimento e producao por
-## macaco chegam como argumento, vindos do .tres -- por isso as funcoes de custo sao
-## puras: recebem os numeros e nao procuram por eles. Enquanto DadosMacaco nao existe
-## (issue #5), quem chama passa o numero na mao; quando existir, muda o chamador e nao
-## esta classe.
+## NENHUM numero de balanceamento mora aqui (GDD §36): eles vem dos .tres de data/, que
+## esta classe carrega no _ready. As funcoes de custo continuam puras -- recebem os
+## numeros e nao procuram por eles -- porque e assim que a suite consegue testar a formula
+## sem depender de nenhum arquivo de balanceamento.
 ##
 ## Compra multipla soma em SERIE GEOMETRICA, nunca em laco: comprar maximo com um saldo
 ## grande pode significar milhares de unidades, e um laco por unidade transformaria um
 ## clique em travada de quadro.
 extends Node
 
+const PASTA_MACACOS := "res://data/macacos"
+const PASTA_UPGRADES := "res://data/upgrades"
+
 ## Teto da compra multipla. Passar disto num clique so acontece com crescimento
-## praticamente igual a 1, que e erro de tuning e nao jogada -- a suite de .tres da issue
-## #5 reprova crescimento <= 1. O teto existe para que o erro vire numero grande e nao
-## um floori() de infinito.
+## praticamente igual a 1, que e erro de tuning e nao jogada -- a suite de .tres reprova
+## crescimento <= 1. O teto existe para que o erro vire numero grande e nao um floori()
+## de infinito.
 const COMPRA_MAXIMA: int = 1_000_000_000
 
 ## Quantos passos a correcao da estimativa pode dar. O log erra na ultima casa e a conta
 ## cai no maximo uma unidade fora; mais que isto e sintoma, nao arredondamento.
 const CORRECOES_MAXIMAS: int = 8
+
+## Ordenados do mais barato para o mais caro, para que macaco_padrao() seja sempre o
+## primeiro da loja e nao a ordem em que o DirAccess resolveu listar a pasta.
+var _macacos: Array[DadosMacaco] = []
+
+## id -> DadosUpgrade. Dicionario porque a compra chega por id, vindo do save.
+var _upgrades: Dictionary = {}
+
+
+func _ready() -> void:
+	for caminho in _listar_tres(PASTA_MACACOS):
+		var macaco := ResourceLoader.load(caminho) as DadosMacaco
+		if macaco != null:
+			_macacos.append(macaco)
+	_macacos.sort_custom(func(a: DadosMacaco, b: DadosMacaco) -> bool:
+		return a.custo_base < b.custo_base)
+
+	for caminho in _listar_tres(PASTA_UPGRADES):
+		var upgrade := ResourceLoader.load(caminho) as DadosUpgrade
+		if upgrade != null:
+			_upgrades[upgrade.id] = upgrade
+
+
+# --- catalogo -------------------------------------------------------------------------
+
+## O macaco da v0.1. A issue #14 traz os dez tiers do GDD §14 e isto vira escolha por tier.
+func macaco_padrao() -> DadosMacaco:
+	return _macacos[0] if not _macacos.is_empty() else null
+
+
+func upgrade_de(id: String) -> DadosUpgrade:
+	return _upgrades.get(id)
+
+
+func upgrades() -> Array:
+	return _upgrades.values()
+
+
+# --- upgrades -------------------------------------------------------------------------
+
+## Quanto bonus de UM TIPO existe no total, somando todos os upgrades comprados.
+##
+## E a regra que vale ouro da CONVENCOES.md: o gameplay nunca pergunta o nivel de um
+## upgrade especifico. E o que permite as vinte entradas da issue #18 sem tocar em uma
+## linha de gameplay -- upgrade novo e um .tres, e mais nada.
+func bonus_de(tipo: DadosUpgrade.Efeito) -> float:
+	var total := 1.0
+	for id in Jogo.upgrades_comprados:
+		var dados: DadosUpgrade = _upgrades.get(id)
+		if dados != null and dados.tipo_de_efeito == tipo:
+			total *= dados.valor
+	return total
+
+
+## Se existe algum upgrade comprado com esse efeito. Para os efeitos de interruptor, que
+## nao multiplicam nada.
+func tem_efeito(tipo: DadosUpgrade.Efeito) -> bool:
+	for id in Jogo.upgrades_comprados:
+		var dados: DadosUpgrade = _upgrades.get(id)
+		if dados != null and dados.tipo_de_efeito == tipo:
+			return true
+	return false
+
+
+## O macaco comeca sem saber digitar sozinho (GDD §3): ate alguem acender isto, so o
+## clique produz. Perguntando pelo TIPO, nunca pelo id do Instinto Digitador.
+func producao_automatica() -> bool:
+	return tem_efeito(DadosUpgrade.Efeito.LIGA_PRODUCAO_AUTOMATICA)
+
+
+## Devolve se a compra aconteceu. Recusa em silencio o que e jogada invalida (nao tem
+## dinheiro, ja comprou, ainda nao desbloqueou) e grita so no que e erro de programa.
+func comprar_upgrade(id: String) -> bool:
+	var dados: DadosUpgrade = _upgrades.get(id)
+	if dados == null:
+		push_error("Economia: upgrade %s nao existe" % id)
+		return false
+	if Jogo.upgrades_comprados.has(id):
+		return false
+	if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
+		return false
+
+	var custo := Grande.de_float(dados.custo)
+	if custo.maior_que(Jogo.dinheiro):
+		return false
+
+	Jogo.dinheiro = Jogo.dinheiro.menos(custo)
+	Jogo.upgrades_comprados.append(id)
+	EventBus.upgrade_comprado.emit(id)
+	return true
 
 
 # --- producao -------------------------------------------------------------------------
@@ -41,7 +133,8 @@ const CORRECOES_MAXIMAS: int = 8
 ## dia um deles passar de 10^308, ai sim ele vira Grande -- e a conta muda de forma.
 func multiplicador_total() -> float:
 	return (
-		multiplicador_de_maquina()
+		bonus_de(DadosUpgrade.Efeito.PRODUCAO_GLOBAL)
+		* multiplicador_de_maquina()
 		* multiplicador_de_sala()
 		* multiplicador_de_prestigio()
 		* Jogo.multiplicador_global
@@ -65,37 +158,61 @@ func multiplicador_de_prestigio() -> float:
 	return 1.0
 
 
-## Caracteres por segundo agora. A producao por macaco vem do DadosMacaco (issue #5).
-func producao_por_segundo(producao_por_macaco: float) -> Grande:
+## Caracteres por segundo de UM macaco, ja com os upgrades de velocidade.
+func producao_por_macaco() -> float:
+	var macaco := macaco_padrao()
+	if macaco == null:
+		return 0.0
+	return macaco.producao_base * bonus_de(DadosUpgrade.Efeito.VELOCIDADE_DO_MACACO)
+
+
+## Caracteres por segundo agora. Zero enquanto ninguem acendeu a producao automatica --
+## e o estado em que o jogo comeca (GDD §3), e nao um caso de erro.
+func producao_por_segundo() -> Grande:
+	if not producao_automatica():
+		return Grande.zero()
 	return (
 		Jogo.macacos
-		.vezes(Grande.de_float(producao_por_macaco))
+		.vezes(Grande.de_float(producao_por_macaco()))
 		.vezes(Grande.de_float(multiplicador_total()))
 	)
 
 
-## Avanca a partida em delta segundos. E a unica funcao que escreve no Jogo, e e o tique
-## do jogo inteiro: quem tem quadro chama isto, e o relogio anda junto.
+## O clique do GDD §3: cada um vale +1 caractere enquanto o macaco nao digita sozinho.
 ##
-## Cada caractere digitado vira uma moeda -- ver docs/decisoes/0004-caractere-e-a-moeda.md.
-## Por isso o mesmo produzido entra em quatro campos com vidas diferentes:
-## total_caracteres nunca desce (e o numero do Panorama), caracteres_da_run zera no
-## prestigio, e dinheiro desce a cada compra.
+## Passa pelo MESMO _creditar da producao automatica de proposito. Dois caminhos ate o
+## acumulador seriam dois lugares para esquecer de somar no dia em que um recurso novo
+## entrar -- e o que ficasse de fora sumiria em silencio, sem erro nenhum.
+func digitar(quantos: int = 1) -> void:
+	if quantos <= 0:
+		return
+	_creditar(Grande.de_float(float(quantos)))
+
+
+## Avanca a partida em delta segundos. E o tique do jogo inteiro: quem tem quadro chama
+## isto, e o relogio anda junto.
 ##
 ## Grava o cps mesmo quando nao ha producao: a HUD le esse campo, e deixar o valor velho
 ## la mostraria producao que acabou de ser zerada por um prestigio.
 ##
-## O relogio anda antes da checagem de producao, e de proposito: tempo passa mesmo com
-## zero macaco, e a producao offline da issue #9 e uma conta sobre esse tempo.
-func acumular(delta: float, producao_por_macaco: float) -> void:
-	Jogo.caracteres_por_segundo = producao_por_segundo(producao_por_macaco)
+## O relogio anda antes da checagem de producao, e de proposito: tempo passa mesmo sem
+## producao, e a producao offline da issue #9 e uma conta sobre esse tempo.
+func acumular(delta: float) -> void:
+	Jogo.caracteres_por_segundo = producao_por_segundo()
 	if delta <= 0.0:
 		return
 	Jogo.tempo_jogado += delta
 
 	if Jogo.caracteres_por_segundo.e_zero():
 		return
-	var produzido := Jogo.caracteres_por_segundo.vezes(Grande.de_float(delta))
+	_creditar(Jogo.caracteres_por_segundo.vezes(Grande.de_float(delta)))
+
+
+## Cada caractere digitado vira uma moeda -- ver docs/decisoes/0004-caractere-e-a-moeda.md.
+## Por isso o mesmo produzido entra em tres campos com vidas diferentes: total_caracteres
+## nunca desce (e o numero do Panorama), caracteres_da_run zera no prestigio, e dinheiro
+## desce a cada compra.
+func _creditar(produzido: Grande) -> void:
 	Jogo.total_caracteres = Jogo.total_caracteres.mais(produzido)
 	Jogo.caracteres_da_run = Jogo.caracteres_da_run.mais(produzido)
 	Jogo.dinheiro = Jogo.dinheiro.mais(produzido)
@@ -182,3 +299,19 @@ func quantos_cabem(
 
 static func _limitar(estimativa: float) -> int:
 	return int(clampf(floorf(estimativa), 0.0, float(COMPRA_MAXIMA)))
+
+
+static func _listar_tres(pasta: String) -> PackedStringArray:
+	var achados := PackedStringArray()
+	var dir := DirAccess.open(pasta)
+	if dir == null:
+		push_error("Economia: pasta %s nao abriu" % pasta)
+		return achados
+	dir.list_dir_begin()
+	var item := dir.get_next()
+	while item != "":
+		if not dir.current_is_dir() and item.ends_with(".tres"):
+			achados.append(pasta.path_join(item))
+		item = dir.get_next()
+	dir.list_dir_end()
+	return achados
