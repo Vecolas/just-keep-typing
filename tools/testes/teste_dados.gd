@@ -14,6 +14,7 @@ extends TesteBase
 const PASTA_MACACOS := "res://data/macacos"
 const PASTA_UPGRADES := "res://data/upgrades"
 const PASTA_MAQUINAS := "res://data/maquinas"
+const PASTA_SALAS := "res://data/salas"
 
 ## O id vai para o save e para chave de dicionario, entao so minuscula, numero e
 ## sublinhado -- acento em chave de save e fonte de bug de codificacao (decisao 0002).
@@ -27,6 +28,7 @@ func executar() -> void:
 	_macacos()
 	_upgrades()
 	_maquinas()
+	_salas()
 
 
 func _macacos() -> void:
@@ -143,6 +145,43 @@ func _maquinas() -> void:
 	# a primeira e a que o jogador ja tem: cobrar por ela seria cobrar pelo estado inicial
 	igual(por_tier[1].custo, 0.0, "a maquina do tier 1 e a que vem com o macaco, e nao custa")
 	igual(por_tier[1].multiplicador, 1.0, "e ela e o multiplicador neutro")
+
+
+## A escada do GDD §15. Capacidade e custo tem que subir juntos, e a primeira sala e a
+## que o jogador ja ocupa -- cobrar por ela seria cobrar pelo estado inicial.
+func _salas() -> void:
+	var caminhos := _listar_tres(PASTA_SALAS)
+	ok(not caminhos.is_empty(), "encontrou algum .tres em %s" % PASTA_SALAS)
+
+	var ids := {}
+	var por_tier := {}
+	for caminho in caminhos:
+		var dados := ResourceLoader.load(caminho) as DadosSala
+		ok(dados != null, "%s carrega como DadosSala" % caminho)
+		if dados == null:
+			continue
+
+		_id_valido(dados.id, ids, caminho)
+		_texto_preenchido(dados.nome, dados.descricao, caminho)
+		# sala sem vaga nenhuma pararia o jogo inteiro em silencio
+		ok(dados.capacidade > 0.0, "%s -- capacidade %s cabe alguem" % [caminho, dados.capacidade])
+		ok(dados.custo >= 0.0, "%s -- custo nao e negativo" % caminho)
+		ok(not por_tier.has(dados.tier), "%s -- tier %d nao repete" % [caminho, dados.tier])
+		por_tier[dados.tier] = dados
+
+	var ordenados := por_tier.keys()
+	ordenados.sort()
+	igual(ordenados[0], 1, "a escada comeca no tier 1")
+	var anterior: DadosSala = null
+	for tier in ordenados:
+		var atual: DadosSala = por_tier[tier]
+		if anterior != null:
+			igual(tier, anterior.tier + 1, "o tier %d nao pula nenhum degrau" % tier)
+			ok(atual.capacidade > anterior.capacidade, "%s cabe mais que %s" % [atual.id, anterior.id])
+			ok(atual.custo > anterior.custo, "%s custa mais que %s" % [atual.id, anterior.id])
+		anterior = atual
+
+	igual(por_tier[1].custo, 0.0, "a sala do tier 1 e onde o jogo comeca, e nao custa")
 
 
 func _id_valido(id: String, ja_vistos: Dictionary, caminho: String) -> void:

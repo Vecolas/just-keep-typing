@@ -31,6 +31,7 @@ func executar() -> void:
 	_producao()
 	_compra_de_upgrade()
 	_escada_de_maquinas()
+	_capacidade_da_sala()
 	_entradas_invalidas()
 
 
@@ -337,6 +338,69 @@ func _escada_de_maquinas() -> void:
 	_devolver_o_jogo(guardado)
 
 
+## O segundo eixo do GDD §15: macaco sem vaga nao produz, e a sala vira decisao.
+##
+## As duas afirmacoes que a issue pede: comprar acima da capacidade falha, e expandir
+## libera EXATAMENTE a diferenca entre as duas capacidades -- nem uma vaga a mais.
+func _capacidade_da_sala() -> void:
+	var guardado := _guardar_o_jogo()
+	Jogo.sala_atual = ""
+	Jogo.macacos = Grande.zero()
+	Jogo.dinheiro = Grande.new(1.0, 30)
+	Jogo.upgrades_comprados = [] as Array[String]
+
+	var pequena := Economia.sala_atual()
+	ok(pequena != null, "partida nova ja vem com uma sala")
+	igual(pequena.tier, 1, "e ela e a do tier 1")
+	_vale(Economia.capacidade(), pequena.capacidade, "a capacidade e a dela")
+	_vale(Economia.vagas_livres(), pequena.capacidade, "e com zero macaco tudo esta livre")
+
+	# encher a sala exatamente ate a borda
+	var cabem := int(pequena.capacidade)
+	ok(Economia.cabe_na_sala(cabem), "a sala inteira cabe de uma vez")
+	ok(not Economia.cabe_na_sala(cabem + 1), "um a mais que a capacidade nao cabe")
+	igual(Economia.comprar_macacos(cabem), cabem, "comprou a sala cheia")
+	ok(Economia.vagas_livres().e_zero(), "e nao sobrou vaga")
+
+	# comprar acima da capacidade falha -- e falha ANTES de cobrar
+	var dinheiro_antes := Jogo.dinheiro
+	igual(Economia.comprar_macacos(1), 0, "com a sala cheia, comprar mais falha")
+	ok(Jogo.dinheiro.igual_a(dinheiro_antes), "e nao cobra nada por uma compra que nao aconteceu")
+	igual(Economia.macacos_que_cabem(), 0, "e o botao de maximo tambem oferece zero")
+
+	# expandir libera exatamente a diferenca
+	var proxima := Economia.proxima_sala()
+	ok(proxima != null and proxima.tier == 2, "a proxima sala e o tier 2")
+	var diferenca := proxima.capacidade - pequena.capacidade
+
+	var expansoes: Array[String] = []
+	var ouvinte := func(id: String) -> void: expansoes.append(id)
+	EventBus.sala_expandida.connect(ouvinte)
+	ok(Economia.expandir_sala(proxima.id), "expandiu")
+	EventBus.sala_expandida.disconnect(ouvinte)
+
+	igual(expansoes.size(), 1, "e o EventBus avisou")
+	_vale(Economia.vagas_livres(), diferenca, "e liberou exatamente a diferenca")
+	ok(Economia.cabe_na_sala(int(diferenca)), "a diferenca inteira cabe")
+	ok(not Economia.cabe_na_sala(int(diferenca) + 1), "e um a mais que ela nao")
+
+	ok(not Economia.expandir_sala(pequena.id), "nao da para voltar para a sala anterior")
+	ok(not Economia.expandir_sala("sala_que_nao_existe"), "nem expandir para sala inexistente")
+
+	# excesso e MULTIPLICADOR e nao corte seco: com vinte macacos numa sala de dez, metade
+	# do trabalho acontece -- o jogador mantem a compra e ve a producao render menos
+	Jogo.sala_atual = ""
+	Jogo.macacos = Grande.de_float(pequena.capacidade)
+	perto(Economia.multiplicador_de_sala(), 1.0, 1e-9, "sala na medida nao penaliza nada")
+	Jogo.macacos = Grande.de_float(pequena.capacidade * 2.0)
+	perto(Economia.multiplicador_de_sala(), 0.5, 1e-9, "o dobro da capacidade rende metade")
+	Jogo.macacos = Grande.de_float(pequena.capacidade * 4.0)
+	perto(Economia.multiplicador_de_sala(), 0.25, 1e-9, "o quadruplo rende um quarto")
+	ok(Economia.vagas_livres().e_zero(), "e vaga livre nunca fica negativa")
+
+	_devolver_o_jogo(guardado)
+
+
 func _guardar_o_jogo() -> Dictionary:
 	return {
 		"macacos": Jogo.macacos,
@@ -348,6 +412,7 @@ func _guardar_o_jogo() -> Dictionary:
 		"tempo_jogado": Jogo.tempo_jogado,
 		"upgrades_comprados": Jogo.upgrades_comprados.duplicate(),
 		"maquina_atual": Jogo.maquina_atual,
+		"sala_atual": Jogo.sala_atual,
 	}
 
 
@@ -361,6 +426,7 @@ func _devolver_o_jogo(guardado: Dictionary) -> void:
 	Jogo.tempo_jogado = guardado["tempo_jogado"]
 	Jogo.upgrades_comprados = guardado["upgrades_comprados"]
 	Jogo.maquina_atual = guardado["maquina_atual"]
+	Jogo.sala_atual = guardado["sala_atual"]
 
 
 ## Crescimento que nao cresce e o erro de tuning que permite compra infinita. As linhas

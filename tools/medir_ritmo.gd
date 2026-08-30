@@ -77,6 +77,9 @@ func _comprar_o_que_der() -> void:
 	var proxima := Economia.proxima_maquina()
 	if proxima != null:
 		Economia.comprar_maquina(proxima.id)
+	var sala := Economia.proxima_sala()
+	if sala != null:
+		Economia.expandir_sala(sala.id)
 	var cabem := Economia.macacos_que_cabem()
 	if cabem > 0:
 		Economia.comprar_macacos(cabem)
@@ -91,6 +94,7 @@ func _zerar_a_partida() -> void:
 	Jogo.dinheiro = Grande.zero()
 	Jogo.macacos = Grande.um()
 	Jogo.maquina_atual = ""
+	Jogo.sala_atual = ""
 	Jogo.pontos_de_teorema = Grande.zero()
 	Jogo.fragmentos = Grande.zero()
 	Jogo.multiplicador_global = 1.0

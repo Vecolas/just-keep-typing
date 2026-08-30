@@ -180,6 +180,12 @@ auto_translate_mode = 2
 layout_mode = 2
 text = "1"
 
+[node name="VagasMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
 [node name="CustoMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
@@ -215,6 +221,27 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Comprar Máximo"
+
+[node name="EspacoSala" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="TituloSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "SALA"
+
+[node name="NomeSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
+[node name="BotaoSala" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
 
 [node name="EspacoMaquina" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
 custom_minimum_size = Vector2(0, 20)

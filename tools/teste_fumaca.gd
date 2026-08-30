@@ -185,7 +185,31 @@ func _ready() -> void:
 		_falhar("o Panorama nao fechou")
 		return
 
-	# 7. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	# 7. a sala enche e a expansao libera vaga (issue #15)
+	var sala := Economia.sala_atual()
+	Economia.digitar(100000)
+	Economia.comprar_macacos(Economia.macacos_que_cabem())
+	if not Economia.vagas_livres().e_zero():
+		_falhar("comprar o maximo nao encheu a sala")
+		return
+	if Economia.comprar_macacos(1) != 0:
+		_falhar("com a sala cheia ainda deu para comprar mais um macaco")
+		return
+
+	var proxima_sala := Economia.proxima_sala()
+	if proxima_sala == null:
+		_falhar("nao ha proxima sala para expandir")
+		return
+	if not Economia.expandir_sala(proxima_sala.id):
+		_falhar("nao deu para expandir a sala com %s de saldo" % Jogo.dinheiro.para_texto())
+		return
+	var liberou := Economia.vagas_livres().para_float()
+	var diferenca := proxima_sala.capacidade - sala.capacidade
+	if absf(liberou - diferenca) > 0.5:
+		_falhar("expandir liberou %s vagas em vez de %s" % [liberou, diferenca])
+		return
+
+	# 8. gravar, sujar tudo e carregar: o estado tem que voltar identico
 	var total_antes := Jogo.total_caracteres
 	var macacos_no_save := Jogo.macacos
 	var upgrades_antes := Jogo.upgrades_comprados.size()
@@ -217,7 +241,7 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 8. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 9. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)
