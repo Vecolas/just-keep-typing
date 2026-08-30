@@ -10,6 +10,20 @@
 ## jogo no meio da gravacao deixa um save pela metade -- que e pior que save nenhum,
 ## porque o jogador acha que tem progresso salvo.
 ##
+## E VERIFICA ANTES DE PROMOVER (issue #36). O temporario e RELIDO do disco e conferido
+## contra o que se quis gravar; so entao o save anterior vira .backup e o novo toma o lugar
+## dele. Sao duas regras, e as duas existem porque a rede de protecao vira ampliador de
+## dano quando falta uma:
+##
+##   ⚠️ backup so vale se foi lido de volta. Promover um arquivo que ninguem releu e
+##   guardar duas copias do mesmo defeito.
+##
+##   ⚠️ e save corrompido NUNCA sobrescreve backup bom. E o caso em que a protecao apagaria
+##   justamente o que ela existe para guardar.
+##
+## Incremental acumula centenas de horas: perder save aqui nao se parece com perder save
+## num jogo de sessao curta, e e por isso que esta rede existe separada do metadado.
+##
 ## Os acumuladores vao como TEXTO de Grande (mantissa e expoente), nunca como float: o
 ## float satura em 10^308 e o jogo passa disso na v0.4. Ver decisao 0001.
 ##
@@ -41,21 +55,35 @@ const VERSAO: int = 10
 
 const CAMINHO_PADRAO := "user://save.json"
 
+## Sufixo da copia de seguranca, ao lado do save: user://save_1.json.backup. O metadado
+## dele sai de graca -- o .meta de um arquivo e sempre o caminho dele mais ".meta", entao o
+## backup ganha o proprio cartao sem ninguem inventar um segundo esquema de nomes.
+const SUFIXO_BACKUP := ".backup"
+
 ## Variavel e nao constante para a suite poder gravar num arquivo proprio. Sem isto ela
 ## sobrescreveria a partida de quem esta desenvolvendo, toda vez que rodasse.
 var caminho: String = CAMINHO_PADRAO
+
+
+static func caminho_do_backup(caminho_do_save: String) -> String:
+	return caminho_do_save + SUFIXO_BACKUP
 
 
 func existe() -> bool:
 	return FileAccess.file_exists(caminho)
 
 
-## Apaga o save E o metadado dele. Deixar o .meta para tras faria o menu listar um
-## Manuscrito que nao existe mais -- e oferecer "continuar" para um arquivo apagado.
+## Apaga o save, o metadado dele E o backup. Deixar qualquer um dos tres para tras faria o
+## menu listar um Manuscrito que nao existe mais -- e o backup sozinho ressuscitaria a
+## partida que o jogador acabou de mandar apagar.
 func apagar() -> void:
 	if existe():
 		DirAccess.remove_absolute(caminho)
 	Manuscrito.apagar_de(caminho)
+	var reserva := caminho_do_backup(caminho)
+	if FileAccess.file_exists(reserva):
+		DirAccess.remove_absolute(reserva)
+	Manuscrito.apagar_de(reserva)
 
 
 ## Devolve se gravou. O timestamp sai daqui e nao do Jogo: e o relogio do sistema no
@@ -110,6 +138,17 @@ func gravar() -> bool:
 	arquivo.store_string(JSON.stringify(dados, "\t"))
 	arquivo.close()
 
+	# ⚠️ RELE O QUE ACABOU DE ESCREVER. Disco cheio, escrita truncada e arquivo intacto com
+	# conteudo errado passam pelo store_string sem reclamar; o unico jeito de saber que a
+	# partida esta la e abrindo o arquivo. Gravacao que nao passa daqui nao encosta no save
+	# final nem no backup -- o jogador continua com a partida anterior inteira.
+	if not _confere(temporario, dados):
+		push_error("Save: o arquivo gravado nao confere com a partida; nada foi trocado")
+		DirAccess.remove_absolute(temporario)
+		return false
+
+	_promover_a_backup()
+
 	# so agora o arquivo final deixa de ser o antigo. Ate esta linha, um desligamento
 	# perde a gravacao nova e MANTEM a anterior, que e o comportamento certo.
 	if existe():
@@ -143,34 +182,109 @@ func recomecar() -> void:
 	EventBus.jogo_carregado.emit()
 
 
+## O principal primeiro; o backup quando ele nao serve. Devolver 0.0 continua significando
+## "nao havia partida", e nao "deu erro" -- os dois casos levam ao mesmo lugar, que e
+## comecar do zero, e so um deles imprime motivo.
 func carregar() -> float:
-	if not existe():
+	var lido = _ler_cru(caminho)
+	if _e_do_futuro(lido):
+		# ⚠️ SAVE DO FUTURO NAO CAI NO BACKUP. Adivinhar campo desconhecido ja apagaria
+		# progresso; carregar um backup antigo por cima de uma partida mais nova apagaria
+		# mais ainda, porque a gravacao seguinte escreveria o velho em cima do novo. O
+		# backup existe contra corrupcao, e nao contra troca de versao.
+		push_error("Save: %s e da versao %d e o jogo le ate a %d" % [
+			caminho, int((lido as Dictionary).get("versao", 0)), VERSAO,
+		])
 		return 0.0
 
-	var arquivo := FileAccess.open(caminho, FileAccess.READ)
-	if arquivo == null:
-		push_error("Save: nao abriu %s para leitura" % caminho)
-		return 0.0
-	var cru = JSON.parse_string(arquivo.get_as_text())
-	arquivo.close()
+	if lido == null:
+		lido = _ler_cru(caminho_do_backup(caminho))
+		if lido == null or _e_do_futuro(lido):
+			return 0.0
+		# o jogador precisa saber que a partida veio da copia: o que ele produziu entre a
+		# ultima gravacao boa e a quebra nao esta aqui
+		print("Save: o principal nao abriu -- a partida veio do backup")
 
-	if typeof(cru) != TYPE_DICTIONARY:
-		push_error("Save: %s nao contem um objeto JSON" % caminho)
-		return 0.0
-
-	var dados: Dictionary = cru
+	var dados: Dictionary = lido
 	var versao := int(dados.get("versao", 0))
-	if versao > VERSAO:
-		# save de um jogo mais novo. Adivinhar o que os campos desconhecidos significam e
-		# como se apaga progresso de verdade -- melhor nao tocar em nada.
-		push_error("Save: arquivo e da versao %d e o jogo le ate a %d" % [versao, VERSAO])
-		return 0.0
 	if versao < VERSAO:
 		dados = _migrar(dados, versao)
 
 	_aplicar(dados)
 	EventBus.jogo_carregado.emit()
 	return float(dados.get("gravado_em", 0.0))
+
+
+## O conteudo de um arquivo de save, ou null quando ele nao abre. NAO julga versao de
+## proposito: quem decide o que fazer com um save do futuro e carregar(), porque a decisao
+## e sobre recorrer ou nao ao backup, e essa escolha nao cabe a um leitor de arquivo.
+func _ler_cru(alvo: String) -> Variant:
+	if not FileAccess.file_exists(alvo):
+		return null
+	var arquivo := FileAccess.open(alvo, FileAccess.READ)
+	if arquivo == null:
+		push_error("Save: nao abriu %s para leitura" % alvo)
+		return null
+	var cru = JSON.parse_string(arquivo.get_as_text())
+	arquivo.close()
+
+	if typeof(cru) != TYPE_DICTIONARY:
+		push_error("Save: %s nao contem um objeto JSON" % alvo)
+		return null
+	return cru
+
+
+static func _e_do_futuro(lido: Variant) -> bool:
+	return lido != null and int((lido as Dictionary).get("versao", 0)) > VERSAO
+
+
+## Rele o arquivo e compara com o que se quis gravar. Confere as chaves todas e o valor de
+## cada campo de TEXTO -- que e onde moram os acumuladores, gravados como texto de Grande
+## justamente para a ida e volta ser identidade (decisao 0001). Numero solto fica de fora
+## da comparacao: o JSON devolve int como float, e um 3 que volta 3.0 nao e defeito.
+func _confere(alvo: String, esperado: Dictionary) -> bool:
+	var lido = _ler_cru(alvo)
+	if lido == null:
+		return false
+	var dados: Dictionary = lido
+	for campo in esperado:
+		if not dados.has(campo):
+			return false
+		if typeof(esperado[campo]) == TYPE_STRING and str(dados[campo]) != str(esperado[campo]):
+			return false
+	return int(dados.get("versao", 0)) == VERSAO
+
+
+## O save atual vira a copia de seguranca -- e so ele, e so se ABRIR.
+##
+## ⚠️ As duas guardas sao a issue inteira. Sem a primeira, um principal corrompido
+## sobrescreveria um backup bom, e a rede de protecao viraria o ampliador do dano. Sem a
+## segunda -- copiar em temporario e renomear -- um desligamento no meio da copia deixaria
+## um backup pela metade, o mesmo defeito que a gravacao em temporario existe para evitar.
+func _promover_a_backup() -> void:
+	if not existe():
+		return
+	if _ler_cru(caminho) == null:
+		push_warning("Save: o principal nao abre; o backup fica como esta")
+		return
+
+	var destino := caminho_do_backup(caminho)
+	if not _copiar_com_seguranca(caminho, destino):
+		push_error("Save: nao consegui promover %s a backup" % caminho)
+		return
+	# o metadado vai junto, senao o menu descreveria o backup com o cartao de outra coisa
+	var metadado := Manuscrito.caminho_do_meta(caminho)
+	if FileAccess.file_exists(metadado):
+		_copiar_com_seguranca(metadado, Manuscrito.caminho_do_meta(destino))
+
+
+static func _copiar_com_seguranca(de: String, para: String) -> bool:
+	var temporario := para + ".tmp"
+	if DirAccess.copy_absolute(de, temporario) != OK:
+		return false
+	if FileAccess.file_exists(para):
+		DirAccess.remove_absolute(para)
+	return DirAccess.rename_absolute(temporario, para) == OK
 
 
 ## Traz um save antigo para a forma atual. Campo que nao existia ganha o padrao de partida

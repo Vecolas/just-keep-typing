@@ -11,6 +11,10 @@
 ## por isso ler um .meta ausente ou corrompido nao e erro: a classe reconstroi tudo lendo o
 ## JSON do save (sem aplicar nada no Jogo) e o slot abre igual.
 ##
+## O corolario, que custou uma falha de suite: o .meta so vale se o arquivo que ele
+## descreve ABRIR. Metadado sobrevive ao save, e um cartao intacto ao lado de um principal
+## corrompido anunciaria no menu uma partida que o Save nao carrega.
+##
 ## Nome e data de criacao moram no save pelo mesmo motivo. Se vivessem so no .meta, apagar
 ## o .meta apagaria o nome que o jogador escolheu, calado.
 ##
@@ -82,26 +86,49 @@ func ilegivel() -> bool:
 
 ## O Manuscrito de um caminho de save qualquer. Nunca devolve null: slot sem arquivo e um
 ## Manuscrito VAZIO, e nao a ausencia de um.
-static func de_arquivo(caminho_do_save: String) -> Manuscrito:
+##
+## `reserva` e o caminho do backup (issue #36). O menu tem que dizer sobre o slot o mesmo
+## que o Save fara ao abri-lo: se a partida vai carregar do backup, o slot esta CHEIO, e
+## chama-lo de ilegivel seria assustar o jogador com um arquivo que o jogo recupera sozinho.
+static func de_arquivo(caminho_do_save: String, reserva: String = "") -> Manuscrito:
+	var manuscrito := _de_um_arquivo(caminho_do_save)
+	if manuscrito.cheio() or reserva.is_empty():
+		return manuscrito
+
+	var copia := _de_um_arquivo(reserva)
+	if copia.cheio():
+		return copia
+	# nenhum dos dois serviu: vazio so quando nao ha arquivo NENHUM, senao ilegivel
+	manuscrito.estado = (
+		Estado.VAZIO if manuscrito.vazio() and copia.vazio() else Estado.ILEGIVEL
+	)
+	return manuscrito
+
+
+static func _de_um_arquivo(caminho_do_save: String) -> Manuscrito:
 	var manuscrito := Manuscrito.new()
 	if not FileAccess.file_exists(caminho_do_save):
 		return manuscrito
 
-	var meta = _ler_json(caminho_do_meta(caminho_do_save))
-	if typeof(meta) == TYPE_DICTIONARY and int(meta.get("versao", 0)) == VERSAO:
-		manuscrito._do_metadado(meta)
-		manuscrito.estado = Estado.CHEIO
-		return manuscrito
-
-	# sem .meta, ou com um .meta que nao serve: o save e a fonte, entao le-se ele. E o
-	# caminho de todo save gravado antes desta issue -- ele abre e ganha o metadado na
-	# gravacao seguinte, sem o jogador ver diferenca.
+	# ⚠️ O SAVE ABRE ANTES DE O .meta SER CONSULTADO. O metadado sobrevive ao arquivo que
+	# ele descreve: um principal corrompido com o .meta intacto ao lado faria o menu
+	# anunciar uma partida que o Save nao consegue carregar -- e o jogador clicaria nela.
+	# Cartao vale por um arquivo que existe; abrir o JSON e barato, aplicar e que nao e.
 	var cru = _ler_json(caminho_do_save)
 	if typeof(cru) != TYPE_DICTIONARY:
 		manuscrito.estado = Estado.ILEGIVEL
 		return manuscrito
-	manuscrito._do_save(cru)
 	manuscrito.estado = Estado.CHEIO
+
+	var meta = _ler_json(caminho_do_meta(caminho_do_save))
+	if typeof(meta) == TYPE_DICTIONARY and int(meta.get("versao", 0)) == VERSAO:
+		manuscrito._do_metadado(meta)
+		return manuscrito
+
+	# sem .meta, ou com um .meta que nao serve: o save e a fonte. E o caminho de todo save
+	# gravado antes da issue #35 -- ele abre e ganha o metadado na gravacao seguinte, sem o
+	# jogador ver diferenca.
+	manuscrito._do_save(cru)
 	return manuscrito
 
 
