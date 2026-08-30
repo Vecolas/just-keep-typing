@@ -23,3 +23,10 @@ Thumbs.db
 
 # Node (ferramentas auxiliares / MCP)
 node_modules/
+
+# Especifico desta maquina (caminhos absolutos)
+.mcp.json
+mcp_tmp/
+
+# Capturas avulsas de tools/capturar.tscn ficam em user://, nao aqui.
+# A galeria de docs/capturas/ E versionada de proposito.
