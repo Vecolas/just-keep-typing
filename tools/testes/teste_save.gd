@@ -31,6 +31,10 @@ func executar() -> void:
 	_migracao()
 	_recusa_versao_do_futuro()
 	_temporario_nao_sobra()
+	_a_verificacao_rele_o_disco()
+	_o_backup_carrega_a_partida()
+	_save_corrompido_nao_encosta_no_backup()
+	_sem_backup_nada_e_inventado()
 
 	Save.apagar()
 	Save.caminho = caminho_original
@@ -170,6 +174,154 @@ func _temporario_nao_sobra() -> void:
 		not FileAccess.file_exists(CAMINHO_DE_TESTE + ".tmp"),
 		"o arquivo temporario nao sobrou depois da gravacao",
 	)
+
+
+## A verificacao e o que separa "escrevi" de "esta la" (issue #36). store_string nao
+## reclama de disco cheio nem de escrita truncada -- o unico jeito de saber e reler.
+func _a_verificacao_rele_o_disco() -> void:
+	Jogo.total_caracteres = Grande.new(8.125, 300)
+	Jogo.maquina_atual = "maquina_eletrica"
+	ok(Save.gravar(), "grava para conferir")
+
+	var esperado := {
+		"versao": Save.VERSAO,
+		"total_caracteres": Jogo.total_caracteres.para_texto(),
+		"maquina_atual": "maquina_eletrica",
+	}
+	ok(Save._confere(CAMINHO_DE_TESTE, esperado), "o arquivo gravado confere com a partida")
+
+	print("    (as linhas ERROR abaixo sao de proposito -- arquivos ruins sob teste)")
+	var trocado := esperado.duplicate()
+	trocado["total_caracteres"] = "1"
+	ok(
+		not Save._confere(CAMINHO_DE_TESTE, trocado),
+		"⚠️ e reprova quando o texto do acumulador nao bate -- e ai que o progresso some",
+	)
+
+	var faltando := esperado.duplicate()
+	faltando["campo_que_nao_foi_gravado"] = "x"
+	ok(not Save._confere(CAMINHO_DE_TESTE, faltando), "e reprova quando falta chave")
+
+	_escrever(CAMINHO_DE_TESTE + ".pedaco", '{"versao": 10, "total')
+	ok(
+		not Save._confere(CAMINHO_DE_TESTE + ".pedaco", esperado),
+		"e reprova arquivo truncado, que e o que uma escrita interrompida deixa",
+	)
+	DirAccess.remove_absolute(CAMINHO_DE_TESTE + ".pedaco")
+	ok(not Save._confere(CAMINHO_DE_TESTE + ".pedaco", esperado), "e arquivo que nem existe")
+
+
+## ⚠️ O portao da issue: corromper o principal e a partida voltar inteira do backup.
+func _o_backup_carrega_a_partida() -> void:
+	Save.apagar()
+	var reserva := Save.caminho_do_backup(CAMINHO_DE_TESTE)
+
+	Jogo.total_caracteres = Grande.new(3.75, 500)
+	Jogo.macacos = Grande.de_float(64.0)
+	Jogo.prestigios = 5
+	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+	ok(Save.gravar(), "a primeira gravacao")
+	ok(not FileAccess.file_exists(reserva), "ainda nao ha backup -- nao havia o que promover")
+
+	# a segunda gravacao promove a primeira: o backup guarda o estado ANTERIOR, ja lido de
+	# volta uma vez. Promover sem reler seria guardar duas copias do mesmo defeito.
+	Jogo.total_caracteres = Grande.new(9.5, 600)
+	ok(Save.gravar(), "a segunda gravacao")
+	ok(FileAccess.file_exists(reserva), "agora ha backup")
+	ok(
+		FileAccess.file_exists(Manuscrito.caminho_do_meta(reserva)),
+		"e o .meta dele foi junto -- senao o menu descreveria o backup com outro cartao",
+	)
+
+	print("    (a linha ERROR abaixo e de proposito -- principal corrompido sob teste)")
+	_escrever(CAMINHO_DE_TESTE, "isto aqui nao abre")
+
+	Jogo.total_caracteres = Grande.zero()
+	Jogo.macacos = Grande.zero()
+	Jogo.prestigios = 0
+	Jogo.upgrades_comprados = [] as Array[String]
+	var gravado_em := Save.carregar()
+	ok(gravado_em > 0.0, "carregar achou a partida mesmo com o principal quebrado")
+	_exato(Jogo.total_caracteres, Grande.new(3.75, 500), "o total do backup")
+	_exato(Jogo.macacos, Grande.de_float(64.0), "os macacos")
+	igual(Jogo.prestigios, 5, "os prestigios")
+	ok(Jogo.upgrades_comprados.has("instinto_digitador"), "e o upgrade comprado")
+
+	# e o menu concorda com o Save: slot que carrega do backup esta CHEIO, e nao ilegivel
+	var manuscrito := Manuscrito.de_arquivo(CAMINHO_DE_TESTE, reserva)
+	ok(manuscrito.cheio(), "e o menu mostra o slot como CHEIO, e nao como ilegivel")
+	_exato(manuscrito.total_caracteres, Grande.new(3.75, 500), "com o total do backup")
+
+
+## ⚠️ O outro portao, e o que transforma rede de protecao em ampliador de dano: gravar por
+## cima de um principal quebrado NAO pode levar o backup bom junto.
+func _save_corrompido_nao_encosta_no_backup() -> void:
+	Save.apagar()
+	var reserva := Save.caminho_do_backup(CAMINHO_DE_TESTE)
+
+	Jogo.total_caracteres = Grande.new(2.5, 80)
+	ok(Save.gravar(), "grava a primeira")
+	Jogo.total_caracteres = Grande.new(2.5, 81)
+	ok(Save.gravar(), "grava a segunda, que promove a primeira a backup")
+	var backup_bom := _ler(reserva)
+	ok(backup_bom.contains("2.5e80"), "o backup guarda a partida anterior")
+
+	print("    (as linhas WARNING/ERROR abaixo sao de proposito -- principal corrompido)")
+	_escrever(CAMINHO_DE_TESTE, "nem isto abre")
+	Jogo.total_caracteres = Grande.new(7.0, 90)
+	ok(Save.gravar(), "grava por cima do principal corrompido")
+
+	igual(
+		_ler(reserva), backup_bom,
+		"⚠️ o backup bom continua exatamente como estava -- lixo nao vira copia de seguranca",
+	)
+	# e o principal foi consertado pela gravacao nova
+	Jogo.total_caracteres = Grande.zero()
+	Save.carregar()
+	_exato(Jogo.total_caracteres, Grande.new(7.0, 90), "e o principal voltou a abrir")
+
+	# a gravacao seguinte ja pode promover, porque agora ha o que promover
+	Jogo.total_caracteres = Grande.new(7.0, 91)
+	ok(Save.gravar(), "grava de novo")
+	ok(_ler(reserva).contains("7e90"), "e ai sim o backup avanca")
+
+
+## Sem principal e sem backup nao ha partida -- e isso e "comecar do zero", nao um estado
+## meio carregado. O estado do Jogo nao pode ser tocado no caminho.
+func _sem_backup_nada_e_inventado() -> void:
+	Save.apagar()
+	print("    (a linha ERROR abaixo e de proposito -- principal corrompido sem backup)")
+	_escrever(CAMINHO_DE_TESTE, "so lixo, e nada mais")
+
+	Jogo.total_caracteres = Grande.de_float(4242.0)
+	perto(Save.carregar(), 0.0, 0.0, "sem backup, carregar devolve 0")
+	_exato(Jogo.total_caracteres, Grande.de_float(4242.0), "e nao encosta no estado atual")
+
+	var manuscrito := Manuscrito.de_arquivo(
+		CAMINHO_DE_TESTE, Save.caminho_do_backup(CAMINHO_DE_TESTE)
+	)
+	ok(manuscrito.ilegivel(), "e o menu chama o slot de ILEGIVEL, que nao e vazio")
+
+	Save.apagar()
+	ok(
+		Manuscrito.de_arquivo(
+			CAMINHO_DE_TESTE, Save.caminho_do_backup(CAMINHO_DE_TESTE)
+		).vazio(),
+		"apagar leva principal, .meta e backup, e o slot volta a ser VAZIO",
+	)
+
+
+static func _escrever(caminho: String, conteudo: String) -> void:
+	var arquivo := FileAccess.open(caminho, FileAccess.WRITE)
+	if arquivo == null:
+		return
+	arquivo.store_string(conteudo)
+	arquivo.close()
+
+
+static func _ler(caminho: String) -> String:
+	var arquivo := FileAccess.open(caminho, FileAccess.READ)
+	return arquivo.get_as_text() if arquivo != null else ""
 
 
 func _exato(obtido: Grande, esperado: Grande, descricao: String) -> void:

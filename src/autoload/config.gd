@@ -276,7 +276,12 @@ func caminho_do_slot(numero: int) -> String:
 ## Mora aqui porque quem sabe onde cada slot fica e este autoload; o Manuscrito so entende
 ## de um caminho por vez, e nao pergunta nada de volta -- ver o aviso la.
 func manuscrito_do_slot(numero: int) -> Manuscrito:
-	var manuscrito := Manuscrito.de_arquivo(caminho_do_slot(numero))
+	var caminho_do_save := caminho_do_slot(numero)
+	# o backup entra como reserva pelo mesmo motivo que ele existe: o menu tem que dizer
+	# sobre o slot o mesmo que o Save fara ao abri-lo (issue #36)
+	var manuscrito := Manuscrito.de_arquivo(
+		caminho_do_save, Save.caminho_do_backup(caminho_do_save)
+	)
 	manuscrito.slot = clampi(numero, 1, SLOTS)
 	return manuscrito
 
