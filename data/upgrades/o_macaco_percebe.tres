@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_upgrade.gd" id="1_dados_upgrade"]
+
+[resource]
+script = ExtResource("1_dados_upgrade")
+id = "o_macaco_percebe"
+nome = "O Macaco Percebe"
+descricao = "Por um instante ele olha para o papel e entende o que está fazendo. Depois volta."
+custo = 10000000000000.0
+tipo_de_efeito = 1
+valor = 4.0
+requisito = 8000000000000.0

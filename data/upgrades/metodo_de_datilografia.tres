@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_upgrade.gd" id="1_dados_upgrade"]
+
+[resource]
+script = ExtResource("1_dados_upgrade")
+id = "metodo_de_datilografia"
+nome = "Método de Datilografia"
+descricao = "Existe um jeito certo de apertar tecla. O macaco aprendeu por eliminação."
+custo = 50000000.0
+tipo_de_efeito = 0
+valor = 2.0
+requisito = 40000000.0

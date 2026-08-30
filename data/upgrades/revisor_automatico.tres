@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_upgrade.gd" id="1_dados_upgrade"]
+
+[resource]
+script = ExtResource("1_dados_upgrade")
+id = "revisor_automatico"
+nome = "Revisor Automático"
+descricao = "Ele não corrige nada. Ele só conta mais rápido."
+custo = 200000000.0
+tipo_de_efeito = 1
+valor = 2.2
+requisito = 150000000.0

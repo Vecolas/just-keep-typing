@@ -398,6 +398,25 @@ func _capacidade_da_sala() -> void:
 	perto(Economia.multiplicador_de_sala(), 0.25, 1e-9, "o quadruplo rende um quarto")
 	ok(Economia.vagas_livres().e_zero(), "e vaga livre nunca fica negativa")
 
+	# upgrade de capacidade MULTIPLICA a sala em vez de somar vagas. Somar faria a Sala
+	# Pequena com tres upgrades valer mais que o Escritorio, e trocar de sala deixaria de
+	# valer a pena exatamente quando o segundo eixo deveria estar apertando.
+	var de_capacidade: DadosUpgrade = null
+	for dados in Economia.upgrades():
+		if dados.tipo_de_efeito == DadosUpgrade.Efeito.CAPACIDADE:
+			de_capacidade = dados
+			break
+	ok(de_capacidade != null, "existe upgrade de capacidade no catalogo")
+
+	Jogo.sala_atual = ""
+	Jogo.upgrades_comprados = [] as Array[String]
+	_vale(Economia.capacidade(), pequena.capacidade, "sem upgrade, a capacidade e a da sala")
+	Jogo.upgrades_comprados = [de_capacidade.id] as Array[String]
+	_vale(
+		Economia.capacidade(), pequena.capacidade * de_capacidade.valor,
+		"com o upgrade, a capacidade da sala e multiplicada",
+	)
+
 	_devolver_o_jogo(guardado)
 
 

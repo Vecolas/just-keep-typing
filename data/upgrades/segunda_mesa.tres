@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_upgrade.gd" id="1_dados_upgrade"]
+
+[resource]
+script = ExtResource("1_dados_upgrade")
+id = "segunda_mesa"
+nome = "Segunda Mesa"
+descricao = "Dá para contratar outro macaco. A sala cabe o dobro agora."
+custo = 20000.0
+tipo_de_efeito = 3
+valor = 2.0
+requisito = 15000.0
