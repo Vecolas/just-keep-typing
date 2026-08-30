@@ -15,7 +15,11 @@ os que vieram antes dele.
 | Ordem | Nome | Arquivo | Papel |
 |---|---|---|---|
 | 1 | `EventBus` | `src/autoload/event_bus.gd` | Só sinais. Não guarda estado, não tem lógica. |
-| 2 | `MCPGameBridge` | `addons/godot_mcp/game_bridge/…` | Ponte do editor ao vivo. Ferramenta, não jogo. |
+| 2 | `Jogo` | `src/autoload/jogo.gd` | Só estado da partida. Não calcula, não desenha, não tem `_process`. |
+| 3 | `MCPGameBridge` | `addons/godot_mcp/game_bridge/…` | Ponte do editor ao vivo. Ferramenta, não jogo. |
+
+`Jogo` está logo depois do `EventBus` porque `Config` e `Save` ainda não existem — quando
+entrarem, os dois se encaixam antes dele, sem que `Jogo` precise mudar de lugar.
 
 `EventBus` é o primeiro de propósito: qualquer autoload futuro vai querer emitir nele já no
 `_ready`.
