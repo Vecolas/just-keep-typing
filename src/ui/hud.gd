@@ -20,26 +20,12 @@
 ## nao e numero de balanceamento (docs/ARTE.md, secao 6).
 extends Control
 
-## Fontes monoespacadas do sistema, na ordem de preferencia. A tipografia de interface do
-## docs/ARTE.md pede maquina de escrever -- monoespacada, serifada, MUITO legivel, porque
-## este e um jogo de ler numero. Fonte propria entra quando houver asset; ate la o sistema
-## resolve, e sem versionar arquivo binario nenhum.
-const FONTES: PackedStringArray = [
-	"Consolas", "Courier New", "DejaVu Sans Mono", "Liberation Mono", "monospace",
-]
-
-const CORPO: int = 18
-const TITULO: int = 15
-const CONTADOR: int = 44
-const DESTAQUE: int = 26
-const BOTAO_DIGITAR: int = 34
-
 ## Quantidades do GDD §32. Comprar Maximo e a entrada 0, resolvida na hora do clique.
 const LOTES: Array[int] = [1, 10, 100]
 
 
 func _ready() -> void:
-	theme = _montar_tema()
+	theme = Tema.montar()
 	%Fundo.color = Paleta.INK_BROWN.darkened(0.4)
 
 	_liberar_clique(self)
@@ -126,11 +112,12 @@ func _ligar_botoes() -> void:
 		var botao: Button = get_node("%Comprar" + str(lote))
 		botao.pressed.connect(Economia.comprar_macacos.bind(lote))
 	%ComprarMaximo.pressed.connect(_ao_comprar_maximo)
+	%BotaoPanorama.pressed.connect(EventBus.panorama_pedido.emit)
 
 	# nenhum botao pega foco: com foco, a barra de espaco aciona o botao focado em vez de
 	# digitar, e um "Comprar Maximo" clicado uma vez transformaria toda tecla de digitar
 	# em compra de macaco pelo resto da partida
-	for botao in [%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo]:
+	for botao in [%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo, %BotaoPanorama]:
 		botao.focus_mode = Control.FOCUS_NONE
 
 
@@ -162,46 +149,24 @@ func _ao_mudar_idioma(_codigo: String) -> void:
 
 # --- aparencia ------------------------------------------------------------------------
 
-func _montar_tema() -> Theme:
-	var fonte := SystemFont.new()
-	fonte.font_names = FONTES
-
-	var tema := Theme.new()
-	tema.default_font = fonte
-	tema.default_font_size = CORPO
-	tema.set_color("font_color", "Label", Paleta.PAPER_CREAM)
-	tema.set_stylebox("panel", "PanelContainer", _painel())
-
-	# botao secundario: marrom com borda de bronze (docs/ARTE.md, secao 9)
-	tema.set_color("font_color", "Button", Paleta.PAPER_CREAM)
-	tema.set_color("font_hover_color", "Button", Paleta.BANANA_GOLD)
-	tema.set_color("font_disabled_color", "Button", Paleta.MONKEY_BROWN)
-	tema.set_stylebox("normal", "Button", _botao(Paleta.MONKEY_BROWN.darkened(0.55)))
-	tema.set_stylebox("hover", "Button", _botao(Paleta.MONKEY_BROWN.darkened(0.35)))
-	tema.set_stylebox("pressed", "Button", _botao(Paleta.MONKEY_BROWN.darkened(0.7)))
-	tema.set_stylebox("disabled", "Button", _botao(Paleta.INK_BROWN, Paleta.MONKEY_BROWN))
-	tema.set_stylebox("focus", "Button", StyleBoxEmpty.new())
-	return tema
-
-
 ## O contador e a coisa mais importante da tela e nao compete com nada: e o maior corpo,
 ## na cor de producao, e todo o resto fica pequeno e creme.
 func _estilizar() -> void:
-	%ValorCaracteres.add_theme_font_size_override("font_size", CONTADOR)
+	%ValorCaracteres.add_theme_font_size_override("font_size", Tema.CONTADOR)
 	%ValorCaracteres.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
 
 	for grande in [%ValorPorSegundo, %ValorDinheiro, %ValorMacacos]:
-		grande.add_theme_font_size_override("font_size", DESTAQUE)
+		grande.add_theme_font_size_override("font_size", Tema.DESTAQUE)
 		grande.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
 
 	%AvisoOffline.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
 
 	for legenda in [%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco]:
-		legenda.add_theme_font_size_override("font_size", TITULO)
+		legenda.add_theme_font_size_override("font_size", Tema.TITULO)
 		legenda.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
 
 	for titulo in [%TituloMacacos, %TituloUpgrades]:
-		titulo.add_theme_font_size_override("font_size", TITULO)
+		titulo.add_theme_font_size_override("font_size", Tema.TITULO)
 		titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
 
 	# desenho de posicionamento ate a cena das eras entrar (issue #26): a maquina de
@@ -209,36 +174,13 @@ func _estilizar() -> void:
 	%Maquina.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.15))
 
 	# o botao principal do docs/ARTE.md, secao 9: dourado, borda grossa, texto escuro
-	%BotaoDigitar.add_theme_font_size_override("font_size", BOTAO_DIGITAR)
+	%BotaoDigitar.add_theme_font_size_override("font_size", Tema.BOTAO_GRANDE)
 	%BotaoDigitar.add_theme_color_override("font_color", Paleta.INK_BROWN)
 	%BotaoDigitar.add_theme_color_override("font_hover_color", Paleta.INK_BROWN)
 	%BotaoDigitar.add_theme_color_override("font_pressed_color", Paleta.INK_BROWN)
 	%BotaoDigitar.add_theme_stylebox_override("normal", _digitar(Paleta.BANANA_GOLD))
 	%BotaoDigitar.add_theme_stylebox_override("hover", _digitar(Paleta.BANANA_GOLD.lightened(0.15)))
 	%BotaoDigitar.add_theme_stylebox_override("pressed", _digitar(Paleta.MECHANICAL_GOLD))
-
-
-func _painel() -> StyleBoxFlat:
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Paleta.INK_BROWN
-	estilo.border_color = Paleta.MECHANICAL_GOLD.darkened(0.35)
-	estilo.set_border_width_all(2)
-	estilo.set_corner_radius_all(6)
-	estilo.set_content_margin_all(0)
-	return estilo
-
-
-func _botao(fundo: Color, borda: Color = Paleta.MECHANICAL_GOLD.darkened(0.2)) -> StyleBoxFlat:
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = fundo
-	estilo.border_color = borda
-	estilo.set_border_width_all(2)
-	estilo.set_corner_radius_all(4)
-	estilo.content_margin_left = 12
-	estilo.content_margin_right = 12
-	estilo.content_margin_top = 8
-	estilo.content_margin_bottom = 8
-	return estilo
 
 
 ## Borda grossa e escura porque dourado brilhante sem area escura para contrastar esta na

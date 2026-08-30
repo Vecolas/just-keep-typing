@@ -1,6 +1,7 @@
 ## Captura um quadro parado da cena principal, para olhar leitura visual.
 ##
 ##   godot --path . tools/capturar.tscn --resolution 1920x1080
+##   godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama
 ##
 ## SEM --headless de proposito: headless nao renderiza (DisplayServer.get_name()
 ## devolve "headless"), entao a imagem sairia vazia. Sai em user://capturas, que existe
@@ -10,6 +11,23 @@ extends Node
 
 const PASTA := "user://capturas"
 const FRAMES_ATE_ESTABILIZAR := 10
+
+## Um cenario e um estado de jogo montado na mao para a foto sair util. Sem isso a unica
+## imagem possivel e a partida vazia -- e o Panorama vazio nao mostra nem alcancado, nem
+## atual, nem silhueta, que sao exatamente as tres coisas que ele precisa provar.
+##
+## Cada cenario vira um arquivo com o nome dele, para a galeria versionada (CONVENCOES.md)
+## poder dar diff de um por vez.
+const CENARIO_PADRAO := "principal"
+
+## Lido de "-- cenario=<nome>" na linha de comando. Argumento depois de -- e o jeito do
+## Godot passar coisa para o jogo sem a engine tentar interpretar.
+func _cenario() -> String:
+	for argumento in OS.get_cmdline_user_args():
+		if argumento.begins_with("cenario="):
+			return argumento.trim_prefix("cenario=")
+	return CENARIO_PADRAO
+
 
 func _ready() -> void:
 	if DisplayServer.get_name() == "headless":
@@ -33,9 +51,19 @@ func _ready() -> void:
 	for i in FRAMES_ATE_ESTABILIZAR:
 		await get_tree().process_frame
 
+	var cenario := _cenario()
+	if cenario == "panorama":
+		# caracteres suficientes para cruzar os dois primeiros marcos e deixar o terceiro
+		# em silhueta -- e a leitura inteira da tela numa foto so
+		Economia.digitar(2000)
+		Marcos.verificar()
+		EventBus.panorama_pedido.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+
 	DirAccess.make_dir_recursive_absolute(PASTA)
 	var imagem := get_viewport().get_texture().get_image()
-	var destino := PASTA.path_join("principal.png")
+	var destino := PASTA.path_join(cenario + ".png")
 	var erro := imagem.save_png(destino)
 	if erro != OK:
 		printerr("FALHA  nao salvou %s (erro %d)" % [destino, erro])

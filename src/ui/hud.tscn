@@ -52,6 +52,15 @@ theme_override_constants/margin_bottom = 20
 layout_mode = 2
 theme_override_constants/separation = 4
 
+[node name="BotaoPanorama" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PANORAMA"
+
+[node name="EspacoPanorama" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+
 [node name="ValorCaracteres" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 auto_translate_mode = 2
