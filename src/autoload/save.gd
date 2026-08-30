@@ -25,7 +25,9 @@ extends Node
 ## `maquina_atual`, que e o id do tier em uso (issue #14).
 ## 3: entra `sala_atual`, o id da sala em uso (issue #15).
 ## 4: entra `descobertas`, os ids ja encontrados (issue #16).
-const VERSAO: int = 4
+## 5: entram os campos de estatistica -- recorde, macacos comprados, offline
+## acumulado, prestigios e tempo da run (issue #21).
+const VERSAO: int = 5
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -60,6 +62,11 @@ func gravar() -> bool:
 		"fragmentos": Jogo.fragmentos.para_texto(),
 		"multiplicador_global": Jogo.multiplicador_global,
 		"tempo_jogado": Jogo.tempo_jogado,
+		"tempo_da_run": Jogo.tempo_da_run,
+		"recorde_por_segundo": Jogo.recorde_por_segundo.para_texto(),
+		"macacos_comprados": Jogo.macacos_comprados.para_texto(),
+		"total_offline": Jogo.total_offline.para_texto(),
+		"prestigios": Jogo.prestigios,
 		"upgrades_comprados": Jogo.upgrades_comprados,
 		"marcos_alcancados": Jogo.marcos_alcancados,
 		"descobertas": Jogo.descobertas,
@@ -147,6 +154,11 @@ const _PADROES := {
 	"fragmentos": "0",
 	"multiplicador_global": 1.0,
 	"tempo_jogado": 0.0,
+	"tempo_da_run": 0.0,
+	"recorde_por_segundo": "0",
+	"macacos_comprados": "0",
+	"total_offline": "0",
+	"prestigios": 0,
 	"upgrades_comprados": [],
 	"marcos_alcancados": [],
 	"descobertas": [],
@@ -164,6 +176,11 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.fragmentos = Grande.de_texto(str(dados["fragmentos"]))
 	Jogo.multiplicador_global = float(dados["multiplicador_global"])
 	Jogo.tempo_jogado = float(dados["tempo_jogado"])
+	Jogo.tempo_da_run = float(dados["tempo_da_run"])
+	Jogo.recorde_por_segundo = Grande.de_texto(str(dados["recorde_por_segundo"]))
+	Jogo.macacos_comprados = Grande.de_texto(str(dados["macacos_comprados"]))
+	Jogo.total_offline = Grande.de_texto(str(dados["total_offline"]))
+	Jogo.prestigios = int(dados["prestigios"])
 	Jogo.upgrades_comprados = _lista_de_texto(dados["upgrades_comprados"])
 	Jogo.marcos_alcancados = _lista_de_texto(dados["marcos_alcancados"])
 	Jogo.descobertas = _lista_de_texto(dados["descobertas"])

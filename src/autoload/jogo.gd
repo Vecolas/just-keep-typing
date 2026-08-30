@@ -75,5 +75,23 @@ var marcos_alcancados: Array[String] = []
 ## na hora de usar, nunca guardado ja multiplicado (CONVENCOES.md, regra 2).
 var descobertas: Array[String] = []
 
+## Maior producao por segundo ja atingida. Recorde nao desce nem no prestigio: e a marca
+## da melhor partida, e nao o estado da partida atual.
+var recorde_por_segundo: Grande = Grande.zero()
+
+## Quantos macacos foram COMPRADOS na vida, e nao quantos existem agora. Os dois numeros
+## se separam no primeiro prestigio, e e a diferenca entre eles que conta a historia.
+var macacos_comprados: Grande = Grande.zero()
+
+## Quanto a producao offline ja rendeu no total. Estatistica pura -- nada le isto para
+## calcular nada.
+var total_offline: Grande = Grande.zero()
+
+## Quantas vezes o Teorema foi provado (GDD §17). Fica em zero ate a issue #24.
+var prestigios: int = 0
+
+## Segundos desta run, que zeram no prestigio. tempo_jogado nao zera.
+var tempo_da_run: float = 0.0
+
 ## Segundos de partida acumulados. Float porque e tempo, nao acumulador de recurso.
 var tempo_jogado: float = 0.0

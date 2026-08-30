@@ -170,6 +170,7 @@ func _ligar_botoes() -> void:
 	%ComprarMaximo.pressed.connect(_ao_comprar_maximo)
 	%BotaoPanorama.pressed.connect(EventBus.panorama_pedido.emit)
 	%BotaoDescobertas.pressed.connect(EventBus.descobertas_pedidas.emit)
+	%BotaoEstatisticas.pressed.connect(EventBus.estatisticas_pedidas.emit)
 	%BotaoMaquina.pressed.connect(_ao_comprar_maquina)
 	%BotaoSala.pressed.connect(_ao_expandir_sala)
 
@@ -178,7 +179,8 @@ func _ligar_botoes() -> void:
 	# em compra de macaco pelo resto da partida
 	for botao in [
 		%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo,
-		%BotaoPanorama, %BotaoDescobertas, %BotaoMaquina, %BotaoSala,
+		%BotaoPanorama, %BotaoDescobertas, %BotaoEstatisticas,
+		%BotaoMaquina, %BotaoSala,
 	]:
 		botao.focus_mode = Control.FOCUS_NONE
 
