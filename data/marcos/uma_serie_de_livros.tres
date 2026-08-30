@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "um_livro"
-requisito = "5e5"
-titulo = "Um Livro"
-texto = "Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras."
+id = "uma_serie_de_livros"
+requisito = "8e6"
+titulo = "Uma Série Inteira"
+texto = "Sete volumes com continuidade. A continuidade é acidental."
 categoria = 1
 era = 2
-nota = "Romance de 300 paginas: 90.000 palavras x 5,7 caracteres."
+nota = "Serie de 7 livros x 1,1 milhao de caracteres."

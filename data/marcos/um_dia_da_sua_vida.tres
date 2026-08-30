@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "um_dia_da_sua_vida"
+requisito = "3.5e7"
+titulo = "Um Dia da Sua Vida"
+texto = "Tudo que você disse hoje. Inclusive o que você preferia não ter dito."
+categoria = 3
+era = 3
+nota = "16.000 palavras x 5,7 caracteres, multiplicado por 330 para cobrir o dia falado inteiro."

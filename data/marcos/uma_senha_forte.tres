@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "primeira_palavra"
-requisito = "5"
-titulo = "A Primeira Palavra"
-texto = "Cinco teclas ao acaso e uma delas virou palavra. O macaco não percebeu."
+id = "uma_senha_forte"
+requisito = "120"
+titulo = "Uma Senha Forte"
+texto = "Impossível de adivinhar. O macaco adivinhou por acidente e esqueceu."
 categoria = 0
 era = 1
-nota = "Palavra media do portugues escrito: 4,7 letras. Arredondado para 5."
+nota = "Senha de 120 caracteres aleatorios, o teto de campos comuns."

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "tudo_que_voce_ja_falou"
+requisito = "1e9"
+titulo = "Tudo Que Você Já Falou"
+texto = "Cada palavra que saiu da sua boca desde que você aprendeu a falar. Cabe aqui."
+categoria = 3
+era = 3
+nota = "16.000 palavras/dia x 365 x 30 anos x 5,7 caracteres."

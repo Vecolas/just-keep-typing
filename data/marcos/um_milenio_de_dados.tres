@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "um_milenio_de_dados"
+requisito = "1e25"
+titulo = "Mil Anos de Dados"
+texto = "Se a humanidade continuar guardando tudo no ritmo de hoje."
+categoria = 4
+era = 6
+nota = "1.000 anos x 100 zettabytes/ano no ritmo atual, sem crescimento."

@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "uma_estante"
-requisito = "5e7"
-titulo = "Uma Estante"
-texto = "Cem livros. O suficiente para encher uma estante e envergar a prateleira do meio."
+id = "uma_caixa_de_livros"
+requisito = "2e6"
+titulo = "Uma Caixa de Livros"
+texto = "Quatro livros numa caixa de papelão. A mudança vai ser fácil."
 categoria = 2
-era = 3
-nota = "100 livros x 500.000 caracteres."
+era = 2
+nota = "4 livros x 500.000 caracteres."

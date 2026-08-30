@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "uma_familia_inteira"
+requisito = "8e10"
+titulo = "Uma Família Inteira"
+texto = "Todas as conversas de uma família durante gerações. Inclusive as brigas."
+categoria = 3
+era = 3
+nota = "6 pessoas x 4 geracoes x uma vida de conversa."

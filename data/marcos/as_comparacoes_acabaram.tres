@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "as_comparacoes_acabaram"
+requisito = "1e28"
+titulo = "As Comparações Acabaram"
+texto = "Não existem mais comparações humanas úteis. A partir daqui é só escala."
+categoria = 5
+era = 6
+nota = "Marco de transicao (GDD §44). Uma ordem de grandeza acima de mil anos de humanidade."

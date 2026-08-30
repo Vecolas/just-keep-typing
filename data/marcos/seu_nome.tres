@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "uma_estante"
-requisito = "5e7"
-titulo = "Uma Estante"
-texto = "Cem livros. O suficiente para encher uma estante e envergar a prateleira do meio."
-categoria = 2
-era = 3
-nota = "100 livros x 500.000 caracteres."
+id = "seu_nome"
+requisito = "15"
+titulo = "Seu Nome"
+texto = "Daria para escrever seu nome — se o macaco soubesse qual é."
+categoria = 0
+era = 1
+nota = "Nome completo brasileiro medio: 15 caracteres com espacos."

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "uma_letra_diferente"
+requisito = "1e120"
+titulo = "Uma Única Letra Diferente"
+texto = "Para cada história que poderia ser escrita existem incontáveis versões nas quais uma única letra é diferente."
+categoria = 5
+era = 8
+nota = "Marco de transicao (GDD §44). 1e120 e a ordem do numero de partidas legais de xadrez."

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "tudo_que_a_humanidade_escreveu"
+requisito = "1e19"
+titulo = "Tudo Que a Humanidade Escreveu"
+texto = "Todo texto produzido desde a escrita cuneiforme. Cinco mil anos de registro."
+categoria = 4
+era = 5
+nota = "5.000 anos x producao escrita crescente, integrada. Ordem de 10^19."

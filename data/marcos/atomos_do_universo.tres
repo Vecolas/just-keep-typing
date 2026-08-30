@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "atomos_do_universo"
+requisito = "1e82"
+titulo = "Um Caractere por Átomo do Universo"
+texto = "Um caractere para cada átomo do universo observável. Ainda sobra macaco digitando."
+categoria = 5
+era = 7
+nota = "Estimativa padrao de atomos no universo observavel: 1e80. Margem de duas ordens."

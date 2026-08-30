@@ -43,6 +43,14 @@ enum Categoria {
 
 @export var icone: Texture2D
 
+## A CONTA por tras da comparacao, para quem for balancear daqui a seis meses.
+##
+## "uma pagina = 1.800" nao se defende sozinho: o numero precisa dizer de onde veio, senao
+## a primeira sessao de tuning troca 1.800 por 2.000 porque ficou mais redondo, e a
+## comparacao que o jogador le deixa de ser verdade. Nao aparece na tela -- e nota de
+## rodape do .tres, e nao texto de jogo. Por isso NAO entra no i18n.
+@export_multiline var nota: String = ""
+
 @export var categoria: Categoria = Categoria.LETRAS
 
 ## Era visual em que este marco cai (docs/ARTE.md, secao 10). A cena das eras e a issue

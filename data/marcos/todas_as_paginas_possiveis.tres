@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "todas_as_paginas_possiveis"
+requisito = "1e80"
+titulo = "Todas as Páginas Possíveis"
+texto = "Toda página de mil e oitocentos caracteres que poderia ser escrita. Quase todas são lixo."
+categoria = 5
+era = 7
+nota = "Cota MUITO baixa: 27^1800 e maior que qualquer coisa. 1e80 e o numero de atomos do universo observavel."

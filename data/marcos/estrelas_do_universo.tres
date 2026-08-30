@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "estrelas_do_universo"
+requisito = "1e24"
+titulo = "Um Caractere por Estrela"
+texto = "Um caractere para cada estrela do universo observável. Sobrou macaco."
+categoria = 5
+era = 6
+nota = "Estimativa: 1e24 estrelas no universo observavel."

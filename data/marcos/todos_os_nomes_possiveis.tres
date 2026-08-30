@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "todos_os_nomes_possiveis"
+requisito = "1e36"
+titulo = "Todos os Nomes Possíveis"
+texto = "Inclusive o seu. Inclusive o de quem ainda não nasceu."
+categoria = 5
+era = 6
+nota = "27^25 sequencias de nome x 25 caracteres. Cota baixa."

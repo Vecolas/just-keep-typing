@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "um_livro"
-requisito = "5e5"
-titulo = "Um Livro"
-texto = "Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras."
+id = "obra_de_shakespeare"
+requisito = "5.2e6"
+titulo = "A Obra de Shakespeare"
+texto = "Trinta e sete peças e cento e cinquenta e quatro sonetos. Em caracteres."
 categoria = 1
 era = 2
-nota = "Romance de 300 paginas: 90.000 palavras x 5,7 caracteres."
+nota = "Obra completa de Shakespeare: 884.000 palavras x 5,9 caracteres."

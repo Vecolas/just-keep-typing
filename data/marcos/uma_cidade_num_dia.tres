@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "uma_cidade_num_dia"
+requisito = "1.1e12"
+titulo = "Uma Cidade em Um Dia"
+texto = "Tudo que uma cidade grande disse hoje. Inclusive o que foi dito baixinho."
+categoria = 3
+era = 4
+nota = "12 milhoes de pessoas x 16.000 palavras x 5,7 caracteres, num dia."

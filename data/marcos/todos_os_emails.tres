@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "todos_os_emails"
+requisito = "1e17"
+titulo = "Todos os E-mails de Um Ano"
+texto = "Trezentos e cinquenta bilhões por dia. A maioria não precisava ter sido enviada."
+categoria = 4
+era = 5
+nota = "350 bilhoes de e-mails/dia x 365 x 800 caracteres."

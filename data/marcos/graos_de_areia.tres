@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "graos_de_areia"
+requisito = "7.5e18"
+titulo = "Um Caractere por Grão de Areia"
+texto = "Um caractere para cada grão de areia de todas as praias do planeta."
+categoria = 5
+era = 5
+nota = "Estimativa classica: 7,5e18 graos de areia na Terra."

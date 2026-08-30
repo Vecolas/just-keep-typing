@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "um_bairro_num_dia"
+requisito = "1e11"
+titulo = "Um Bairro em Um Dia"
+texto = "Tudo que um bairro disse hoje. Ninguém percebeu que estava sendo contado."
+categoria = 3
+era = 4
+nota = "1.000 pessoas x 16.000 palavras x 5,7 caracteres, num dia."
