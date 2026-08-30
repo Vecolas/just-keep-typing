@@ -27,6 +27,12 @@ var _relogios: Dictionary = {}
 ## Quantidades do GDD §32. Comprar Maximo e a entrada 0, resolvida na hora do clique.
 const LOTES: Array[int] = [1, 10, 100]
 
+## Quanto tempo o "Salvando..." fica na tela (issue #37). Curto porque ele e confirmacao e
+## nao informacao: quem esta olhando ve, e quem nao esta nao perde nada.
+const AVISO_DE_GRAVACAO_VISIVEL: float = 1.6
+
+var _ate_esconder_o_aviso: float = 0.0
+
 
 func _ready() -> void:
 	theme = Tema.montar()
@@ -46,10 +52,12 @@ func _ready() -> void:
 	EventBus.voltou_do_offline.connect(_ao_voltar_do_offline)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
+	EventBus.jogo_gravado.connect(_ao_gravar)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_pintar()
+	_apagar_o_aviso_de_gravacao(delta)
 
 
 # --- pintura --------------------------------------------------------------------------
@@ -364,6 +372,29 @@ func _ao_voltar_do_offline(produzido: Grande, _segundos: float) -> void:
 		%AvisoOffline.text = tr("Enquanto você esteve fora: %s") % Formatador.formatar(produzido)
 
 
+## ⚠️ AVISO, E NAO POPUP. Um Label no canto que aparece e some sozinho: nao rouba foco, nao
+## para o jogo e nao pede clique nenhum. Este e um jogo que fica aberto atras de outra
+## coisa -- o mesmo motivo pelo qual a tela cheia nao e exclusiva (issue #34) --, e uma
+## janelinha modal a cada trinta segundos seria motivo para fechar o jogo.
+##
+## O texto vem da CENA, e por isso o Godot o retraduz sozinho: aqui so a visibilidade muda.
+func _ao_gravar() -> void:
+	%AvisoDeGravacao.visible = true
+	%AvisoDeGravacao.modulate.a = 1.0
+	_ate_esconder_o_aviso = AVISO_DE_GRAVACAO_VISIVEL
+
+
+func _apagar_o_aviso_de_gravacao(delta: float) -> void:
+	if _ate_esconder_o_aviso <= 0.0:
+		return
+	_ate_esconder_o_aviso -= delta
+	# desaparece nos ultimos segundos em vez de sumir num quadro: aviso que pisca vira
+	# ruido, e o jogador passa a nao ler nenhum deles
+	%AvisoDeGravacao.modulate.a = clampf(_ate_esconder_o_aviso, 0.0, 1.0)
+	if _ate_esconder_o_aviso <= 0.0:
+		%AvisoDeGravacao.visible = false
+
+
 func _ao_mudar_idioma(_codigo: String) -> void:
 	_montar_upgrades()
 
@@ -381,6 +412,10 @@ func _estilizar() -> void:
 		grande.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
 
 	%AvisoOffline.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	# discreto de proposito: marrom apagado, corpo de legenda. O aviso confirma, e nao
+	# disputa atencao com o contador.
+	%AvisoDeGravacao.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
+	%AvisoDeGravacao.add_theme_font_size_override("font_size", Tema.TITULO)
 	# sala cheia e o unico aviso da loja: cor de alerta, e nao mais um creme apagado
 	%VagasMacaco.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
 	%VagasMacaco.add_theme_font_size_override("font_size", Tema.TITULO)

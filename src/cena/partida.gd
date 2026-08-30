@@ -1,5 +1,9 @@
-## O no que tem o quadro. Abre a partida, faz o relogio andar, transforma clique em
-## caractere e grava de tempos em tempos.
+## O no que tem o quadro. Abre a partida, faz o relogio andar e transforma clique em
+## caractere.
+##
+## QUANDO gravar nao mora mais aqui (issue #37): quem decide e o Autosave, porque os
+## gatilhos que importam sao sinais do EventBus e nao um contador de quadro. Esta cena
+## continua sendo o tique dele, como e de Eventos e Automacao.
 ##
 ## E o unico lugar do jogo com _process, e de proposito: Jogo so guarda estado e Economia
 ## so calcula, entao alguem precisa ser o tique -- e quem tem quadro e a cena. Pelo mesmo
@@ -9,15 +13,6 @@
 ## Nao desenha nada. A HUD e um irmao no CanvasLayer, ouvindo o EventBus; este script
 ## continua sem saber que ela existe.
 extends Node
-
-## De quanto em quanto tempo a partida e gravada. Trinta segundos e o maximo de progresso
-## que um desligamento na tomada pode custar -- e o minimo de escrita em disco que nao
-## incomoda. Gravar todo quadro seria escrever num arquivo sessenta vezes por segundo
-## para salvar uma diferenca que o jogador nem enxerga.
-const INTERVALO_DE_GRAVACAO: float = 30.0
-
-var _ate_gravar: float = INTERVALO_DE_GRAVACAO
-
 
 func _ready() -> void:
 	var gravado_em := Save.carregar()
@@ -34,11 +29,9 @@ func _process(delta: float) -> void:
 	Automacao.tique(delta)
 	Economia.acumular(delta)
 	Marcos.verificar()
-
-	_ate_gravar -= delta
-	if _ate_gravar <= 0.0:
-		_ate_gravar = INTERVALO_DE_GRAVACAO
-		Save.gravar()
+	# QUANDO gravar saiu daqui na issue #37: os gatilhos que importam sao sinais do
+	# EventBus (prestigio, reescrita, troca de era) e nao cabiam num contador de quadro.
+	Autosave.tique(delta)
 
 
 ## Fechar a janela grava. Sem isto, tudo que foi produzido desde a ultima gravacao
@@ -46,7 +39,7 @@ func _process(delta: float) -> void:
 ## quando ele mais espera que o jogo tenha guardado.
 func _notification(que: int) -> void:
 	if que == NOTIFICATION_WM_CLOSE_REQUEST:
-		Save.gravar()
+		Autosave.gravar_agora()
 
 
 ## _unhandled_input, e nao _input, de proposito: assim o botao da loja consome o clique

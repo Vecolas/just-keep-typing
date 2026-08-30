@@ -354,13 +354,48 @@ func _ready() -> void:
 	if not Teoremas.pode_provar():
 		_falhar("um bilhao de caracteres nao chegou para provar o Teorema")
 		return
+	# ⚠️ o prestigio GRAVA (issue #37). Perder um prestigio por um desligamento trinta
+	# segundos depois dele nao e perder trinta segundos: e desfazer a decisao mais cara da
+	# run. E grava UMA vez -- o cronometro reinicia junto com o gatilho.
+	var aviso := hud.find_child("AvisoDeGravacao", true, false) as Label
+	if aviso == null:
+		_falhar("a HUD nao tem o aviso discreto de gravacao")
+		return
+	# a run ja atravessou era ate aqui, e trocar de era e gatilho de gravacao: espera o
+	# aviso anterior sumir para que o que se mede a seguir seja o do prestigio. Que ele
+	# suma sozinho tambem e afirmacao -- aviso que fica e popup sem moldura.
+	if not await _esperar_o_aviso_sumir(aviso):
+		return
+	# ⚠️ conta numa lista, e nao num int: lambda de GDScript captura por VALOR, e um
+	# contador inteiro voltaria zero com o sinal tendo chegado. Array e referencia.
+	var gravacoes: Array[int] = []
+	var contador := func() -> void: gravacoes.append(1)
+	EventBus.jogo_gravado.connect(contador)
+
 	var macacos_antes_do_reset := Jogo.macacos
 	var ganhos := Teoremas.provar()
+	EventBus.jogo_gravado.disconnect(contador)
 	if ganhos.sinal() <= 0:
 		_falhar("provar o Teorema nao rendeu ponto nenhum")
 		return
 	if not macacos_antes_do_reset.maior_que(Jogo.macacos):
 		_falhar("provar o Teorema nao reiniciou a contagem de macacos")
+		return
+	if gravacoes.size() != 1:
+		_falhar("provar o Teorema gravou %d vezes em vez de uma" % gravacoes.size())
+		return
+	if not Save.existe():
+		_falhar("o prestigio gravou, mas nao ha arquivo em disco")
+		return
+
+	# e o aviso e AVISO: aparece, nao rouba foco, nao e popup, e some sozinho
+	if not aviso.visible:
+		_falhar("gravar nao mostrou o aviso na HUD")
+		return
+	if get_viewport().gui_get_focus_owner() != null:
+		_falhar("o aviso de gravacao roubou o foco de alguem")
+		return
+	if not await _esperar_o_aviso_sumir(aviso):
 		return
 
 	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
@@ -577,6 +612,18 @@ func _clicar() -> void:
 	soltar.button_index = MOUSE_BUTTON_LEFT
 	soltar.pressed = false
 	Input.parse_input_event(soltar)
+
+
+## Espera o aviso de gravacao sumir sozinho. Devolve se ele sumiu -- aviso que fica na tela
+## para sempre e popup sem moldura, e o teto existe para a fumaca falhar em vez de travar.
+func _esperar_o_aviso_sumir(aviso: Label) -> bool:
+	var ate := Time.get_ticks_msec() + 8000
+	while aviso.visible and Time.get_ticks_msec() < ate:
+		await get_tree().process_frame
+	if aviso.visible:
+		_falhar("o aviso de gravacao nao sumiu sozinho")
+		return false
+	return true
 
 
 func _falhar(motivo: String) -> void:
