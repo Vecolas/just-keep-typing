@@ -60,11 +60,33 @@ func _pintar() -> void:
 		var botao: Button = get_node("%Comprar" + str(lote))
 		botao.disabled = Economia.custo_de_macacos(lote).maior_que(Jogo.dinheiro)
 	%ComprarMaximo.disabled = Economia.macacos_que_cabem() <= 0
+	_pintar_maquina()
 
 	for botao in %ListaUpgrades.get_children():
 		var dados: DadosUpgrade = Economia.upgrade_de(botao.get_meta("id"))
 		if dados != null:
 			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+
+
+## A maquina em uso e a proxima da escada do GDD §13. No topo o botao some, em vez de
+## ficar la desabilitado para sempre dizendo que nao ha nada -- botao morto na tela e
+## ruido que o jogador aprende a nao ler.
+func _pintar_maquina() -> void:
+	var atual := Economia.maquina_atual()
+	%NomeMaquina.text = "%s  x%s" % [
+		tr(atual.nome), Formatador.formatar(Grande.de_float(atual.multiplicador)),
+	] if atual != null else ""
+
+	var proxima := Economia.proxima_maquina()
+	%BotaoMaquina.visible = proxima != null
+	if proxima == null:
+		return
+	# "%s — %s" e marca de formato, nao texto: nao passa por traducao
+	%BotaoMaquina.text = "%s — %s" % [
+		tr(proxima.nome), Formatador.formatar(Grande.de_float(proxima.custo)),
+	]
+	%BotaoMaquina.tooltip_text = tr(proxima.descricao)
+	%BotaoMaquina.disabled = Grande.de_float(proxima.custo).maior_que(Jogo.dinheiro)
 
 
 ## Um botao por upgrade ainda nao comprado e ja desbloqueado. Limpa antes de montar.
@@ -113,11 +135,15 @@ func _ligar_botoes() -> void:
 		botao.pressed.connect(Economia.comprar_macacos.bind(lote))
 	%ComprarMaximo.pressed.connect(_ao_comprar_maximo)
 	%BotaoPanorama.pressed.connect(EventBus.panorama_pedido.emit)
+	%BotaoMaquina.pressed.connect(_ao_comprar_maquina)
 
 	# nenhum botao pega foco: com foco, a barra de espaco aciona o botao focado em vez de
 	# digitar, e um "Comprar Maximo" clicado uma vez transformaria toda tecla de digitar
 	# em compra de macaco pelo resto da partida
-	for botao in [%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo, %BotaoPanorama]:
+	for botao in [
+		%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo,
+		%BotaoPanorama, %BotaoMaquina,
+	]:
 		botao.focus_mode = Control.FOCUS_NONE
 
 
@@ -127,6 +153,12 @@ func _ao_comprar_maximo() -> void:
 
 func _ao_comprar(id: String) -> void:
 	Economia.comprar_upgrade(id)
+
+
+func _ao_comprar_maquina() -> void:
+	var proxima := Economia.proxima_maquina()
+	if proxima != null:
+		Economia.comprar_maquina(proxima.id)
 
 
 ## O upgrade comprado sai da lista, e um requisito recem-atingido pode ter trazido outro.
@@ -161,11 +193,14 @@ func _estilizar() -> void:
 
 	%AvisoOffline.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
 
-	for legenda in [%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco]:
+	for legenda in [
+		%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco,
+		%NomeMaquina,
+	]:
 		legenda.add_theme_font_size_override("font_size", Tema.TITULO)
 		legenda.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
 
-	for titulo in [%TituloMacacos, %TituloUpgrades]:
+	for titulo in [%TituloMacacos, %TituloUpgrades, %TituloMaquina]:
 		titulo.add_theme_font_size_override("font_size", Tema.TITULO)
 		titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
 

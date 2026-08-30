@@ -23,6 +23,7 @@ extends Node
 
 const PASTA_MACACOS := "res://data/macacos"
 const PASTA_UPGRADES := "res://data/upgrades"
+const PASTA_MAQUINAS := "res://data/maquinas"
 const CAMINHO_OFFLINE := "res://data/offline.tres"
 
 ## Teto da compra multipla. Passar disto num clique so acontece com crescimento
@@ -42,6 +43,9 @@ var _macacos: Array[DadosMacaco] = []
 ## id -> DadosUpgrade. Dicionario porque a compra chega por id, vindo do save.
 var _upgrades: Dictionary = {}
 
+## Ordenadas por tier: a escada do GDD §13, e nao a ordem em que o DirAccess listou.
+var _maquinas: Array[DadosMaquina] = []
+
 ## Teto da producao offline, do .tres. Nulo so se alguem apagar o arquivo.
 var _offline: DadosOffline = null
 
@@ -58,6 +62,13 @@ func _ready() -> void:
 		var upgrade := ResourceLoader.load(caminho) as DadosUpgrade
 		if upgrade != null:
 			_upgrades[upgrade.id] = upgrade
+
+	for caminho in _listar_tres(PASTA_MAQUINAS):
+		var maquina := ResourceLoader.load(caminho) as DadosMaquina
+		if maquina != null:
+			_maquinas.append(maquina)
+	_maquinas.sort_custom(func(a: DadosMaquina, b: DadosMaquina) -> bool:
+		return a.tier < b.tier)
 
 	_offline = ResourceLoader.load(CAMINHO_OFFLINE) as DadosOffline
 	if _offline == null:
@@ -77,6 +88,47 @@ func upgrade_de(id: String) -> DadosUpgrade:
 
 func upgrades() -> Array:
 	return _upgrades.values()
+
+
+func maquinas() -> Array[DadosMaquina]:
+	return _maquinas
+
+
+## A maquina em uso. Save vazio -- partida nova -- cai na mais barata da escada, que e a
+## Maquina Velha do GDD §13: o macaco comeca com ela, nao sem maquina nenhuma.
+func maquina_atual() -> DadosMaquina:
+	for maquina in _maquinas:
+		if maquina.id == Jogo.maquina_atual:
+			return maquina
+	return _maquinas[0] if not _maquinas.is_empty() else null
+
+
+## A proxima da escada, ou nulo no topo. Ordem vem do tier e nao do custo: se um dia uma
+## maquina cara vier antes de uma barata, quem manda e o GDD e nao o balanceamento.
+func proxima_maquina() -> DadosMaquina:
+	var atual := maquina_atual()
+	if atual == null:
+		return null
+	for maquina in _maquinas:
+		if maquina.tier > atual.tier:
+			return maquina
+	return null
+
+
+## So a PROXIMA da escada pode ser comprada. Pular tier deixaria o jogador gastar num
+## multiplicador que ele ja teria de graca dois cliques depois.
+func comprar_maquina(id: String) -> bool:
+	var proxima := proxima_maquina()
+	if proxima == null or proxima.id != id:
+		return false
+	var custo := Grande.de_float(proxima.custo)
+	if custo.maior_que(Jogo.dinheiro):
+		return false
+
+	Jogo.dinheiro = Jogo.dinheiro.menos(custo)
+	Jogo.maquina_atual = proxima.id
+	EventBus.maquina_trocada.emit(proxima.id)
+	return true
 
 
 # --- upgrades -------------------------------------------------------------------------
@@ -197,11 +249,12 @@ func multiplicador_total() -> float:
 	)
 
 
-## Vale 1.0 ate a issue #14 trazer os dez tiers do GDD §13. Existe como funcao desde
-## agora para que a formula ja nasca com a forma final, e ligar as maquinas seja mudar
-## um corpo em vez de mexer em quem chama.
+## O multiplicador do tier em uso (GDD §13). Lido na hora, e nunca multiplicado dentro do
+## macaco: trocar de maquina tem que fazer o macaco que ja estava la produzir mais no
+## mesmo quadro (CONVENCOES.md, regra 2 de arquitetura).
 func multiplicador_de_maquina() -> float:
-	return 1.0
+	var maquina := maquina_atual()
+	return maquina.multiplicador if maquina != null else 1.0
 
 
 ## Vale 1.0 ate a issue #15 trazer as salas (GDD §15).

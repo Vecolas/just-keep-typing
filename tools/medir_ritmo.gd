@@ -74,6 +74,9 @@ func _ready() -> void:
 func _comprar_o_que_der() -> void:
 	for dados in Economia.upgrades():
 		Economia.comprar_upgrade(dados.id)
+	var proxima := Economia.proxima_maquina()
+	if proxima != null:
+		Economia.comprar_maquina(proxima.id)
 	var cabem := Economia.macacos_que_cabem()
 	if cabem > 0:
 		Economia.comprar_macacos(cabem)
@@ -87,7 +90,7 @@ func _zerar_a_partida() -> void:
 	Jogo.caracteres_por_segundo = Grande.zero()
 	Jogo.dinheiro = Grande.zero()
 	Jogo.macacos = Grande.um()
-	Jogo.maquinas = Grande.zero()
+	Jogo.maquina_atual = ""
 	Jogo.pontos_de_teorema = Grande.zero()
 	Jogo.fragmentos = Grande.zero()
 	Jogo.multiplicador_global = 1.0

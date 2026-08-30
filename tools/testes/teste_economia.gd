@@ -30,6 +30,7 @@ func executar() -> void:
 	_compra_maxima()
 	_producao()
 	_compra_de_upgrade()
+	_escada_de_maquinas()
 	_entradas_invalidas()
 
 
@@ -271,6 +272,71 @@ func _compra_de_upgrade() -> void:
 	_devolver_o_jogo(guardado)
 
 
+## A escada do GDD §13: uma maquina de cada vez, sempre a proxima, e o multiplicador
+## entrando na formula em vez de dentro do macaco.
+func _escada_de_maquinas() -> void:
+	var guardado := _guardar_o_jogo()
+	Jogo.maquina_atual = ""
+	Jogo.dinheiro = Grande.zero()
+	Jogo.upgrades_comprados = [] as Array[String]
+
+	var primeira := Economia.maquina_atual()
+	ok(primeira != null, "partida nova ja vem com uma maquina")
+	igual(primeira.tier, 1, "e ela e a do tier 1, a que veio com o macaco")
+	perto(Economia.multiplicador_de_maquina(), 1.0, 1e-12, "e ela e o multiplicador neutro")
+
+	var proxima := Economia.proxima_maquina()
+	ok(proxima != null and proxima.tier == 2, "a proxima e o tier 2")
+
+	ok(not Economia.comprar_maquina(proxima.id), "sem dinheiro nao troca de maquina")
+	igual(Jogo.maquina_atual, "", "e a recusa nao deixa rastro")
+
+	# pular tier deixaria o jogador pagar por um multiplicador que ele teria de graca dois
+	# cliques depois
+	var terceira: DadosMaquina = Economia.maquinas()[2]
+	# saldo perto do custo, e nao 1e20: com dezoito ordens de grandeza de distancia a
+	# parcela menor SOME na subtracao -- que e o comportamento certo do Grande e esta
+	# provado em teste_grande -- e o custo pareceria nao ter sido cobrado
+	Jogo.dinheiro = Grande.de_float(1e6)
+	ok(not Economia.comprar_maquina(terceira.id), "nao da para pular um degrau da escada")
+	ok(not Economia.comprar_maquina("maquina_que_nao_existe"), "nem comprar maquina inexistente")
+
+	var trocas: Array[String] = []
+	var ouvinte := func(id: String) -> void: trocas.append(id)
+	EventBus.maquina_trocada.connect(ouvinte)
+
+	var antes := Jogo.dinheiro
+	ok(Economia.comprar_maquina(proxima.id), "com dinheiro, troca")
+	igual(Jogo.maquina_atual, proxima.id, "e a maquina em uso passa a ser a nova")
+	ok(antes.maior_que(Jogo.dinheiro), "e o custo saiu do saldo")
+	perto(
+		Economia.multiplicador_de_maquina(), proxima.multiplicador, 1e-9,
+		"e o multiplicador da formula e o dela",
+	)
+	igual(trocas.size(), 1, "e o EventBus avisou")
+	EventBus.maquina_trocada.disconnect(ouvinte)
+
+	# a troca vale para o macaco que JA estava la: multiplicador nao e congelado na compra
+	Jogo.macacos = Grande.de_float(10.0)
+	Jogo.multiplicador_global = 1.0
+	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+	var com_o_tier_dois := Economia.producao_por_segundo()
+	ok(Economia.comprar_maquina(Economia.proxima_maquina().id), "sobe mais um degrau")
+	ok(
+		Economia.producao_por_segundo().maior_que(com_o_tier_dois),
+		"e os mesmos dez macacos passam a produzir mais",
+	)
+
+	# a escada acaba, e acabar e um estado e nao um erro
+	Jogo.dinheiro = Grande.new(1.0, 30)
+	while Economia.proxima_maquina() != null:
+		Economia.comprar_maquina(Economia.proxima_maquina().id)
+	ok(Economia.proxima_maquina() == null, "no topo da escada nao ha proxima")
+	igual(Economia.maquina_atual().tier, Economia.maquinas().size(), "e a atual e a ultima")
+
+	_devolver_o_jogo(guardado)
+
+
 func _guardar_o_jogo() -> Dictionary:
 	return {
 		"macacos": Jogo.macacos,
@@ -281,6 +347,7 @@ func _guardar_o_jogo() -> Dictionary:
 		"dinheiro": Jogo.dinheiro,
 		"tempo_jogado": Jogo.tempo_jogado,
 		"upgrades_comprados": Jogo.upgrades_comprados.duplicate(),
+		"maquina_atual": Jogo.maquina_atual,
 	}
 
 
@@ -293,6 +360,7 @@ func _devolver_o_jogo(guardado: Dictionary) -> void:
 	Jogo.dinheiro = guardado["dinheiro"]
 	Jogo.tempo_jogado = guardado["tempo_jogado"]
 	Jogo.upgrades_comprados = guardado["upgrades_comprados"]
+	Jogo.maquina_atual = guardado["maquina_atual"]
 
 
 ## Crescimento que nao cresce e o erro de tuning que permite compra infinita. As linhas

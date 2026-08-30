@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosMaquina" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_maquina.gd" id="1_dados_maquina"]
+
+[resource]
+script = ExtResource("1_dados_maquina")
+id = "teclado_industrial"
+nome = "Teclado Industrial"
+descricao = "Feito para aguentar turno de doze horas."
+tier = 4
+multiplicador = 50.0
+custo = 150000.0

@@ -44,3 +44,6 @@ signal marco_alcancado(marco: DadosMarco)
 ## este e no passado porque o que aconteceu foi o jogador PEDIR, e quem decide o que fazer
 ## com o pedido e a tela.
 signal panorama_pedido()
+
+## Emitido depois de a maquina ja ter sido trocada, com o id do tier novo.
+signal maquina_trocada(id: String)

@@ -216,6 +216,27 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "Comprar Máximo"
 
+[node name="EspacoMaquina" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="TituloMaquina" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "MÁQUINA"
+
+[node name="NomeMaquina" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
+[node name="BotaoMaquina" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
 [node name="EspacoLoja" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2

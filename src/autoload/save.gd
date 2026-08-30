@@ -21,7 +21,9 @@ extends Node
 ## Sobe quando a forma do arquivo muda. Save mais antigo passa por _migrar antes de ser
 ## aplicado; save mais NOVO que o jogo e recusado, porque adivinhar campo do futuro e como
 ## se perde progresso de verdade.
-const VERSAO: int = 1
+## 2: `maquinas`, que era contagem e nunca chegou a ser escrita por ninguem, virou
+## `maquina_atual`, que e o id do tier em uso (issue #14).
+const VERSAO: int = 2
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -50,7 +52,7 @@ func gravar() -> bool:
 		"caracteres_da_run": Jogo.caracteres_da_run.para_texto(),
 		"dinheiro": Jogo.dinheiro.para_texto(),
 		"macacos": Jogo.macacos.para_texto(),
-		"maquinas": Jogo.maquinas.para_texto(),
+		"maquina_atual": Jogo.maquina_atual,
 		"pontos_de_teorema": Jogo.pontos_de_teorema.para_texto(),
 		"fragmentos": Jogo.fragmentos.para_texto(),
 		"multiplicador_global": Jogo.multiplicador_global,
@@ -135,7 +137,7 @@ const _PADROES := {
 	"caracteres_da_run": "0",
 	"dinheiro": "0",
 	"macacos": "1",
-	"maquinas": "0",
+	"maquina_atual": "",
 	"pontos_de_teorema": "0",
 	"fragmentos": "0",
 	"multiplicador_global": 1.0,
@@ -150,7 +152,7 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.caracteres_da_run = Grande.de_texto(str(dados["caracteres_da_run"]))
 	Jogo.dinheiro = Grande.de_texto(str(dados["dinheiro"]))
 	Jogo.macacos = Grande.de_texto(str(dados["macacos"]))
-	Jogo.maquinas = Grande.de_texto(str(dados["maquinas"]))
+	Jogo.maquina_atual = str(dados["maquina_atual"])
 	Jogo.pontos_de_teorema = Grande.de_texto(str(dados["pontos_de_teorema"]))
 	Jogo.fragmentos = Grande.de_texto(str(dados["fragmentos"]))
 	Jogo.multiplicador_global = float(dados["multiplicador_global"])
