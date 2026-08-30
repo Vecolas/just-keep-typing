@@ -74,17 +74,31 @@ func producao_por_segundo(producao_por_macaco: float) -> Grande:
 	)
 
 
-## Avanca a producao de um quadro. E a unica funcao que escreve no Jogo.
+## Avanca a partida em delta segundos. E a unica funcao que escreve no Jogo, e e o tique
+## do jogo inteiro: quem tem quadro chama isto, e o relogio anda junto.
+##
+## Cada caractere digitado vira uma moeda -- ver docs/decisoes/0004-caractere-e-a-moeda.md.
+## Por isso o mesmo produzido entra em quatro campos com vidas diferentes:
+## total_caracteres nunca desce (e o numero do Panorama), caracteres_da_run zera no
+## prestigio, e dinheiro desce a cada compra.
 ##
 ## Grava o cps mesmo quando nao ha producao: a HUD le esse campo, e deixar o valor velho
 ## la mostraria producao que acabou de ser zerada por um prestigio.
+##
+## O relogio anda antes da checagem de producao, e de proposito: tempo passa mesmo com
+## zero macaco, e a producao offline da issue #9 e uma conta sobre esse tempo.
 func acumular(delta: float, producao_por_macaco: float) -> void:
 	Jogo.caracteres_por_segundo = producao_por_segundo(producao_por_macaco)
-	if delta <= 0.0 or Jogo.caracteres_por_segundo.e_zero():
+	if delta <= 0.0:
+		return
+	Jogo.tempo_jogado += delta
+
+	if Jogo.caracteres_por_segundo.e_zero():
 		return
 	var produzido := Jogo.caracteres_por_segundo.vezes(Grande.de_float(delta))
 	Jogo.total_caracteres = Jogo.total_caracteres.mais(produzido)
 	Jogo.caracteres_da_run = Jogo.caracteres_da_run.mais(produzido)
+	Jogo.dinheiro = Jogo.dinheiro.mais(produzido)
 
 
 # --- custo ----------------------------------------------------------------------------

@@ -141,11 +141,15 @@ func _producao() -> void:
 	var total_original := Jogo.total_caracteres
 	var run_original := Jogo.caracteres_da_run
 	var cps_original := Jogo.caracteres_por_segundo
+	var dinheiro_original := Jogo.dinheiro
+	var tempo_original := Jogo.tempo_jogado
 
 	Jogo.macacos = Grande.de_float(10.0)
 	Jogo.multiplicador_global = 2.0
 	Jogo.total_caracteres = Grande.zero()
 	Jogo.caracteres_da_run = Grande.zero()
+	Jogo.dinheiro = Grande.zero()
+	Jogo.tempo_jogado = 0.0
 
 	perto(Economia.multiplicador_total(), 2.0, 1e-12, "so o multiplicador global esta ligado")
 	_vale(Economia.producao_por_segundo(1.5), 30.0, "10 macacos x 1,5 x 2")
@@ -154,26 +158,44 @@ func _producao() -> void:
 	_vale(Jogo.caracteres_por_segundo, 30.0, "acumular grava o cps para a HUD ler")
 	_vale(Jogo.total_caracteres, 15.0, "meio segundo de 30/s soma 15 no total")
 	_vale(Jogo.caracteres_da_run, 15.0, "e soma 15 na run")
+	# decisao 0004: cada caractere digitado vale uma moeda
+	_vale(Jogo.dinheiro, 15.0, "e soma 15 no dinheiro, um caractere por moeda")
+	perto(Jogo.tempo_jogado, 0.5, 1e-9, "o relogio anda meio segundo")
 
 	Economia.acumular(0.5, 1.5)
 	_vale(Jogo.total_caracteres, 30.0, "o acumulo e cumulativo")
+	_vale(Jogo.dinheiro, 30.0, "o dinheiro tambem acumula")
+	perto(Jogo.tempo_jogado, 1.0, 1e-9, "e o relogio tambem")
+
+	# a loja gasta so o dinheiro: total_caracteres e o numero do Panorama e nao pode
+	# descer, senao comprar um macaco apagaria um marco ja alcancado
+	Jogo.dinheiro = Jogo.dinheiro.menos(Grande.de_float(20.0))
+	_vale(Jogo.dinheiro, 10.0, "gastar desce o dinheiro")
+	_vale(Jogo.total_caracteres, 30.0, "e nao encosta no total do Panorama")
 
 	# delta nao positivo nao produz, mas o cps continua sendo atualizado: deixar o valor
 	# velho na tela mostraria producao que acabou de ser zerada
 	Economia.acumular(0.0, 1.5)
 	_vale(Jogo.total_caracteres, 30.0, "delta zero nao produz nada")
 	_vale(Jogo.caracteres_por_segundo, 30.0, "e mesmo assim atualiza o cps")
+	perto(Jogo.tempo_jogado, 1.0, 1e-9, "delta zero nao mexe no relogio")
 
 	Jogo.macacos = Grande.zero()
 	Economia.acumular(1.0, 1.5)
 	ok(Jogo.caracteres_por_segundo.e_zero(), "sem macaco o cps zera de verdade")
 	_vale(Jogo.total_caracteres, 30.0, "sem macaco nada e produzido")
+	_vale(Jogo.dinheiro, 10.0, "e nada e ganho")
+	# o tempo passa mesmo sem producao: a producao offline da issue #9 e uma conta sobre
+	# esse relogio, e ele parar com zero macaco quebraria a conta
+	perto(Jogo.tempo_jogado, 2.0, 1e-9, "mas o relogio anda mesmo sem macaco")
 
 	Jogo.macacos = macacos_originais
 	Jogo.multiplicador_global = multiplicador_original
 	Jogo.total_caracteres = total_original
 	Jogo.caracteres_da_run = run_original
 	Jogo.caracteres_por_segundo = cps_original
+	Jogo.dinheiro = dinheiro_original
+	Jogo.tempo_jogado = tempo_original
 	ok(Jogo.macacos == macacos_originais, "a suite devolveu o estado do Jogo")
 
 
