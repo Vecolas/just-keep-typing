@@ -28,7 +28,7 @@ Registrado com escopo `local` (não versionado):
 
 ```bash
 claude mcp add godot --scope local \
-  --env GODOT_PATH="C:\Users\alcyn\Downloads\Godot_v4.7.2-stable_win64.exe" \
+  --env GODOT_PATH="C:\Users\alcyn\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64.exe" \
   -- npx -y @coding-solo/godot-mcp
 ```
 
