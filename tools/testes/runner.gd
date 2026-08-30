@@ -16,6 +16,7 @@ const SUITES: Array = [
 	preload("res://tools/testes/teste_economia.gd"),
 	preload("res://tools/testes/teste_dados.gd"),
 	preload("res://tools/testes/teste_save.gd"),
+	preload("res://tools/testes/teste_offline.gd"),
 ]
 
 func _ready() -> void:

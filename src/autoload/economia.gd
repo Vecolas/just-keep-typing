@@ -23,6 +23,7 @@ extends Node
 
 const PASTA_MACACOS := "res://data/macacos"
 const PASTA_UPGRADES := "res://data/upgrades"
+const CAMINHO_OFFLINE := "res://data/offline.tres"
 
 ## Teto da compra multipla. Passar disto num clique so acontece com crescimento
 ## praticamente igual a 1, que e erro de tuning e nao jogada -- a suite de .tres reprova
@@ -41,6 +42,9 @@ var _macacos: Array[DadosMacaco] = []
 ## id -> DadosUpgrade. Dicionario porque a compra chega por id, vindo do save.
 var _upgrades: Dictionary = {}
 
+## Teto da producao offline, do .tres. Nulo so se alguem apagar o arquivo.
+var _offline: DadosOffline = null
+
 
 func _ready() -> void:
 	for caminho in _listar_tres(PASTA_MACACOS):
@@ -54,6 +58,10 @@ func _ready() -> void:
 		var upgrade := ResourceLoader.load(caminho) as DadosUpgrade
 		if upgrade != null:
 			_upgrades[upgrade.id] = upgrade
+
+	_offline = ResourceLoader.load(CAMINHO_OFFLINE) as DadosOffline
+	if _offline == null:
+		push_error("Economia: %s nao carregou" % CAMINHO_OFFLINE)
 
 
 # --- catalogo -------------------------------------------------------------------------
@@ -224,6 +232,28 @@ func producao_por_segundo() -> Grande:
 		.vezes(Grande.de_float(producao_por_macaco()))
 		.vezes(Grande.de_float(multiplicador_total()))
 	)
+
+
+## Teto da producao offline em segundos. Zero significa sem limite (GDD §38).
+func teto_offline_segundos() -> float:
+	return _offline.teto_segundos() if _offline != null else 0.0
+
+
+## Credita o que a partida produziu enquanto estava fechada e devolve quanto foi.
+##
+## Passa pelo mesmo _creditar do clique e do quadro: producao offline nao e um recurso
+## paralelo, e o mesmo caractere chegando de outro jeito.
+##
+## Emite sempre, inclusive com zero: a tela de volta e metade da recompensa de reabrir o
+## jogo, e quem escuta precisa saber que a conta foi feita para decidir se mostra algo.
+func creditar_offline(segundos_ausente: float) -> Grande:
+	var segundos := ProgressoOffline.segundos_creditados(segundos_ausente, teto_offline_segundos())
+	var produzido := ProgressoOffline.producao(producao_por_segundo(), segundos)
+	if produzido.sinal() > 0:
+		_creditar(produzido)
+		Jogo.tempo_jogado += segundos
+	EventBus.voltou_do_offline.emit(produzido, segundos)
+	return produzido
 
 
 ## O clique do GDD §3: cada um vale +1 caractere enquanto o macaco nao digita sozinho.

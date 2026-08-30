@@ -18,8 +18,14 @@ extends Node
 const FRAMES := 120
 const CLIQUES := 12
 const UPGRADE_INICIAL := "instinto_digitador"
+const CAMINHO_DO_SAVE := "user://teste_fumaca_save.json"
 
 func _ready() -> void:
+	# arquivo proprio e apagado ANTES de a cena subir: a Partida carrega o save no _ready,
+	# e sem isto a run de fumaca leria -- e sobrescreveria -- a partida de quem desenvolve
+	Save.caminho = CAMINHO_DO_SAVE
+	Save.apagar()
+
 	var caminho: String = ProjectSettings.get_setting("application/run/main_scene", "")
 	if caminho.is_empty():
 		_falhar("nenhuma cena principal configurada em application/run/main_scene")
