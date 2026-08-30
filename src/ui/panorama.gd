@@ -10,6 +10,7 @@
 ##   alcancado   texto completo, e o jogador rele quando quiser
 ##   atual       o ultimo cruzado, em destaque, porque e onde ele esta
 ##   proximo     EM SILHUETA -- o requisito aparece, a comparacao nao
+##   e nenhum    depois do ultimo marco nao entra linha nenhuma (ver _montar)
 ##
 ## A silhueta e o motor da tela. O jogador tem que querer chegar la so para descobrir a
 ## comparacao; mostrar o texto antes da hora gasta a unica recompensa que o Panorama tem.
@@ -86,6 +87,14 @@ func _montar() -> void:
 			break
 		%Lista.add_child(_item(marco, marco == atual, false))
 
+	# ⚠️ O FIM DO JOGO E A AUSENCIA DE UMA LINHA, E ISSO E DE PROPOSITO (issue #33).
+	#
+	# Cruzado O Macaco Infinito, Marcos.proximo() devolve nulo e nada entra abaixo dele.
+	# Nenhum "? ? ?", nenhum "voce terminou", nenhum selo. O Panorama passou o jogo inteiro
+	# dizendo que sempre ha um proximo; o fecho e ele parar de dizer isso.
+	#
+	# Uma linha de parabens aqui responderia a frase do ultimo marco, e a frase nao e uma
+	# pergunta. A tela tem que saber terminar em silencio.
 	var proximo := Marcos.proximo()
 	if proximo != null:
 		%Lista.add_child(_item(proximo, false, true))

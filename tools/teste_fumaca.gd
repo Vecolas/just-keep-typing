@@ -186,6 +186,32 @@ func _ready() -> void:
 		_falhar("o Panorama abriu sem os alcancados mais a silhueta do proximo")
 		return
 
+	# e o outro extremo da mesma tela: o FIM. Cruzado O Macaco Infinito nao entra silhueta
+	# nenhuma abaixo dele -- e a ausencia dessa linha que fecha o jogo (issue #33)
+	var total_antes_do_fim := Jogo.total_caracteres
+	var alcancados_antes_do_fim := Jogo.marcos_alcancados.duplicate()
+	Jogo.total_caracteres = Marcos.todos()[-1].requisito_grande()
+	Marcos.verificar()
+	panorama.call("abrir")
+	await get_tree().process_frame
+	if Marcos.proximo() != null:
+		_falhar("cruzado o ultimo marco ainda sobrou um proximo")
+		return
+	if lista.get_child_count() != Marcos.todos().size():
+		_falhar("o Panorama do fim tem %d linhas para %d marcos -- sobrou silhueta" % [
+			lista.get_child_count(), Marcos.todos().size(),
+		])
+		return
+	if Marcos.atual().id != "o_macaco_infinito":
+		_falhar("o marco do fim nao e O Macaco Infinito, e sim %s" % Marcos.atual().id)
+		return
+
+	# e volta ao estado de antes: a fumaca continua jogando dali
+	Jogo.total_caracteres = total_antes_do_fim
+	Jogo.marcos_alcancados = alcancados_antes_do_fim
+	panorama.call("abrir")
+	await get_tree().process_frame
+
 	panorama.call("fechar")
 	await get_tree().process_frame
 	if panorama.visible:

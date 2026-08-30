@@ -126,6 +126,23 @@ func _ready() -> void:
 		EventBus.estatisticas_pedidas.emit()
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
+	elif cenario == "fim":
+		# o fecho do jogo (issue #33): O Macaco Infinito em destaque e, abaixo dele, NADA.
+		# A foto existe justamente para mostrar o que nao esta la -- se um dia aparecer uma
+		# silhueta "? ? ?" no rodape, e nesta captura que se ve.
+		Jogo.total_caracteres = Marcos.todos()[-1].requisito_grande()
+		Marcos.verificar()
+		EventBus.panorama_pedido.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+		var fundo: ScrollContainer = null
+		for candidata in get_tree().root.find_children("Rolagem", "ScrollContainer", true, false):
+			if candidata.is_visible_in_tree():
+				fundo = candidata
+		if fundo != null:
+			fundo.scroll_vertical = int(fundo.get_v_scroll_bar().max_value)
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
 	elif cenario == "lendarias":
 		# as seis do GDD §11 abertas, para a revisao de texto das DUAS colunas do CSV
 		# (issue #32): a piada e o produto aqui, e traduzir e onde ela mais se perde

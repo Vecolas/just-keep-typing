@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "o_macaco_infinito"
+requisito = "1e30000"
+titulo = "O Macaco Infinito"
+texto = "Você percebe que nunca esteve tentando fazer o macaco escrever alguma coisa específica. Você estava apenas dando tempo suficiente ao acaso."
+categoria = 6
+era = 8
+nota = "O ultimo marco do jogo (GDD §44). NAO tem conta por tras, e nao deve ter: os marcos de escala comparam com atomos e bibliotecas, e este compara com nada -- e o unico cuja frase nao e sobre o numero. O requisito segue o passo dos tres anteriores (1e1000, 1e3000, 1e10000) e nada mais: ele existe para ficar longe, e nao para medir alguma coisa. NAO PENDURE BONUS AQUI. Marco nao da bonus em lugar nenhum do jogo (decisao 0003), e neste em particular a recompensa E a frase: um multiplicador ao lado dela transformaria o fecho do jogo em recibo de compra."
