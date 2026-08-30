@@ -56,6 +56,11 @@ func _ida_e_volta() -> void:
 	Jogo.fragmentos = Grande.zero()
 	Jogo.multiplicador_global = 2.75
 	Jogo.tempo_jogado = 3661.5
+	Jogo.tempo_da_run = 900.25
+	Jogo.recorde_por_segundo = Grande.new(4.2, 88)
+	Jogo.macacos_comprados = Grande.de_float(4321.0)
+	Jogo.total_offline = Grande.new(7.7, 30)
+	Jogo.prestigios = 3
 	Jogo.upgrades_comprados = ["instinto_digitador", "dedos_mais_ageis"] as Array[String]
 	Jogo.marcos_alcancados = ["primeira_palavra"] as Array[String]
 	Jogo.descobertas = ["um_poema"] as Array[String]
@@ -74,6 +79,11 @@ func _ida_e_volta() -> void:
 	Jogo.fragmentos = Grande.de_float(999.0)
 	Jogo.multiplicador_global = 1.0
 	Jogo.tempo_jogado = 0.0
+	Jogo.tempo_da_run = 0.0
+	Jogo.recorde_por_segundo = Grande.zero()
+	Jogo.macacos_comprados = Grande.zero()
+	Jogo.total_offline = Grande.zero()
+	Jogo.prestigios = 0
 	Jogo.upgrades_comprados = [] as Array[String]
 	Jogo.marcos_alcancados = [] as Array[String]
 
@@ -91,6 +101,11 @@ func _ida_e_volta() -> void:
 	ok(Jogo.fragmentos.e_zero(), "fragmentos zerados continuam zerados")
 	perto(Jogo.multiplicador_global, 2.75, 0.0, "multiplicador global")
 	perto(Jogo.tempo_jogado, 3661.5, 0.0, "tempo jogado")
+	perto(Jogo.tempo_da_run, 900.25, 0.0, "tempo da run")
+	_exato(Jogo.recorde_por_segundo, Grande.new(4.2, 88), "recorde")
+	_exato(Jogo.macacos_comprados, Grande.de_float(4321.0), "macacos comprados")
+	_exato(Jogo.total_offline, Grande.new(7.7, 30), "offline acumulado")
+	igual(Jogo.prestigios, 3, "prestigios")
 	igual(Jogo.upgrades_comprados.size(), 2, "os dois upgrades voltaram")
 	ok(Jogo.upgrades_comprados.has("dedos_mais_ageis"), "e com os ids certos")
 	igual(Jogo.marcos_alcancados.size(), 1, "o marco alcancado voltou")
@@ -173,6 +188,11 @@ func _guardar_o_jogo() -> Dictionary:
 		"fragmentos": Jogo.fragmentos,
 		"multiplicador_global": Jogo.multiplicador_global,
 		"tempo_jogado": Jogo.tempo_jogado,
+		"tempo_da_run": Jogo.tempo_da_run,
+		"recorde_por_segundo": Jogo.recorde_por_segundo,
+		"macacos_comprados": Jogo.macacos_comprados,
+		"total_offline": Jogo.total_offline,
+		"prestigios": Jogo.prestigios,
 		"upgrades_comprados": Jogo.upgrades_comprados.duplicate(),
 		"marcos_alcancados": Jogo.marcos_alcancados.duplicate(),
 		"descobertas": Jogo.descobertas.duplicate(),
@@ -190,6 +210,11 @@ func _devolver_o_jogo(guardado: Dictionary) -> void:
 	Jogo.fragmentos = guardado["fragmentos"]
 	Jogo.multiplicador_global = guardado["multiplicador_global"]
 	Jogo.tempo_jogado = guardado["tempo_jogado"]
+	Jogo.tempo_da_run = guardado["tempo_da_run"]
+	Jogo.recorde_por_segundo = guardado["recorde_por_segundo"]
+	Jogo.macacos_comprados = guardado["macacos_comprados"]
+	Jogo.total_offline = guardado["total_offline"]
+	Jogo.prestigios = guardado["prestigios"]
 	Jogo.upgrades_comprados = guardado["upgrades_comprados"]
 	Jogo.marcos_alcancados = guardado["marcos_alcancados"]
 	Jogo.descobertas = guardado["descobertas"]

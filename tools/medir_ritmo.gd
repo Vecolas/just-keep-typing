@@ -99,6 +99,11 @@ func _zerar_a_partida() -> void:
 	Jogo.fragmentos = Grande.zero()
 	Jogo.multiplicador_global = 1.0
 	Jogo.tempo_jogado = 0.0
+	Jogo.tempo_da_run = 0.0
+	Jogo.recorde_por_segundo = Grande.zero()
+	Jogo.macacos_comprados = Grande.zero()
+	Jogo.total_offline = Grande.zero()
+	Jogo.prestigios = 0
 	Jogo.upgrades_comprados = [] as Array[String]
 	Jogo.marcos_alcancados = [] as Array[String]
 	Jogo.descobertas = [] as Array[String]

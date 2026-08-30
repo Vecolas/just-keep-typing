@@ -314,7 +314,11 @@ func comprar_macacos(quantos: int) -> int:
 		return 0
 
 	Jogo.dinheiro = Jogo.dinheiro.menos(custo)
-	Jogo.macacos = Jogo.macacos.mais(Grande.de_float(float(quantos)))
+	var comprados := Grande.de_float(float(quantos))
+	Jogo.macacos = Jogo.macacos.mais(comprados)
+	# contador de vida, e nao de partida: ele e macacos se separam no primeiro prestigio,
+	# e e a diferenca entre os dois que conta a historia (GDD §23)
+	Jogo.macacos_comprados = Jogo.macacos_comprados.mais(comprados)
 	EventBus.macacos_comprados.emit(quantos)
 	return quantos
 
@@ -412,6 +416,8 @@ func creditar_offline(segundos_ausente: float) -> Grande:
 	if produzido.sinal() > 0:
 		_creditar(produzido)
 		Jogo.tempo_jogado += segundos
+		Jogo.tempo_da_run += segundos
+		Jogo.total_offline = Jogo.total_offline.mais(produzido)
 	EventBus.voltou_do_offline.emit(produzido, segundos)
 	return produzido
 
@@ -437,9 +443,13 @@ func digitar(quantos: int = 1) -> void:
 ## producao, e a producao offline da issue #9 e uma conta sobre esse tempo.
 func acumular(delta: float) -> void:
 	Jogo.caracteres_por_segundo = producao_por_segundo()
+	# recorde antes da checagem de delta: ele e sobre a producao, e nao sobre o tempo
+	if Jogo.caracteres_por_segundo.maior_que(Jogo.recorde_por_segundo):
+		Jogo.recorde_por_segundo = Jogo.caracteres_por_segundo
 	if delta <= 0.0:
 		return
 	Jogo.tempo_jogado += delta
+	Jogo.tempo_da_run += delta
 
 	if Jogo.caracteres_por_segundo.e_zero():
 		return

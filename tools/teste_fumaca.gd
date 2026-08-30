@@ -205,7 +205,30 @@ func _ready() -> void:
 	tela.call("fechar")
 	await get_tree().process_frame
 
-	# 8. a sala enche e a expansao libera vaga (issue #15)
+	# 8. a tela de Estatisticas abre com as uteis e as inuteis (issue #21)
+	var estatisticas := raiz.find_child("EstatisticasTela", true, false) as Control
+	if estatisticas == null:
+		_falhar("a tela de Estatisticas nao subiu junto da cena principal")
+		return
+	EventBus.estatisticas_pedidas.emit()
+	await get_tree().process_frame
+	if not estatisticas.visible:
+		_falhar("a tela de Estatisticas nao abriu com o pedido do EventBus")
+		return
+	var linhas := estatisticas.find_child("Lista", true, false) as Control
+	var esperadas := (
+		Estatisticas.uteis().size() + Estatisticas.tempos().size()
+		+ Estatisticas.inuteis().size() + 1
+	)
+	if linhas == null or linhas.get_child_count() != esperadas:
+		_falhar("a tela de Estatisticas listou %d linhas em vez de %d" % [
+			linhas.get_child_count() if linhas != null else -1, esperadas,
+		])
+		return
+	estatisticas.call("fechar")
+	await get_tree().process_frame
+
+	# 9. a sala enche e a expansao libera vaga (issue #15)
 	var sala := Economia.sala_atual()
 	Economia.digitar(100000)
 	Economia.comprar_macacos(Economia.macacos_que_cabem())
@@ -229,7 +252,7 @@ func _ready() -> void:
 		_falhar("expandir liberou %s vagas em vez de %s" % [liberou, diferenca])
 		return
 
-	# 9. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	# 10. gravar, sujar tudo e carregar: o estado tem que voltar identico
 	var total_antes := Jogo.total_caracteres
 	var macacos_no_save := Jogo.macacos
 	var upgrades_antes := Jogo.upgrades_comprados.size()
@@ -261,7 +284,7 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 10. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 11. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)

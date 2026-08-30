@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://c35t4t1st1c4s0"]
+
+[ext_resource type="Script" path="res://src/ui/estatisticas_tela.gd" id="1_estatisticas"]
+
+[node name="EstatisticasTela" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_estatisticas")
+
+[node name="Cortina" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margem" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 160
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 160
+theme_override_constants/margin_bottom = 48
+
+[node name="Painel" type="PanelContainer" parent="Margem"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MargemPainel" type="MarginContainer" parent="Margem/Painel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="Coluna" type="VBoxContainer" parent="Margem/Painel/MargemPainel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Cabecalho" type="HBoxContainer" parent="Margem/Painel/MargemPainel/Coluna"]
+layout_mode = 2
+
+[node name="Titulo" type="Label" parent="Margem/Painel/MargemPainel/Coluna/Cabecalho"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ESTATÍSTICAS"
+
+[node name="Contagem" type="Label" parent="Margem/Painel/MargemPainel/Coluna/Cabecalho"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+size_flags_horizontal = 3
+text = ""
+
+[node name="BotaoFechar" type="Button" parent="Margem/Painel/MargemPainel/Coluna/Cabecalho"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Fechar"
+
+[node name="Rolagem" type="ScrollContainer" parent="Margem/Painel/MargemPainel/Coluna"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="Lista" type="VBoxContainer" parent="Margem/Painel/MargemPainel/Coluna/Rolagem"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 28

@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://bmnk0infmonkey"]
+[gd_scene load_steps=6 format=3 uid="uid://bmnk0infmonkey"]
 
 [ext_resource type="PackedScene" uid="uid://cp4rt1d4jkt00" path="res://src/cena/partida.tscn" id="1_partida"]
 [ext_resource type="PackedScene" uid="uid://ck3ttg32a6emh" path="res://src/ui/hud.tscn" id="2_hud"]
 [ext_resource type="PackedScene" uid="uid://cp4n0r4m4jkt0" path="res://src/ui/panorama.tscn" id="3_panorama"]
 [ext_resource type="PackedScene" uid="uid://cd3sc0b3rt4s00" path="res://src/ui/descobertas_tela.tscn" id="4_descobertas"]
+[ext_resource type="PackedScene" uid="uid://c35t4t1st1c4s0" path="res://src/ui/estatisticas_tela.tscn" id="5_estatisticas"]
 
 [node name="Main" type="Node2D"]
 
@@ -16,3 +17,5 @@
 [node name="Panorama" parent="Interface" instance=ExtResource("3_panorama")]
 
 [node name="DescobertasTela" parent="Interface" instance=ExtResource("4_descobertas")]
+
+[node name="EstatisticasTela" parent="Interface" instance=ExtResource("5_estatisticas")]

@@ -57,3 +57,6 @@ signal descoberta_encontrada(descoberta: DadosDescoberta)
 
 ## Pedido de abrir a tela de Descobertas.
 signal descobertas_pedidas()
+
+## Pedido de abrir a tela de Estatisticas.
+signal estatisticas_pedidas()

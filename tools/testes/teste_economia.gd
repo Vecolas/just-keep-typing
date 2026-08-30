@@ -169,6 +169,11 @@ func _producao() -> void:
 	Economia.digitar(-3)
 	_vale(Jogo.total_caracteres, 5.0, "clique de zero ou negativo nao produz nada")
 
+	# digitar sorteia descoberta, e o bonus dela entraria no multiplicador -- este bloco
+	# testa a FORMULA da producao, e nao a interacao com as descobertas. Sem esta linha o
+	# teste passa ou falha conforme a semente do sorteio, que e o pior tipo de teste.
+	Jogo.descobertas = [] as Array[String]
+
 	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
 	ok(Economia.producao_automatica(), "o Instinto Digitador acende a producao automatica")
 
@@ -280,6 +285,7 @@ func _escada_de_maquinas() -> void:
 	Jogo.maquina_atual = ""
 	Jogo.dinheiro = Grande.zero()
 	Jogo.upgrades_comprados = [] as Array[String]
+	Jogo.descobertas = [] as Array[String]
 
 	var primeira := Economia.maquina_atual()
 	ok(primeira != null, "partida nova ja vem com uma maquina")
@@ -348,6 +354,7 @@ func _capacidade_da_sala() -> void:
 	Jogo.macacos = Grande.zero()
 	Jogo.dinheiro = Grande.new(1.0, 30)
 	Jogo.upgrades_comprados = [] as Array[String]
+	Jogo.descobertas = [] as Array[String]
 
 	var pequena := Economia.sala_atual()
 	ok(pequena != null, "partida nova ja vem com uma sala")
@@ -432,6 +439,7 @@ func _guardar_o_jogo() -> Dictionary:
 		"upgrades_comprados": Jogo.upgrades_comprados.duplicate(),
 		"maquina_atual": Jogo.maquina_atual,
 		"sala_atual": Jogo.sala_atual,
+		"descobertas": Jogo.descobertas.duplicate(),
 	}
 
 
@@ -446,6 +454,7 @@ func _devolver_o_jogo(guardado: Dictionary) -> void:
 	Jogo.upgrades_comprados = guardado["upgrades_comprados"]
 	Jogo.maquina_atual = guardado["maquina_atual"]
 	Jogo.sala_atual = guardado["sala_atual"]
+	Jogo.descobertas = guardado["descobertas"]
 
 
 ## Crescimento que nao cresce e o erro de tuning que permite compra infinita. As linhas

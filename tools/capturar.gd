@@ -52,7 +52,16 @@ func _ready() -> void:
 		await get_tree().process_frame
 
 	var cenario := _cenario()
-	if cenario == "descobertas":
+	if cenario == "estatisticas":
+		Descobertas.gerador.seed = 1
+		Economia.digitar(500000)
+		Economia.comprar_macacos(Economia.macacos_que_cabem())
+		Marcos.verificar()
+		Economia.acumular(1.0)
+		EventBus.estatisticas_pedidas.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+	elif cenario == "descobertas":
 		# uma achada e o resto em silhueta: e a leitura inteira da tela numa foto so
 		Descobertas.gerador.seed = 1
 		Economia.digitar(20000)

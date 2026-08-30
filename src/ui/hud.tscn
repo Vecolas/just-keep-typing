@@ -62,6 +62,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "DESCOBERTAS"
 
+[node name="BotaoEstatisticas" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ESTATÍSTICAS"
+
 [node name="EspacoPanorama" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
