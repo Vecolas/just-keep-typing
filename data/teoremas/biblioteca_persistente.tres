@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DadosTeorema" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_teorema.gd" id="1_dados_teorema"]
+
+[resource]
+script = ExtResource("1_dados_teorema")
+id = "biblioteca_persistente"
+nome = "Biblioteca Persistente"
+descricao = "O que foi descoberto não se perde ao provar o Teorema."
+tipo_de_efeito = 3
+custo = 12.0
+crescimento_custo = 1.0
+niveis = 1
+valor = 1.0
+pre_requisitos = PackedStringArray("deja_vu_literario")

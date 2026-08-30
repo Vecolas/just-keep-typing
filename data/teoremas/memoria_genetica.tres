@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DadosTeorema" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_teorema.gd" id="1_dados_teorema"]
+
+[resource]
+script = ExtResource("1_dados_teorema")
+id = "memoria_genetica"
+nome = "Memória Genética"
+descricao = "Os macacos nascem sabendo. Cada nível deixa a digitação 25% mais rápida."
+tipo_de_efeito = 0
+custo = 1.0
+crescimento_custo = 1.6
+niveis = 8
+valor = 1.25
+pre_requisitos = PackedStringArray()

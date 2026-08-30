@@ -184,14 +184,20 @@ func _producao() -> void:
 	perto(Economia.multiplicador_total(), 2.0, 1e-12, "so o multiplicador global esta ligado")
 	_vale(Economia.producao_por_segundo(), 10.0 * por_macaco * 2.0, "10 macacos x producao x 2")
 
+	# ⚠️ acumular() credita, creditar sorteia descoberta, e o bonus dela muda o cps do
+	# quadro seguinte -- que e o comportamento certo da regra 2. Este bloco testa a
+	# FORMULA, entao ele zera as descobertas depois de cada credito: sem isso as
+	# afirmacoes passam ou falham conforme a semente do sorteio.
 	var por_segundo := 10.0 * por_macaco * 2.0
 	Economia.acumular(0.5)
+	Jogo.descobertas = [] as Array[String]
 	_vale(Jogo.caracteres_por_segundo, por_segundo, "acumular grava o cps para a HUD ler")
 	_vale(Jogo.total_caracteres, 5.0 + por_segundo * 0.5, "meio segundo entra no total")
 	_vale(Jogo.dinheiro, 5.0 + por_segundo * 0.5, "e no dinheiro")
 	perto(Jogo.tempo_jogado, 1.5, 1e-9, "e o relogio anda meio segundo")
 
 	Economia.acumular(0.5)
+	Jogo.descobertas = [] as Array[String]
 	_vale(Jogo.total_caracteres, 5.0 + por_segundo, "o acumulo e cumulativo")
 
 	# a loja gasta so o dinheiro: total_caracteres e o numero do Panorama e nao pode
@@ -204,12 +210,14 @@ func _producao() -> void:
 	# delta nao positivo nao produz, mas o cps continua sendo atualizado: deixar o valor
 	# velho na tela mostraria producao que acabou de ser zerada
 	Economia.acumular(0.0)
+	Jogo.descobertas = [] as Array[String]
 	ok(Jogo.total_caracteres.igual_a(total_antes), "delta zero nao produz nada")
 	_vale(Jogo.caracteres_por_segundo, por_segundo, "e mesmo assim atualiza o cps")
 	perto(Jogo.tempo_jogado, 2.0, 1e-9, "delta zero nao mexe no relogio")
 
 	Jogo.macacos = Grande.zero()
 	Economia.acumular(1.0)
+	Jogo.descobertas = [] as Array[String]
 	ok(Jogo.caracteres_por_segundo.e_zero(), "sem macaco o cps zera de verdade")
 	ok(Jogo.total_caracteres.igual_a(total_antes), "sem macaco nada e produzido")
 	# o tempo passa mesmo sem producao: a producao offline da issue #9 e uma conta sobre

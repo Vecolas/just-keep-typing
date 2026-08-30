@@ -29,6 +29,13 @@ const CAMINHO_DO_SAVE := "user://teste_fumaca_save.json"
 const HORAS_OFFLINE := 4.0
 
 func _ready() -> void:
+	# fixa a lingua como o runner faz, e pelo mesmo motivo: as opcoes moram em
+	# user://opcoes.json, que e da INSTALACAO. Sem isto a fumaca roda no idioma em que o
+	# jogo foi deixado, e uma volta na tela de opcoes quebraria a run sem nada ter mudado
+	# no codigo. Portugues porque a chave da tabela de traducao E o texto em portugues.
+	var locale_original := TranslationServer.get_locale()
+	TranslationServer.set_locale("pt_BR")
+
 	# arquivo proprio e apagado ANTES de a cena subir: a Partida carrega o save no _ready,
 	# e sem isto a run de fumaca leria -- e sobrescreveria -- a partida de quem desenvolve
 	Save.caminho = CAMINHO_DO_SAVE
@@ -228,7 +235,45 @@ func _ready() -> void:
 	estatisticas.call("fechar")
 	await get_tree().process_frame
 
-	# 9. a sala enche e a expansao libera vaga (issue #15)
+	# 9. o prestigio: o Teorema e provado e um no da Arvore muda a run seguinte
+	#    (issues #24 e #25)
+	var teoremas := raiz.find_child("TeoremasTela", true, false) as Control
+	if teoremas == null:
+		_falhar("a tela de Teoremas nao subiu junto da cena principal")
+		return
+	EventBus.teoremas_pedidos.emit()
+	await get_tree().process_frame
+	if not teoremas.visible:
+		_falhar("a tela de Teoremas nao abriu com o pedido do EventBus")
+		return
+	teoremas.call("fechar")
+
+	Economia.digitar(1000000000)
+	if not Teoremas.pode_provar():
+		_falhar("um bilhao de caracteres nao chegou para provar o Teorema")
+		return
+	var macacos_antes_do_reset := Jogo.macacos
+	var ganhos := Teoremas.provar()
+	if ganhos.sinal() <= 0:
+		_falhar("provar o Teorema nao rendeu ponto nenhum")
+		return
+	if not macacos_antes_do_reset.maior_que(Jogo.macacos):
+		_falhar("provar o Teorema nao reiniciou a contagem de macacos")
+		return
+
+	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+	Jogo.macacos = Grande.de_float(10.0)
+	var sem_arvore := Economia.producao_por_segundo()
+	if not Teoremas.comprar("memoria_genetica"):
+		_falhar("nao deu para comprar o no da Arvore com %s pontos" % [
+			Jogo.pontos_de_teorema.para_texto(),
+		])
+		return
+	if not Economia.producao_por_segundo().maior_que(sem_arvore):
+		_falhar("o no da Arvore nao mudou a producao da run seguinte")
+		return
+
+	# 10. a sala enche e a expansao libera vaga (issue #15)
 	var sala := Economia.sala_atual()
 	Economia.digitar(100000)
 	Economia.comprar_macacos(Economia.macacos_que_cabem())
@@ -252,7 +297,7 @@ func _ready() -> void:
 		_falhar("expandir liberou %s vagas em vez de %s" % [liberou, diferenca])
 		return
 
-	# 10. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	# 11. gravar, sujar tudo e carregar: o estado tem que voltar identico
 	var total_antes := Jogo.total_caracteres
 	var macacos_no_save := Jogo.macacos
 	var upgrades_antes := Jogo.upgrades_comprados.size()
@@ -284,7 +329,7 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 11. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 12. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)

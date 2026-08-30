@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DadosTeorema" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_teorema.gd" id="1_dados_teorema"]
+
+[resource]
+script = ExtResource("1_dados_teorema")
+id = "teorema_refinado"
+nome = "Teorema Refinado"
+descricao = "Provar o Teorema rende 50% mais pontos por nível."
+tipo_de_efeito = 6
+custo = 10.0
+crescimento_custo = 2.8
+niveis = 5
+valor = 1.5
+pre_requisitos = PackedStringArray("probabilidade_condensada")

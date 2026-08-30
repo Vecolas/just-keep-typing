@@ -62,6 +62,20 @@ var multiplicador_global: float = 1.0
 ## Moeda do primeiro prestigio (GDD §17-18). Sobrevive ao reset da run.
 var pontos_de_teorema: Grande = Grande.zero()
 
+## Pontos de Teorema JA GANHADOS na vida. Nunca desce, nem gastando na arvore: e ele que
+## alimenta o multiplicador global, e se o multiplicador olhasse o saldo, comprar um no da
+## arvore deixaria a run seguinte mais lenta -- que e o que a issue #25 proibe.
+var pontos_totais: Grande = Grande.zero()
+
+## Nivel comprado de cada no da Arvore de Teoremas, por id. Dicionario e nao lista porque
+## no tem NIVEL e nao so presenca (GDD §19).
+var teoremas: Dictionary = {}
+
+## Maior total de caracteres ja atingido. Nao desce no prestigio, e e ele que a
+## Probabilidade Condensada le -- o bonus por ordem de grandeza nao pode sumir no reset,
+## que e exatamente quando ele deveria estar segurando a run nova.
+var recorde_de_total: Grande = Grande.zero()
+
 ## Moeda do segundo prestigio (GDD §20). Sobrevive inclusive ao reset dos Teoremas.
 var fragmentos: Grande = Grande.zero()
 

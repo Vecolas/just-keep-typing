@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bmnk0infmonkey"]
+[gd_scene load_steps=8 format=3 uid="uid://bmnk0infmonkey"]
 
 [ext_resource type="PackedScene" uid="uid://cp4rt1d4jkt00" path="res://src/cena/partida.tscn" id="1_partida"]
 [ext_resource type="PackedScene" uid="uid://cl3tr4ssub1nd0" path="res://src/cena/letras.tscn" id="6_letras"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cp4n0r4m4jkt0" path="res://src/ui/panorama.tscn" id="3_panorama"]
 [ext_resource type="PackedScene" uid="uid://cd3sc0b3rt4s00" path="res://src/ui/descobertas_tela.tscn" id="4_descobertas"]
 [ext_resource type="PackedScene" uid="uid://c35t4t1st1c4s0" path="res://src/ui/estatisticas_tela.tscn" id="5_estatisticas"]
+[ext_resource type="PackedScene" uid="uid://ct30r3m4st3l4" path="res://src/ui/teoremas_tela.tscn" id="7_teoremas"]
 
 [node name="Main" type="Node2D"]
 
@@ -20,5 +21,7 @@
 [node name="DescobertasTela" parent="Interface" instance=ExtResource("4_descobertas")]
 
 [node name="EstatisticasTela" parent="Interface" instance=ExtResource("5_estatisticas")]
+
+[node name="TeoremasTela" parent="Interface" instance=ExtResource("7_teoremas")]
 
 [node name="Letras" parent="Interface" instance=ExtResource("6_letras")]

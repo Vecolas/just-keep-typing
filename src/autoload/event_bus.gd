@@ -60,3 +60,13 @@ signal descobertas_pedidas()
 
 ## Pedido de abrir a tela de Estatisticas.
 signal estatisticas_pedidas()
+
+## Emitido depois de o Teorema ja ter sido provado, com quantos pontos foram ganhos.
+## A run ja esta reiniciada quando isto chega.
+signal teorema_provado(pontos: Grande)
+
+## Emitido depois de um no da Arvore de Teoremas subir de nivel.
+signal teorema_comprado(id: String)
+
+## Pedido de abrir a tela de Teoremas.
+signal teoremas_pedidos()

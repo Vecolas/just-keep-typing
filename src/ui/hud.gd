@@ -68,6 +68,7 @@ func _pintar() -> void:
 	%ComprarMaximo.disabled = Economia.macacos_que_cabem() <= 0
 	_pintar_maquina()
 	_pintar_sala()
+	%BotaoTeoremas.visible = Teoremas.pode_provar() or Jogo.prestigios > 0
 
 	for botao in %ListaUpgrades.get_children():
 		var dados: DadosUpgrade = Economia.upgrade_de(botao.get_meta("id"))
@@ -171,6 +172,7 @@ func _ligar_botoes() -> void:
 	%BotaoPanorama.pressed.connect(EventBus.panorama_pedido.emit)
 	%BotaoDescobertas.pressed.connect(EventBus.descobertas_pedidas.emit)
 	%BotaoEstatisticas.pressed.connect(EventBus.estatisticas_pedidas.emit)
+	%BotaoTeoremas.pressed.connect(EventBus.teoremas_pedidos.emit)
 	%BotaoMaquina.pressed.connect(_ao_comprar_maquina)
 	%BotaoSala.pressed.connect(_ao_expandir_sala)
 
@@ -179,7 +181,7 @@ func _ligar_botoes() -> void:
 	# em compra de macaco pelo resto da partida
 	for botao in [
 		%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo,
-		%BotaoPanorama, %BotaoDescobertas, %BotaoEstatisticas,
+		%BotaoPanorama, %BotaoDescobertas, %BotaoEstatisticas, %BotaoTeoremas,
 		%BotaoMaquina, %BotaoSala,
 	]:
 		botao.focus_mode = Control.FOCUS_NONE

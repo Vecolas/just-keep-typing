@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="DadosTeorema" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_teorema.gd" id="1_dados_teorema"]
+
+[resource]
+script = ExtResource("1_dados_teorema")
+id = "producao_offline"
+nome = "Produção Offline"
+descricao = "Os macacos continuam enquanto o jogo está fechado. Cada nível estica o teto."
+tipo_de_efeito = 4
+custo = 4.0
+crescimento_custo = 2.0
+niveis = 5
+valor = 1.0
+pre_requisitos = PackedStringArray()
