@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DadosRaridade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_raridade.gd" id="1_dados_raridade"]
+
+[resource]
+script = ExtResource("1_dados_raridade")
+categoria_minima = 4
+intervalo = 900.0

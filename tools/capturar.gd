@@ -126,6 +126,32 @@ func _ready() -> void:
 		EventBus.estatisticas_pedidas.emit()
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
+	elif cenario == "lendarias":
+		# as seis do GDD §11 abertas, para a revisao de texto das DUAS colunas do CSV
+		# (issue #32): a piada e o produto aqui, e traduzir e onde ela mais se perde
+		Economia.digitar(20000)
+		for id in [
+			"hamlet", "romance_inedito", "minha_biografia",
+			"o_jogo", "essa_mensagem", "o_proximo_texto",
+		]:
+			if not Jogo.descobertas.has(id):
+				Jogo.descobertas.append(id)
+		EventBus.descobertas_pedidas.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+		# as raras ficam no fim de uma lista de dezesseis: sem rolar ate o fundo a foto
+		# mostra as comuns, que nao sao o que esta em revisao.
+		#
+		# ⚠️ Quatro telas tem um no chamado "Rolagem", e find_child a partir da raiz achava
+		# a primeira -- que estava escondida. Tem que ser a rolagem VISIVEL.
+		var rolagem: ScrollContainer = null
+		for candidata in get_tree().root.find_children("Rolagem", "ScrollContainer", true, false):
+			if candidata.is_visible_in_tree():
+				rolagem = candidata
+		if rolagem != null:
+			rolagem.scroll_vertical = int(rolagem.get_v_scroll_bar().max_value)
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
 	elif cenario == "descobertas":
 		# uma achada e o resto em silhueta: e a leitura inteira da tela numa foto so
 		Descobertas.gerador.seed = 1

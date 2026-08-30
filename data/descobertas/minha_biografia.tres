@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "minha_biografia"
+nome = "Minha Biografia"
+texto = "Um macaco escreveu a sua vida inteira. Os primeiros capítulos conferem."
+categoria = 5
+chance_base = 1e-24
+bonus = 25.0

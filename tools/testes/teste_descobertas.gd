@@ -27,6 +27,7 @@ func executar() -> void:
 	_teto_da_chance()
 	_sorteio_reprodutivel()
 	_bonus_permanente()
+	_as_lendarias_e_o_espaco_entre_elas()
 
 
 func _catalogo() -> void:
@@ -176,3 +177,83 @@ func _bonus_permanente() -> void:
 	)
 
 	Jogo.descobertas = guardado
+
+
+## As seis do GDD §11, e a regra que faz elas VALEREM alguma coisa.
+##
+## "Se o jogador ve duas lendarias na mesma sessao, elas deixam de ser lendarias." Esta e a
+## afirmacao que a issue #32 pede, e ela nao e sobre chance: no endgame a chance de tudo
+## que ainda falta vale 1, entao sem quarentena as seis caem no MESMO QUADRO. Seis avisos
+## empilhados nao sao seis momentos raros -- sao um so, e barulhento.
+func _as_lendarias_e_o_espaco_entre_elas() -> void:
+	var guardado_descobertas := Jogo.descobertas.duplicate()
+	var guardado_tempo := Jogo.tempo_jogado
+	var guardado_ultima := Jogo.tempo_da_ultima_rara
+	var semente_original := Descobertas.gerador.seed
+
+	# as seis do GDD §11 existem, e cada uma das tres faixas de cima tem alguem
+	var faixas := {}
+	for id in [
+		"hamlet", "romance_inedito", "minha_biografia",
+		"o_jogo", "essa_mensagem", "o_proximo_texto",
+	]:
+		var dados := Descobertas.de(id)
+		ok(dados != null, "%s existe no catalogo" % id)
+		if dados == null:
+			continue
+		ok(
+			dados.categoria >= DadosDescoberta.Categoria.LENDARIO,
+			"%s e Lendaria ou acima" % id,
+		)
+		faixas[dados.categoria] = true
+	for categoria in [
+		DadosDescoberta.Categoria.LENDARIO,
+		DadosDescoberta.Categoria.IMPOSSIVEL,
+		DadosDescoberta.Categoria.PARADOXAL,
+	]:
+		ok(faixas.has(categoria), "a faixa %d tem pelo menos uma descoberta" % categoria)
+
+	# Hamlet e o unico bonus que o GDD crava: x10 permanente (§11)
+	perto(Descobertas.de("hamlet").bonus, 10.0, 1e-12, "Hamlet vale os x10 do GDD §11")
+
+	# O CASO QUE IMPORTA: chance saturada, credito atras de credito, e as raras uma so vez
+	Jogo.descobertas = [] as Array[String]
+	Jogo.tempo_jogado = 0.0
+	# negativo e o "nenhuma rara ainda" -- zero seria uma rara achada no instante zero
+	Jogo.tempo_da_ultima_rara = -1.0
+	Descobertas.gerador.seed = 42
+	var raras := 0
+	for i in 200:
+		Descobertas.sortear(Grande.new(1.0, 300))
+	for id in Jogo.descobertas:
+		if Descobertas.de(id).categoria >= DadosDescoberta.Categoria.LENDARIO:
+			raras += 1
+	igual(raras, 1, "duzentos creditos no mesmo instante soltam UMA rara, e nao seis")
+
+	# e as comuns continuam saindo: a quarentena espaca as raras, nao congela o sistema
+	ok(Jogo.descobertas.size() > raras, "as comuns continuam caindo durante a quarentena")
+
+	# passado o intervalo, a proxima rara pode sair
+	var quarentena: DadosDescoberta = null
+	for descoberta in Descobertas.todas():
+		if not Descobertas.encontrada(descoberta.id) 				and descoberta.categoria >= DadosDescoberta.Categoria.LENDARIO:
+			quarentena = descoberta
+			break
+	ok(quarentena != null, "ainda ha rara por achar depois da primeira")
+	ok(Descobertas.em_quarentena(quarentena), "e ela esta em quarentena no mesmo instante")
+
+	Jogo.tempo_jogado = Jogo.tempo_da_ultima_rara + 10000.0
+	ok(not Descobertas.em_quarentena(quarentena), "passado o intervalo, ela e liberada")
+	Descobertas.sortear(Grande.new(1.0, 300))
+	ok(Descobertas.encontrada(quarentena.id), "e o credito seguinte a solta")
+
+	# e a quarentena nunca vale para as comuns -- elas nao prometem raridade nenhuma
+	ok(
+		not Descobertas.em_quarentena(Descobertas.todas()[0]),
+		"a mais comum do catalogo nunca fica em quarentena",
+	)
+
+	Descobertas.gerador.seed = semente_original
+	Jogo.descobertas = guardado_descobertas
+	Jogo.tempo_jogado = guardado_tempo
+	Jogo.tempo_da_ultima_rara = guardado_ultima
