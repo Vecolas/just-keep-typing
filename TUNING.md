@@ -33,12 +33,48 @@ nenhum teste é escrito antes de existir lógica para testar.
 | Régua | Mede | Estado |
 |---|---|---|
 | `medir_ritmo` | tempo até cada marco do Panorama, com a produção no momento | **existe** |
-| `medir_quadro` | tempo de quadro: média, p95, p99, frames perdidos | entra com as letras subindo (#22) |
+| `medir_quadro` | tempo de quadro: média, p95, p99, frames perdidos | **existe** |
 | `medir_economia` | curva do prestígio: quando vale provar o Teorema | entra com os Teoremas (#29) |
 
 ```bash
 godot --headless --path . tools/medir_ritmo.tscn
 ```
+
+### `medir_quadro`
+
+```bash
+godot --path . tools/medir_quadro.tscn --resolution 1920x1080
+```
+
+⚠️ **Precisa de janela.** Headless não renderiza, e medir tempo de quadro sem desenhar
+mede o nada.
+
+Mede o efeito de letras (issue #22) nas três escalas de produção do GDD §26 mais uma
+quarta linha com a piscina de rótulos **saturada** — sem ela o teto seria um número que se
+diz medido sem nunca ter sido tocado por uma medição.
+
+Primeira medição, orçamento de 16,67 ms:
+
+```text
+producao/s       rotulos  media     p95       p99       perdidos
+5                14       11,3 ms   11,9 ms   11,9 ms   0 de 240
+500 mil          14       10,9 ms   11,0 ms   11,0 ms   0 de 240
+5e17             13       13,7 ms   15,3 ms   15,3 ms   0 de 240
+SATURADO         64       11,0 ms   11,3 ms   11,3 ms   0 de 240
+```
+
+⚠️ **A escala entra pelo multiplicador global, e não pela contagem de macacos.** Macaco
+além da capacidade da sala é cortado pelo multiplicador de sala — a primeira versão desta
+régua pôs 500 mil macacos numa Sala Pequena e mediu as três escalas rodando todas a **10
+caracteres por segundo**, sem ninguém perceber. Régua que mede a coisa errada é pior que
+régua nenhuma, porque ela dá confiança.
+
+O regime permanente do jogo fica em **14 rótulos** (9 por segundo × 1,6 s de vida). O teto
+de 64 é margem de mais de quatro vezes, e com ela cheia o quadro ainda cabe no orçamento.
+
+⚠️ **A medição varia entre execuções.** Uma rodada isolada marcou 120 quadros perdidos na
+faixa de 500 mil; duas rodadas seguintes deram zero na mesma faixa. Rode pelo menos duas
+vezes antes de acreditar num pico — a máquina tem outras coisas acontecendo.
 
 ### `medir_ritmo`
 
