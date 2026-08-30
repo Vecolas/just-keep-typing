@@ -9,4 +9,4 @@ nome = "Terminal Digital"
 descricao = "Tela verde e cursor piscando. Ninguém sabe ler o que sai."
 tier = 5
 multiplicador = 250.0
-custo = 3000000.0
+custo = 2.63183e+08

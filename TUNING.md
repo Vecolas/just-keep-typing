@@ -34,11 +34,33 @@ nenhum teste é escrito antes de existir lógica para testar.
 |---|---|---|
 | `medir_ritmo` | tempo até cada marco do Panorama, com a produção no momento | **existe** |
 | `medir_quadro` | tempo de quadro por era: média, p95, p99, frames perdidos | **existe** |
-| `medir_economia` | curva do prestígio: quando vale provar o Teorema | entra com os Teoremas (#29) |
+| `medir_economia` | curva do prestígio: quando vale provar o Teorema | **existe** |
 
 ```bash
 godot --headless --path . tools/medir_ritmo.tscn
 ```
+
+### `medir_economia`
+
+```bash
+godot --headless --path . tools/medir_economia.tscn
+```
+
+Responde a pergunta que o GDD §18 quer criar: **"faço prestígio agora ou continuo?"**
+
+Em cada ponto ela **bifurca a partida** e simula os dois futuros a partir do mesmo estado —
+quanto tempo até a produção dobrar continuando, e quanto tempo até a run nova voltar à
+produção de agora prestigiando. O menor dos dois é a resposta certa ali. Onde ficam a menos
+de 20% um do outro é a **janela ambígua**, e é ela que faz a pergunta ter dois lados.
+
+Bifurcar só é possível porque o estado inteiro da partida mora no autoload `Jogo`: um
+dicionário copia tudo, e devolver é atribuir de volta. Se algum sistema guardasse estado
+próprio, esta régua não existiria — é o primeiro retorno concreto daquela regra.
+
+Ela também confere a terceira pergunta da issue #29: se alguma run fica mais lenta que a
+anterior, sintoma de árvore mal calibrada.
+
+Demora cerca de dois minutos.
 
 ### `medir_quadro`
 
