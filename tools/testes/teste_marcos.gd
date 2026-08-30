@@ -29,6 +29,7 @@ func executar() -> void:
 	_ordem_estritamente_crescente()
 	_portao_de_texto()
 	_cruzar()
+	_o_fim()
 
 
 func _catalogo() -> void:
@@ -173,3 +174,53 @@ func _quantos_arquivos() -> int:
 		item = dir.get_next()
 	dir.list_dir_end()
 	return quantos
+
+
+## O fecho do jogo (GDD §44, issue #33). Sao afirmacoes sobre os DADOS, e cada uma protege
+## uma decisao que se perde facil:
+##
+##   O MACACO INFINITO E O ULTIMO. Se alguem acrescentar um marco mais caro, a frase deixa
+##   de ser o fim e vira uma parada no meio -- e nada no jogo reclamaria sozinho.
+##
+##   ELE NAO E SOBRE O NUMERO. Todo marco de escala compara com atomo, biblioteca, grao de
+##   areia. Este compara com nada: e o unico cuja frase e sobre o jogador.
+func _o_fim() -> void:
+	var todos := Marcos.todos()
+	var ultimo := todos[-1]
+	igual(ultimo.id, "o_macaco_infinito", "o ultimo marco do jogo e O Macaco Infinito")
+	igual(
+		ultimo.categoria, DadosMarco.Categoria.INFINITO,
+		"e ele esta na ultima categoria da escala do GDD §45",
+	)
+
+	# "nada de recompensa mecanica aqui": marco nao tem campo de bonus em lugar nenhum, e a
+	# afirmacao existe para que acrescentar um seja uma mudanca VISIVEL, e nao um @export a
+	# mais que ninguem nota
+	for campo in ultimo.get_property_list():
+		var nome: String = campo["name"]
+		ok(
+			not nome.to_lower().contains("bonus") and not nome.to_lower().contains("multiplic"),
+			"DadosMarco nao tem campo %s -- marco da significado, nao numero" % nome,
+		)
+
+	# cruzado o ultimo, nao sobra proximo: e a ausencia dessa linha que fecha o Panorama
+	var total_original := Jogo.total_caracteres
+	var alcancados_originais := Jogo.marcos_alcancados.duplicate()
+	Jogo.marcos_alcancados = [] as Array[String]
+	Jogo.total_caracteres = ultimo.requisito_grande()
+	Marcos.verificar()
+	ok(Marcos.alcancado(ultimo.id), "o requisito exato do ultimo marco o cruza")
+	ok(Marcos.atual() == ultimo, "e ele fica sendo o marco atual, para sempre")
+	ok(Marcos.proximo() == null, "e nao ha proximo: o Panorama nao tem o que desenhar abaixo")
+
+	# e produzir mais nao inventa marco nenhum nem quebra o estado
+	Jogo.total_caracteres = ultimo.requisito_grande().vezes(Grande.new(1.0, 100))
+	Marcos.verificar()
+	igual(
+		Jogo.marcos_alcancados.size(), todos.size(),
+		"passar muito do ultimo requisito nao cruza nada alem do que existe",
+	)
+	ok(Marcos.proximo() == null, "e continua sem proximo")
+
+	Jogo.total_caracteres = total_original
+	Jogo.marcos_alcancados = alcancados_originais
