@@ -3,7 +3,8 @@
 O GDD (`GDD.md`) diz o que o jogo é. Este documento diz em que ordem ele é construído e
 onde cada pedaço vira issue.
 
-Quatro versões, espelhando §39–§42 do GDD. Cada versão é uma tag jogável do início ao fim
+Cinco versões. As quatro primeiras espelham §39–§42 do GDD; a v0.5 vem de um plano próprio
+de menu e saves, e não do GDD. Cada versão é uma tag jogável do início ao fim
 — o ponto para onde voltar quando um refactor descarrilar.
 
 | Versão | Milestone | Alvo | Issues |
@@ -12,6 +13,7 @@ Quatro versões, espelhando §39–§42 do GDD. Cada versão é uma tag jogável
 | v0.2 | Máquinas e descobertas | máquinas, salas, descobertas, Panorama completo | #14–#23 |
 | v0.3 | Prestígio e eras | Teoremas, árvore, eras 1–7, eventos, automação | #24–#29 |
 | v0.4 | Endgame | eras 8–14, Fragmentos do Infinito, O MACACO INFINITO | #30–#34 |
+| v0.5 | Menu principal e arquivos | boot, menu, Manuscritos, configurações em abas, áudio | #35–#49 |
 
 Regra de fechamento: **nenhuma issue fecha sem `runner.tscn` e `teste_fumaca.tscn`
 imprimindo `PASSOU`.** Issue que cria lógica pura nova traz a suite junto; issue que mexe
@@ -101,6 +103,58 @@ justifica o resto.
 | 32 | Descobertas lendárias, impossíveis e paradoxais | §11–12 | suite + revisão de texto |
 | 33 | Panorama de endgame e O MACACO INFINITO | §44 | revisão de texto |
 | 34 | Opções: vídeo, idioma e slots de save | `CONVENCOES.md` | fumaça + captura |
+
+
+---
+
+## v0.5 — Menu principal e arquivos
+
+As quatro primeiras versões abrem direto na mesa. Esta dá ao jogo um começo: uma tela de
+boot, um menu que é a **primeira cena narrativa** do projeto, e Manuscritos que o jogador
+escolhe antes de jogar.
+
+A ordem aqui não é negociável, e é a única regra que o plano de origem repete duas vezes: o
+**sistema de saves vem antes do menu visual**. Interface bonita construída sobre slots que
+ainda não existem é interface que se refaz inteira quando eles chegarem.
+
+| # | Issue | Fonte | Prova |
+|---|---|---|---|
+| 35 | Manuscritos: um slot com metadados próprios | plano §10–§13, §28–§30 | suite |
+| 36 | Save seguro: backup e recuperação | plano §32 | suite |
+| 37 | Autosave nos momentos que importam | plano §33 | suite + fumaça |
+| 38 | Boot, Cenas e o caminho até a partida | plano §25–§27, §45–§46 | fumaça |
+| 39 | Menu principal: as cinco opções e o CONTINUAR | plano §7, §8, §36 | fumaça + captura |
+| 40 | Arquivos: criar, escolher e excluir Manuscrito | plano §9–§15 | fumaça + captura |
+| 41 | Configurações em abas | plano §16, §17, §20 | suite + captura |
+| 42 | Áudio: os cinco barramentos e os sons de digitação | plano §18–§19 | suite + `medir_quadro` |
+| 43 | Interface e Acessibilidade | plano §21–§22 | suite + captura |
+| 44 | Pixel art: mudar o `ARTE.md` antes de gerar asset | `ARTE.md` §7, §16 | decisão escrita |
+| 45 | Os assets do menu | plano §39–§42 | checagem de arte |
+| 46 | O menu ganha a mesa | plano §2–§7, §43 | captura |
+| 47 | Abertura datilografada, e pular quando já se viu | plano §4 | fumaça + captura |
+| 48 | O menu vivo e a transição para a partida | plano §23, §44, §45 | `medir_quadro` |
+| 49 | Polimento, easter eggs e o caminho inteiro | plano §24, §37, §48 | fumaça de ponta a ponta |
+
+### O que o plano de origem propõe e este repositório não faz
+
+Três coisas, e vale registrar o porquê antes que alguém as reintroduza lendo o plano
+original:
+
+- **`SaveManager` e `SettingsManager`.** Já existem, chamam-se `Save` e `Config`, e estão em
+  português (decisão 0002). Um terceiro autoload de save seria um segundo caminho de
+  gravação — o mesmo que a issue #28 proibiu para a automação.
+- **`"version": 1` com chaves em inglês.** O save está na **versão 9**, com `_migrar`
+  funcionando desde a issue #8. Recomeçar do 1 órfãozaria todo save existente.
+- **`res://scenes/` e `res://scripts/`.** O repositório usa `src/cena/`, `src/ui/` e
+  `src/autoload/` desde a issue #1, e a separação por tipo de arquivo espalharia cada tela
+  em duas pastas.
+
+### A decisão de arte que a v0.5 força
+
+A issue #44 existe porque o `ARTE.md` §7 exclui **pixel art por nome**, e o gerador
+escolhido para os assets do menu é o PixelLab. Cânone que contradiz a ferramenta tem que
+mudar antes do primeiro sprite, não depois do lote inteiro — e mudar cânone é decisão do
+autor, registrada em `docs/decisoes/`.
 
 ---
 
