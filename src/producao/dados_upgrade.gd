@@ -28,6 +28,7 @@ enum Efeito {
 	VELOCIDADE_DO_MACACO,
 	PRODUCAO_GLOBAL,
 	LIGA_PRODUCAO_AUTOMATICA,
+	CAPACIDADE,
 }
 
 ## snake_case sem acento: vai para o save e para chave de dicionario (decisao 0002).

@@ -131,7 +131,12 @@ func proxima_sala() -> DadosSala:
 ## Quantos macacos cabem na sala em uso.
 func capacidade() -> Grande:
 	var sala := sala_atual()
-	return Grande.de_float(sala.capacidade) if sala != null else Grande.zero()
+	if sala == null:
+		return Grande.zero()
+	# upgrade de capacidade MULTIPLICA a sala em vez de somar vagas: somar faria a Sala
+	# Pequena com tres upgrades valer mais que o Escritorio, e trocar de sala deixaria de
+	# valer a pena exatamente quando o segundo eixo deveria estar apertando
+	return Grande.de_float(sala.capacidade * bonus_de(DadosUpgrade.Efeito.CAPACIDADE))
 
 
 ## Quantas vagas sobram. Nunca negativo: sala menor que a populacao acontece de verdade --

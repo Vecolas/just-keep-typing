@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_upgrade.gd" id="1_dados_upgrade"]
+
+[resource]
+script = ExtResource("1_dados_upgrade")
+id = "turno_da_noite"
+nome = "Turno da Noite"
+descricao = "Os macacos revezam. Nenhum deles dorme direito desde então."
+custo = 3000000.0
+tipo_de_efeito = 1
+valor = 2.0
+requisito = 2000000.0

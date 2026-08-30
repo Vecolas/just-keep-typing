@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_upgrade.gd" id="1_dados_upgrade"]
+
+[resource]
+script = ExtResource("1_dados_upgrade")
+id = "arquivo_vertical"
+nome = "Arquivo Vertical"
+descricao = "O andar de cima também era espaço. Ninguém tinha reparado."
+custo = 5000000000.0
+tipo_de_efeito = 3
+valor = 3.0
+requisito = 4000000000.0

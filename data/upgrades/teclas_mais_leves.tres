@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_upgrade.gd" id="1_dados_upgrade"]
+
+[resource]
+script = ExtResource("1_dados_upgrade")
+id = "teclas_mais_leves"
+nome = "Teclas Mais Leves"
+descricao = "Metade da força para o mesmo caractere."
+custo = 200000.0
+tipo_de_efeito = 0
+valor = 1.5
+requisito = 150000.0
