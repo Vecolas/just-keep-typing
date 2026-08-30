@@ -30,3 +30,8 @@ signal jogo_gravado()
 ## Emitido depois de um save ja ter sido aplicado no Jogo. Quem escuta pode ler o estado
 ## novo direto, sem receber nada por argumento.
 signal jogo_carregado()
+
+## Emitido na abertura, depois de a producao offline ja ter sido creditada. Vem com o
+## quanto e com quantos segundos contaram de fato -- que pode ser menos do que o jogador
+## ficou fora, por causa do teto.
+signal voltou_do_offline(produzido: Grande, segundos: float)

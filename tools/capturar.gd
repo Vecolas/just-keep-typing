@@ -17,6 +17,11 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 
+	# a captura nunca encosta no save de quem joga, e parte sempre de partida nova: assim
+	# duas capturas do mesmo commit dao a mesma imagem, que e o que faz o diff valer
+	Save.caminho = "user://capturas/save_da_captura.json"
+	Save.apagar()
+
 	var caminho: String = ProjectSettings.get_setting("application/run/main_scene", "")
 	var empacotada := load(caminho) as PackedScene
 	if empacotada == null:

@@ -47,6 +47,7 @@ func _ready() -> void:
 	_ligar_botoes()
 	_montar_upgrades()
 
+	EventBus.voltou_do_offline.connect(_ao_voltar_do_offline)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
 
@@ -146,6 +147,15 @@ func _ao_comprar_upgrade(_id: String) -> void:
 	_montar_upgrades()
 
 
+## Metade da recompensa de reabrir o jogo e ver o quanto rendeu enquanto estava fechado
+## (GDD §38). Volta sem producao nao mostra nada -- aviso de zero e ruido.
+func _ao_voltar_do_offline(produzido: Grande, _segundos: float) -> void:
+	%AvisoOffline.visible = produzido.sinal() > 0
+	if %AvisoOffline.visible:
+		# o tr() vem ANTES da substituicao: traduz-se o molde, nunca o resultado
+		%AvisoOffline.text = tr("Enquanto você esteve fora: %s") % Formatador.formatar(produzido)
+
+
 func _ao_mudar_idioma(_codigo: String) -> void:
 	_montar_upgrades()
 
@@ -183,6 +193,8 @@ func _estilizar() -> void:
 	for grande in [%ValorPorSegundo, %ValorDinheiro, %ValorMacacos]:
 		grande.add_theme_font_size_override("font_size", DESTAQUE)
 		grande.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
+
+	%AvisoOffline.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
 
 	for legenda in [%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco]:
 		legenda.add_theme_font_size_override("font_size", TITULO)
