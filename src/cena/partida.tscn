@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cp4rt1d4jkt00"]
+
+[ext_resource type="Script" path="res://src/cena/partida.gd" id="1_partida"]
+
+[node name="Partida" type="Node"]
+script = ExtResource("1_partida")
