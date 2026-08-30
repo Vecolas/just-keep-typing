@@ -30,6 +30,17 @@ const MAQUINA := "  .-----------.\n /  _______  /|\n/  /  ∞    / / \n|________
 ## O macaco. Ele nunca encolhe, e e isso que mantem a piada de pe em qualquer escala.
 const MACACO := " @@ \n(o o)\n /^\\ "
 
+## O que a grade desenha quando a metafora troca (GDD §6, era 12 em diante). Nao e maquina
+## nem predio: e probabilidade, informacao e possibilidade -- as tres coisas que o jogador
+## passa a manipular. A banana some do desenho, mas o macaco nao: o docs/ARTE.md secao 10 e
+## categorico -- no fim do universo ainda existe um macaco digitando.
+##
+## ⚠️ SO GLIFOS QUE A FONTE MONOESPACADA TEM. A primeira versao usava ∑, Ω, ◇ e ✦, e a
+## regua medir_quadro mediu 22 ms de tempo de processo na era 14 contra 14 ms na era 7 --
+## que tem SEIS VEZES mais rotulos. Glifo que falta na fonte faz o Godot percorrer a
+## cadeia de fallback a cada desenho, e a busca custa mais que o desenho.
+const SIMBOLOS: PackedStringArray = ["∞", "?", "%", "+", "~", "=", "()"]
+
 const QUADROS_DE_TRANSICAO: float = 1.4
 const AVISO_VISIVEL: float = 3.0
 
@@ -44,6 +55,10 @@ var _ate_esconder: float = 0.0
 ## medir_quadro achou o preco na hora: quarenta quadros perdidos de duzentos e quarenta,
 ## todos dentro do 1,4 s da transicao. E o pior lugar possivel para engasgar -- a troca de
 ## era e o momento de recompensa. Agora a transicao mexe em UM transform.
+## Se a grade ja esta desenhada no modo abstrato. Guardado para a troca de era nao
+## reaplicar estilo em rotulo que nao mudou de modo.
+var _abstrata: bool = false
+
 var _grade: Control = null
 var _fundo: Array[Label] = []
 var _macaco: Label = null
@@ -116,6 +131,12 @@ func era_atual() -> DadosEra:
 	return _atual
 
 
+## Como a era chama a unidade que o jogador acumula. A HUD le daqui: na era 14 a contagem
+## de macacos deixa de fazer sentido, e trocar so o fundo nao contaria essa historia.
+func unidade() -> String:
+	return _atual.unidade if _atual != null else "macacos"
+
+
 ## Quantas maquinas de fundo estao desenhadas. A regua medir_quadro le isto.
 func visiveis() -> int:
 	return _atual.maquinas_visiveis if _atual != null else 0
@@ -132,9 +153,21 @@ func _trocar(era: DadosEra, imediato: bool) -> void:
 	if imediato:
 		_escala = _escala_alvo
 
+	# ⚠️ SO A VISIBILIDADE MUDA A CADA ERA. O texto e os dois overrides de tema dependem
+	# apenas de `abstrata`, e reaplicar os tres em duzentos e vinte e cinco rotulos a cada
+	# troca custou caro: a regua medir_quadro mediu 30 ms de tempo de processo exatamente
+	# nas faixas de producao que atravessam era durante a medicao, e 8 ms nas que nao
+	# atravessam. Override de tema invalida cache; fazer isso 675 vezes num quadro e o
+	# preco disso.
 	for i in _fundo.size():
 		_fundo[i].visible = i < era.maquinas_visiveis
-		_fundo[i].text = MAQUINA
+
+	if primeira or era.abstrata != _abstrata:
+		_abstrata = era.abstrata
+		_reestilizar()
+
+	# a maquina da frente some quando nao ha mais maquina; o macaco NUNCA some
+	_frente.visible = not era.abstrata
 
 	if not primeira:
 		_aviso.visible = true
@@ -143,6 +176,19 @@ func _trocar(era: DadosEra, imediato: bool) -> void:
 		EventBus.era_mudou.emit(era)
 	_pintar_aviso()
 	_posicionar()
+
+
+## Texto, corpo e cor da grade inteira. So roda quando a metafora troca -- uma vez por
+## partida, e nao uma vez por era.
+func _reestilizar() -> void:
+	for i in _fundo.size():
+		_fundo[i].text = SIMBOLOS[i % SIMBOLOS.size()] if _abstrata else MAQUINA
+		_fundo[i].add_theme_font_size_override("font_size", 30 if _abstrata else 11)
+		_fundo[i].add_theme_color_override(
+			"font_color",
+			Paleta.INFINITY_CYAN.darkened(0.15) if _abstrata
+			else Paleta.MONKEY_BROWN.lightened(0.05),
+		)
 
 
 func _pintar_aviso() -> void:

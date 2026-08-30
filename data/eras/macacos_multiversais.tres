@@ -4,11 +4,11 @@
 
 [resource]
 script = ExtResource("1_dados_era")
-numero = 5
-id = "complexo_de_digitacao"
-nome = "Complexo de Digitação"
-descricao = "Milhões de macacos em prédios dedicados a produzir texto aleatório."
-requisito = "5e12"
+numero = 13
+id = "macacos_multiversais"
+nome = "Macacos Multiversais"
+descricao = "Cada universo calcula um conjunto diferente de textos. Em todos eles há uma banana."
+requisito = "5e200"
 maquinas_visiveis = 64
-abstrata = false
-unidade = "macacos"
+abstrata = true
+unidade = "universos"

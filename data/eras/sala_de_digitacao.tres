@@ -10,3 +10,5 @@ nome = "Sala de Digitação"
 descricao = "Dezenas de macacos ao mesmo tempo. As máquinas começam a ocupar tudo."
 requisito = "5e3"
 maquinas_visiveis = 4
+abstrata = false
+unidade = "macacos"

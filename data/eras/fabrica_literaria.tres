@@ -10,3 +10,5 @@ nome = "Fábrica Literária"
 descricao = "Milhares de macacos. Rolos gigantes de papel. Armazéns de páginas."
 requisito = "5e9"
 maquinas_visiveis = 36
+abstrata = false
+unidade = "macacos"
