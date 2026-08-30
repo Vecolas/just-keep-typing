@@ -1,4 +1,4 @@
-# Convenções — Infinite Monkey
+# Convenções — Just Keep Typing
 
 Base de regras para o desenvolvimento deste projeto (Godot 4.7).
 
@@ -105,11 +105,12 @@ Balanceamento (`.tres`) é livre — arquivos pequenos, conflito trivial.
 
 | Área | Arquivos |
 |---|---|
-| Jogador e armas | `src/player/`, `src/weapons/` |
-| Inimigos e chefe | `src/enemies/` |
-| Mapa, salas e UI | `src/mapa/`, `src/ui/` |
-| Itens e loot | `src/items/` |
-| Autoloads e sistemas | `src/autoload/` |
+| Lógica pura, sem cena | `src/nucleo/` (`Grande`, `Formatador`) |
+| Quem gera caractere | `src/producao/` (macacos, máquinas, salas) |
+| Marcos, descobertas, teoremas | `src/progressao/` |
+| Telas | `src/ui/` |
+| A cena das eras e a câmera | `src/cena/` |
+| Autoloads | `src/autoload/` |
 | Dados de balanceamento | `data/` (`.tres`) |
 | Testes, réguas e ferramentas | `tools/` |
 | Documentação | `docs/` |
@@ -473,8 +474,40 @@ no jogo rodando, congelar o relógio e ler estado de runtime como JSON, com o ed
 
 ---
 
-## Checagem de lore
+## Checagem de arte
 
-Quando existir `docs/LORE.md`: antes de mergear qualquer coisa com texto, economia ou
-progressão, passe pelas perguntas de canonicidade dele. **A lore é cânone e vence os outros
-documentos** — inclusive este.
+A identidade visual é **cânone** e mora em `docs/ARTE.md`: paleta oficial, mascote, máquina
+de escrever, tipografia, linguagem de UI, progressão visual por tier, raridades, o que
+evitar e os prompts-base para gerar asset novo.
+
+Antes de criar ou revisar qualquer arte, UI, ícone, shader, partícula ou prompt de imagem,
+passe pela checagem da última seção de lá. Não invente paleta, fonte ou estilo por conta
+própria — a identidade só funciona se for a mesma em todas as eras do jogo.
+
+Cor de identidade **não** vai para `.tres`: ela não é número de balanceamento e não muda em
+sessão de tuning. Vive numa constante (`Paleta`), com o hex vindo de `docs/ARTE.md`.
+
+---
+
+## Checagem de design
+
+`docs/GDD.md` é **cânone** e vence os outros documentos — inclusive este. Antes de mergear
+qualquer coisa com texto, economia ou progressão, confira se ela continua fiel a ele.
+Mudou de ideia sobre o jogo? Muda no GDD primeiro, e aí implementa.
+
+Três perguntas que valem para toda mudança de conteúdo:
+
+1. **O número ganhou significado?** O GDD §45 diz que o diferencial não é o número subindo,
+   é o jogador descobrir o que ele significa. Produção nova sem marco correspondente é
+   número solto.
+2. **O tom cabe na escala?** O humor muda com o jogo (§21): "macaco apertou tecla" no
+   começo, científico no meio, filosófico depois, absurdo no fim. Piada de era errada
+   quebra a progressão de tom.
+3. **Nada está sendo simulado à toa?** §10 é categórico: o jogo calcula probabilidade, não
+   produz caractere. Se uma feature nova precisa gerar texto de verdade para funcionar, ela
+   está errada.
+
+Quando `docs/LORE.md` existir, ele entra acima do GDD na mesma checagem.
+
+Ordem de precedência hoje: `docs/GDD.md` → `docs/ARTE.md` (visual) → este documento →
+`docs/ARQUITETURA.md` e `TUNING.md`.

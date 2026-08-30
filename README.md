@@ -1,6 +1,31 @@
-# Infinite Monkey
+# Just Keep Typing
 
-Projeto de jogo em **Godot 4.7**.
+Incremental sobre o Teorema do Macaco Infinito, em **Godot 4.7**.
+
+Um macaco, uma máquina de escrever e teclas apertadas ao acaso. Você acompanha o contador
+sair de 1 caractere para números que já não cabem em nenhuma comparação humana — e o
+**Panorama** existe justamente para dizer o que cada número significa.
+
+## Documentos
+
+| Arquivo | O que é |
+|---|---|
+| [`docs/GDD.md`](docs/GDD.md) | Design do jogo. **Cânone** — vence os outros documentos. |
+| [`docs/ARTE.md`](docs/ARTE.md) | Direção de arte. Cânone visual. |
+| [`docs/PLANO.md`](docs/PLANO.md) | Plano de desenvolvimento em quatro versões, mapeado nas issues. |
+| [`CONVENCOES.md`](CONVENCOES.md) | Regras de código, git e testes. |
+| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Autoloads, pastas e fluxo de comunicação. |
+| [`TUNING.md`](TUNING.md) | Como ajustar balanceamento sem abrir um `.gd`. |
+| [`docs/decisoes/`](docs/decisoes/) | Uma decisão de design por arquivo. |
+
+## Testes
+
+```bash
+godot --headless --path . tools/testes/runner.tscn   # segundos
+godot --headless --path . tools/teste_fumaca.tscn    # minutos
+```
+
+Os dois precisam imprimir `PASSOU`.
 
 ## Requisitos
 
