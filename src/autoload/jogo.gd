@@ -6,8 +6,8 @@
 ## e nao e -- ela e o que permite Economia ser trocada inteira sem que ninguem perca o
 ## save, e o que impede o autoload de virar o lugar onde tudo acaba morando.
 ##
-## Por isso tambem nao ha _process aqui: nem para o tempo_jogado. Quem tem frame e a
-## cena, e e ela que faz o relogio andar.
+## Por isso tambem nao ha _process aqui: nem para o tempo_jogado. Quem tem quadro chama
+## Economia.acumular(), e e ela que faz o relogio andar.
 ##
 ## Os acumuladores sao Grande, o resto e float (decisao 0001: Grande e para acumulador,
 ## nao para tudo). Grande e imutavel, entao atribuir um aqui e seguro sem copiar.
@@ -22,8 +22,9 @@ var caracteres_da_run: Grande = Grande.zero()
 ## Producao corrente. Quem escreve e Economia, no frame em que recalcula.
 var caracteres_por_segundo: Grande = Grande.zero()
 
-## Recurso de compra, separado dos caracteres: os caracteres geram dinheiro e o dinheiro
-## compra macaco e maquina (GDD §2). Zera no prestigio.
+## O que sobra para gastar. Sobe junto com a producao, um caractere por moeda, e desce a
+## cada compra -- e a unica diferenca entre ele e caracteres_da_run. Zera no prestigio.
+## Ver docs/decisoes/0004-caractere-e-a-moeda.md.
 var dinheiro: Grande = Grande.zero()
 
 ## Quantos macacos digitam. Grande e nao int porque o endgame chama O MACACO INFINITO --
