@@ -24,6 +24,7 @@ extends Node
 const PASTA_MACACOS := "res://data/macacos"
 const PASTA_UPGRADES := "res://data/upgrades"
 const PASTA_MAQUINAS := "res://data/maquinas"
+const PASTA_SALAS := "res://data/salas"
 const CAMINHO_OFFLINE := "res://data/offline.tres"
 
 ## Teto da compra multipla. Passar disto num clique so acontece com crescimento
@@ -45,6 +46,9 @@ var _upgrades: Dictionary = {}
 
 ## Ordenadas por tier: a escada do GDD §13, e nao a ordem em que o DirAccess listou.
 var _maquinas: Array[DadosMaquina] = []
+
+## Ordenadas por tier: a escada do GDD §15.
+var _salas: Array[DadosSala] = []
 
 ## Teto da producao offline, do .tres. Nulo so se alguem apagar o arquivo.
 var _offline: DadosOffline = null
@@ -70,6 +74,13 @@ func _ready() -> void:
 	_maquinas.sort_custom(func(a: DadosMaquina, b: DadosMaquina) -> bool:
 		return a.tier < b.tier)
 
+	for caminho in _listar_tres(PASTA_SALAS):
+		var sala := ResourceLoader.load(caminho) as DadosSala
+		if sala != null:
+			_salas.append(sala)
+	_salas.sort_custom(func(a: DadosSala, b: DadosSala) -> bool:
+		return a.tier < b.tier)
+
 	_offline = ResourceLoader.load(CAMINHO_OFFLINE) as DadosOffline
 	if _offline == null:
 		push_error("Economia: %s nao carregou" % CAMINHO_OFFLINE)
@@ -92,6 +103,66 @@ func upgrades() -> Array:
 
 func maquinas() -> Array[DadosMaquina]:
 	return _maquinas
+
+
+func salas() -> Array[DadosSala]:
+	return _salas
+
+
+## A sala em uso. Save vazio -- partida nova -- cai na menor da escada, que e a Sala
+## Pequena do GDD §15: o macaco comeca numa sala, nao no vazio.
+func sala_atual() -> DadosSala:
+	for sala in _salas:
+		if sala.id == Jogo.sala_atual:
+			return sala
+	return _salas[0] if not _salas.is_empty() else null
+
+
+func proxima_sala() -> DadosSala:
+	var atual := sala_atual()
+	if atual == null:
+		return null
+	for sala in _salas:
+		if sala.tier > atual.tier:
+			return sala
+	return null
+
+
+## Quantos macacos cabem na sala em uso.
+func capacidade() -> Grande:
+	var sala := sala_atual()
+	return Grande.de_float(sala.capacidade) if sala != null else Grande.zero()
+
+
+## Quantas vagas sobram. Nunca negativo: sala menor que a populacao acontece de verdade --
+## producao offline nao expande sala -- e vaga negativa viraria compra negativa.
+func vagas_livres() -> Grande:
+	var sobra := capacidade().menos(Jogo.macacos)
+	return sobra if sobra.sinal() > 0 else Grande.zero()
+
+
+## Se a compra cabe. Quem explica ao jogador e a tela: a Economia responde sim ou nao, e
+## a HUD e que sabe escrever "sala cheia" -- economia nao monta texto.
+func cabe_na_sala(quantos: int) -> bool:
+	if quantos <= 0:
+		return false
+	return not Grande.de_float(float(quantos)).maior_que(vagas_livres())
+
+
+## So a PROXIMA da escada pode ser comprada, pelo mesmo motivo das maquinas: pular tier e
+## pagar por um espaco que viria de graca dois cliques depois.
+func expandir_sala(id: String) -> bool:
+	var proxima := proxima_sala()
+	if proxima == null or proxima.id != id:
+		return false
+	var custo := Grande.de_float(proxima.custo)
+	if custo.maior_que(Jogo.dinheiro):
+		return false
+
+	Jogo.dinheiro = Jogo.dinheiro.menos(custo)
+	Jogo.sala_atual = proxima.id
+	EventBus.sala_expandida.emit(proxima.id)
+	return true
 
 
 ## A maquina em uso. Save vazio -- partida nova -- cai na mais barata da escada, que e a
@@ -204,17 +275,25 @@ func custo_de_macacos(quantos: int) -> Grande:
 	)
 
 
-## Quantos cabem no saldo agora. E o "Comprar Maximo" do GDD §32.
+## Quantos cabem no saldo E na sala. E o "Comprar Maximo" do GDD §32.
+##
+## O limite da sala entra aqui e nao so na compra: sem isso o botao ofereceria comprar
+## cinquenta macacos para uma sala com tres vagas, e a compra seria recusada depois do
+## clique -- que e exatamente o "silenciosamente inutil" que a issue #15 proibe.
 func macacos_que_cabem() -> int:
 	var macaco := macaco_padrao()
 	if macaco == null:
 		return 0
-	return quantos_cabem(
+	var pelo_saldo := quantos_cabem(
 		Grande.de_float(macaco.custo_base),
 		macaco.crescimento_custo,
 		Jogo.macacos.para_float(),
 		Jogo.dinheiro,
 	)
+	var vagas := vagas_livres()
+	if Grande.de_float(float(pelo_saldo)).maior_que(vagas):
+		return int(vagas.para_float())
+	return pelo_saldo
 
 
 ## Devolve quantos foram comprados de fato -- zero quando nao da, o que e jogada normal e
@@ -222,6 +301,8 @@ func macacos_que_cabem() -> int:
 ## custar o mesmo que cem cliques em comprar 1, e e a suite que garante.
 func comprar_macacos(quantos: int) -> int:
 	if quantos <= 0:
+		return 0
+	if not cabe_na_sala(quantos):
 		return 0
 	var custo := custo_de_macacos(quantos)
 	if custo.sinal() <= 0 or custo.maior_que(Jogo.dinheiro):
@@ -257,9 +338,17 @@ func multiplicador_de_maquina() -> float:
 	return maquina.multiplicador if maquina != null else 1.0
 
 
-## Vale 1.0 ate a issue #15 trazer as salas (GDD §15).
+## Macaco sem vaga nao produz (GDD §15), e o excesso entra na formula como MULTIPLICADOR
+## e nao como corte seco: com vinte macacos numa sala de dez, metade do trabalho acontece.
+##
+## Corte seco -- apagar o macaco excedente -- seria roubar o que o jogador comprou. Assim
+## ele mantem a compra, ve a producao render menos do que devia, e a saida obvia e
+## expandir. E o que faz o espaco virar decisao em vez de parede.
 func multiplicador_de_sala() -> float:
-	return 1.0
+	var cabem := capacidade()
+	if Jogo.macacos.sinal() <= 0 or not Jogo.macacos.maior_que(cabem):
+		return 1.0
+	return cabem.dividido(Jogo.macacos).para_float()
 
 
 ## Vale 1.0 ate a issue #24 trazer os Teoremas (GDD §17-18).

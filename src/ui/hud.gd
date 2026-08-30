@@ -58,14 +58,45 @@ func _pintar() -> void:
 
 	for lote in LOTES:
 		var botao: Button = get_node("%Comprar" + str(lote))
-		botao.disabled = Economia.custo_de_macacos(lote).maior_que(Jogo.dinheiro)
+		botao.disabled = (
+			Economia.custo_de_macacos(lote).maior_que(Jogo.dinheiro)
+			or not Economia.cabe_na_sala(lote)
+		)
 	%ComprarMaximo.disabled = Economia.macacos_que_cabem() <= 0
 	_pintar_maquina()
+	_pintar_sala()
 
 	for botao in %ListaUpgrades.get_children():
 		var dados: DadosUpgrade = Economia.upgrade_de(botao.get_meta("id"))
 		if dados != null:
 			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+
+
+## A sala em uso, a ocupacao e a proxima da escada do GDD §15.
+##
+## A ocupacao fica ao lado do botao de comprar macaco, e nao escondida no card da sala: a
+## issue #15 exige que comprar sem vaga seja impedido COM EXPLICACAO, e explicacao que o
+## jogador precisa procurar em outro canto da tela nao explica nada.
+func _pintar_sala() -> void:
+	var atual := Economia.sala_atual()
+	%NomeSala.text = "%s  %s" % [
+		tr(atual.nome), tr("%s de %s macacos") % [
+			Formatador.formatar(Jogo.macacos), Formatador.formatar(Economia.capacidade()),
+		],
+	] if atual != null else ""
+
+	var proxima := Economia.proxima_sala()
+	%BotaoSala.visible = proxima != null
+	if proxima != null:
+		%BotaoSala.text = "%s \u2014 %s" % [
+			tr(proxima.nome), Formatador.formatar(Grande.de_float(proxima.custo)),
+		]
+		%BotaoSala.tooltip_text = tr(proxima.descricao)
+		%BotaoSala.disabled = Grande.de_float(proxima.custo).maior_que(Jogo.dinheiro)
+
+	var vagas := Economia.vagas_livres()
+	%VagasMacaco.text = tr("Sala cheia") if vagas.e_zero() else ""
+	%VagasMacaco.visible = vagas.e_zero()
 
 
 ## A maquina em uso e a proxima da escada do GDD §13. No topo o botao some, em vez de
@@ -136,13 +167,14 @@ func _ligar_botoes() -> void:
 	%ComprarMaximo.pressed.connect(_ao_comprar_maximo)
 	%BotaoPanorama.pressed.connect(EventBus.panorama_pedido.emit)
 	%BotaoMaquina.pressed.connect(_ao_comprar_maquina)
+	%BotaoSala.pressed.connect(_ao_expandir_sala)
 
 	# nenhum botao pega foco: com foco, a barra de espaco aciona o botao focado em vez de
 	# digitar, e um "Comprar Maximo" clicado uma vez transformaria toda tecla de digitar
 	# em compra de macaco pelo resto da partida
 	for botao in [
 		%BotaoDigitar, %Comprar1, %Comprar10, %Comprar100, %ComprarMaximo,
-		%BotaoPanorama, %BotaoMaquina,
+		%BotaoPanorama, %BotaoMaquina, %BotaoSala,
 	]:
 		botao.focus_mode = Control.FOCUS_NONE
 
@@ -159,6 +191,12 @@ func _ao_comprar_maquina() -> void:
 	var proxima := Economia.proxima_maquina()
 	if proxima != null:
 		Economia.comprar_maquina(proxima.id)
+
+
+func _ao_expandir_sala() -> void:
+	var proxima := Economia.proxima_sala()
+	if proxima != null:
+		Economia.expandir_sala(proxima.id)
 
 
 ## O upgrade comprado sai da lista, e um requisito recem-atingido pode ter trazido outro.
@@ -192,15 +230,18 @@ func _estilizar() -> void:
 		grande.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
 
 	%AvisoOffline.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	# sala cheia e o unico aviso da loja: cor de alerta, e nao mais um creme apagado
+	%VagasMacaco.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+	%VagasMacaco.add_theme_font_size_override("font_size", Tema.TITULO)
 
 	for legenda in [
 		%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco,
-		%NomeMaquina,
+		%NomeMaquina, %NomeSala,
 	]:
 		legenda.add_theme_font_size_override("font_size", Tema.TITULO)
 		legenda.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
 
-	for titulo in [%TituloMacacos, %TituloUpgrades, %TituloMaquina]:
+	for titulo in [%TituloMacacos, %TituloUpgrades, %TituloMaquina, %TituloSala]:
 		titulo.add_theme_font_size_override("font_size", Tema.TITULO)
 		titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
 

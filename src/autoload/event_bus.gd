@@ -47,3 +47,6 @@ signal panorama_pedido()
 
 ## Emitido depois de a maquina ja ter sido trocada, com o id do tier novo.
 signal maquina_trocada(id: String)
+
+## Emitido depois de a sala ja ter sido trocada, com o id da nova.
+signal sala_expandida(id: String)

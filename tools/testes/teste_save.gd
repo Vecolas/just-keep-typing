@@ -51,6 +51,7 @@ func _ida_e_volta() -> void:
 	Jogo.dinheiro = Grande.new(9.87654321, 140)
 	Jogo.macacos = Grande.de_float(1234.0)
 	Jogo.maquina_atual = "maquina_eletrica"
+	Jogo.sala_atual = "galpao"
 	Jogo.pontos_de_teorema = Grande.new(3.5, 8)
 	Jogo.fragmentos = Grande.zero()
 	Jogo.multiplicador_global = 2.75
@@ -67,6 +68,7 @@ func _ida_e_volta() -> void:
 	Jogo.dinheiro = Grande.zero()
 	Jogo.macacos = Grande.zero()
 	Jogo.maquina_atual = ""
+	Jogo.sala_atual = ""
 	Jogo.pontos_de_teorema = Grande.zero()
 	Jogo.fragmentos = Grande.de_float(999.0)
 	Jogo.multiplicador_global = 1.0
@@ -83,6 +85,7 @@ func _ida_e_volta() -> void:
 	_exato(Jogo.dinheiro, Grande.new(9.87654321, 140), "dinheiro")
 	_exato(Jogo.macacos, Grande.de_float(1234.0), "macacos")
 	igual(Jogo.maquina_atual, "maquina_eletrica", "o tier de maquina voltou")
+	igual(Jogo.sala_atual, "galpao", "e a sala tambem")
 	_exato(Jogo.pontos_de_teorema, Grande.new(3.5, 8), "pontos de teorema")
 	ok(Jogo.fragmentos.e_zero(), "fragmentos zerados continuam zerados")
 	perto(Jogo.multiplicador_global, 2.75, 0.0, "multiplicador global")
@@ -162,6 +165,7 @@ func _guardar_o_jogo() -> Dictionary:
 		"dinheiro": Jogo.dinheiro,
 		"macacos": Jogo.macacos,
 		"maquina_atual": Jogo.maquina_atual,
+		"sala_atual": Jogo.sala_atual,
 		"pontos_de_teorema": Jogo.pontos_de_teorema,
 		"fragmentos": Jogo.fragmentos,
 		"multiplicador_global": Jogo.multiplicador_global,
@@ -177,6 +181,7 @@ func _devolver_o_jogo(guardado: Dictionary) -> void:
 	Jogo.dinheiro = guardado["dinheiro"]
 	Jogo.macacos = guardado["macacos"]
 	Jogo.maquina_atual = guardado["maquina_atual"]
+	Jogo.sala_atual = guardado["sala_atual"]
 	Jogo.pontos_de_teorema = guardado["pontos_de_teorema"]
 	Jogo.fragmentos = guardado["fragmentos"]
 	Jogo.multiplicador_global = guardado["multiplicador_global"]

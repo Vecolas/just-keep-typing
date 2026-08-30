@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="DadosSala" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_sala.gd" id="1_dados_sala"]
+
+[resource]
+script = ExtResource("1_dados_sala")
+id = "fabrica"
+nome = "Fábrica"
+descricao = "Turnos. Esteiras. Rolos de papel do tamanho de um carro."
+tier = 4
+capacidade = 10000.0
+custo = 5000000000.0

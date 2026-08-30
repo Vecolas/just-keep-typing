@@ -48,6 +48,13 @@ var upgrades_comprados: Array[String] = []
 ## Vazio significa a mais barata da lista -- e o estado de partida nova, e nao um erro.
 var maquina_atual: String = ""
 
+## Id da sala em uso. Vazio significa a menor da lista -- o estado de partida nova.
+##
+## Macaco sem vaga nao produz (GDD §15): e o que transforma "comprar macaco" em decisao
+## em vez de reflexo, e o que faz o espaco ser um eixo de progressao ao lado da
+## quantidade, da velocidade e da qualidade da maquina.
+var sala_atual: String = ""
+
 ## Multiplicador que vale para tudo. Continua float de proposito: multiplicador cabe no
 ## double sem perda, e Grande so paga a pena em acumulador (decisao 0001).
 var multiplicador_global: float = 1.0
