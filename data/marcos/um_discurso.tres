@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "primeira_palavra"
-requisito = "5"
-titulo = "A Primeira Palavra"
-texto = "Cinco teclas ao acaso e uma delas virou palavra. O macaco não percebeu."
+id = "um_discurso"
+requisito = "9000"
+titulo = "Um Discurso"
+texto = "Vinte minutos falando sem parar. A plateia é composta por um macaco."
 categoria = 0
 era = 1
-nota = "Palavra media do portugues escrito: 4,7 letras. Arredondado para 5."
+nota = "20 minutos x 130 palavras por minuto x 3,5 caracteres. Ritmo de fala publica."

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "todas_as_mensagens_trocadas"
+requisito = "5e19"
+titulo = "Todas as Mensagens Já Trocadas"
+texto = "Cada conversa digitada desde que existe teclado."
+categoria = 4
+era = 5
+nota = "50 anos x 5 bilhoes de pessoas x 100 mensagens/dia x 60 caracteres."

@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "um_livro"
-requisito = "5e5"
-titulo = "Um Livro"
-texto = "Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras."
+id = "uma_tese"
+requisito = "120000"
+titulo = "Uma Tese"
+texto = "Quatro anos de trabalho. Ou quarenta segundos de macaco."
 categoria = 1
 era = 2
-nota = "Romance de 300 paginas: 90.000 palavras x 5,7 caracteres."
+nota = "Tese de doutorado: 80.000 palavras x 5,7 caracteres. Media em humanas."

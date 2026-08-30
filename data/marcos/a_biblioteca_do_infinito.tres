@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "a_biblioteca_do_infinito"
+requisito = "1e10000"
+titulo = "A Biblioteca do Infinito"
+texto = "Todos os textos possíveis. Tudo que foi escrito e tudo que poderia ter sido."
+categoria = 6
+era = 8
+nota = "Ultimo marco da escada da issue #19. O MACACO INFINITO e a issue #33."

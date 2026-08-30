@@ -114,8 +114,13 @@ func _cruzar() -> void:
 	igual(avisados.size(), 1, "verificar de novo nao avisa duas vezes")
 
 	# a producao offline pula varios de uma vez: voltar depois de quatro horas e
-	# atravessar tres faixas de escala e o caso comum, nao o raro
-	Jogo.total_caracteres = Grande.new(1.0, 100)
+	# atravessar tres faixas de escala e o caso comum, nao o raro.
+	#
+	# o alvo sai do ULTIMO marco e nao de um 1e100 fixo: a lista cresceu de cinco para
+	# noventa na issue #19 e passou de 10^10000, e um numero cravado aqui envelheceria
+	# em silencio -- passaria a testar "cruza os primeiros oitenta" achando que testa
+	# "cruza todos"
+	Jogo.total_caracteres = Marcos.todos()[-1].requisito_grande()
 	Marcos.verificar()
 	igual(avisados.size(), Marcos.todos().size(), "um salto grande cruza todos de uma vez")
 	ok(Marcos.proximo() == null, "e nao sobra proximo")

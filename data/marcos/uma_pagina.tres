@@ -8,5 +8,6 @@ id = "uma_pagina"
 requisito = "1800"
 titulo = "Uma Página"
 texto = "Você já digitou caracteres suficientes para encher uma página inteira. Ninguém vai ler."
-categoria = 1
+categoria = 0
 era = 1
+nota = "Pagina datilografada A4 com espaco duplo: 1.800 caracteres."

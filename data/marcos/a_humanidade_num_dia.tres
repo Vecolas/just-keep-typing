@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "a_humanidade_num_dia"
+requisito = "7.3e14"
+titulo = "A Humanidade em Um Dia"
+texto = "Oito bilhões de pessoas. Um dia. Todas as conversas ao mesmo tempo."
+categoria = 3
+era = 5
+nota = "8 bilhoes de pessoas x 16.000 palavras x 5,7 caracteres, num unico dia."

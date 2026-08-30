@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "voce_nao_produz_mais_texto"
+requisito = "1e60"
+titulo = "Você Não Produz Mais Texto"
+texto = "Você não está mais produzindo textos. Você está percorrendo possibilidades."
+categoria = 5
+era = 7
+nota = "Marco de transicao (GDD §44). Escolhido pelo tom, e nao por uma conta fisica."

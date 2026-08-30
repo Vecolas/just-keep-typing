@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "todas_as_linguas"
+requisito = "3.5e18"
+titulo = "Todas as Línguas Humanas"
+texto = "Sete mil idiomas. Inclusive os que ninguém fala mais."
+categoria = 3
+era = 5
+nota = "7.000 idiomas x 5e14 caracteres por idioma."

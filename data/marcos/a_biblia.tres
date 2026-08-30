@@ -4,10 +4,10 @@
 
 [resource]
 script = ExtResource("1_dados_marco")
-id = "um_livro"
-requisito = "5e5"
-titulo = "Um Livro"
-texto = "Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras."
+id = "a_biblia"
+requisito = "3.5e6"
+titulo = "A Bíblia"
+texto = "Setecentas e oitenta mil palavras. O macaco levou menos tempo que os autores."
 categoria = 1
 era = 2
-nota = "Romance de 300 paginas: 90.000 palavras x 5,7 caracteres."
+nota = "Biblia completa: 783.000 palavras x 4,5 caracteres."

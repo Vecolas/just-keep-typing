@@ -23,16 +23,6 @@ Comprar Máximo,Comprar Máximo,Buy Max
 UPGRADES,UPGRADES,UPGRADES
 para o próximo,para o próximo,for the next one
 Enquanto você esteve fora: %s,Enquanto você esteve fora: %s,While you were away: %s
-A Primeira Palavra,A Primeira Palavra,The First Word
-Cinco teclas ao acaso e uma delas virou palavra. O macaco não percebeu.,Cinco teclas ao acaso e uma delas virou palavra. O macaco não percebeu.,Five random keys and one of them turned into a word. The monkey did not notice.
-Uma Página,Uma Página,One Page
-Você já digitou caracteres suficientes para encher uma página inteira. Ninguém vai ler.,Você já digitou caracteres suficientes para encher uma página inteira. Ninguém vai ler.,You have typed enough characters to fill an entire page. Nobody is going to read it.
-Um Livro,Um Livro,One Book
-Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras.,Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras.,You have written a book. No plot and no characters — but the same number of letters.
-Uma Estante,Uma Estante,One Shelf
-Cem livros. O suficiente para encher uma estante e envergar a prateleira do meio.,Cem livros. O suficiente para encher uma estante e envergar a prateleira do meio.,A hundred books. Enough to fill a shelf and bend the middle plank.
-Uma Biblioteca,Uma Biblioteca,One Library
-Você já poderia preencher uma biblioteca inteira. As pessoas costumam levar séculos para isso.,Você já poderia preencher uma biblioteca inteira. As pessoas costumam levar séculos para isso.,You could already fill an entire library. People usually take centuries to do that.
 PANORAMA,PANORAMA,PANORAMA
 Fechar,Fechar,Close
 O próximo marco ainda é um mistério.,O próximo marco ainda é um mistério.,The next milestone is still a mystery.
@@ -76,7 +66,6 @@ Uma Pequena Frase,Uma Pequena Frase,A Short Sentence
 Sujeito e verbo no mesmo lugar. Ninguém estava olhando na hora.,Sujeito e verbo no mesmo lugar. Ninguém estava olhando na hora.,Subject and verb in the same place. Nobody was watching at the time.
 Uma Frase Completa,Uma Frase Completa,A Complete Sentence
 Começa com maiúscula e termina com ponto. O macaco parece orgulhoso.,Começa com maiúscula e termina com ponto. O macaco parece orgulhoso.,Starts with a capital and ends with a period. The monkey looks proud.
-Um Parágrafo,Um Parágrafo,A Paragraph
 Cinco frases seguidas sobre o mesmo assunto. Isso já é quase intenção.,Cinco frases seguidas sobre o mesmo assunto. Isso já é quase intenção.,Five sentences in a row about the same subject. That is almost intent.
 Uma História Curta,Uma História Curta,A Short Story
 "Começo, meio e fim. O fim é sobre bananas.","Começo, meio e fim. O fim é sobre bananas.","A beginning, a middle and an end. The end is about bananas."
@@ -136,3 +125,186 @@ Espaço Não Euclidiano,Espaço Não Euclidiano,Non-Euclidean Space
 A sala tem o mesmo tamanho por fora. Por dentro não.,A sala tem o mesmo tamanho por fora. Por dentro não.,The room is the same size from outside. Not from inside.
 O Macaco Percebe,O Macaco Percebe,The Monkey Notices
 Por um instante ele olha para o papel e entende o que está fazendo. Depois volta.,Por um instante ele olha para o papel e entende o que está fazendo. Depois volta.,For an instant he looks at the paper and understands. Then he goes back.
+"Cento e trinta milhões de títulos. Toda a literatura humana, em número de letras.","Cento e trinta milhões de títulos. Toda a literatura humana, em número de letras.",One hundred and thirty million titles. All of human literature — by the letter.
+"Cem zetabytes. Fotos, vídeos, planilhas e uma quantidade absurda de backups.","Cem zetabytes. Fotos, vídeos, planilhas e uma quantidade absurda de backups.","One hundred zettabytes. Photos, videos, spreadsheets and an absurd amount of backups."
+"Um caractere para cada átomo deste planeta. O planeta inteiro, escrito.","Um caractere para cada átomo deste planeta. O planeta inteiro, escrito.","One character for every atom on this planet. The whole planet, written down."
+A Primeira Palavra,A Primeira Palavra,The First Word
+Cinco teclas ao acaso e uma delas virou palavra. O macaco não percebeu.,Cinco teclas ao acaso e uma delas virou palavra. O macaco não percebeu.,Five random keys and one of them became a word. The monkey did not notice.
+Seu Nome,Seu Nome,Your Name
+Daria para escrever seu nome — se o macaco soubesse qual é.,Daria para escrever seu nome — se o macaco soubesse qual é.,Enough to write your name — if the monkey knew it.
+Uma Frase,Uma Frase,A Sentence
+Quarenta caracteres em fila. Um deles é ponto final e ninguém sabe explicar por quê.,Quarenta caracteres em fila. Um deles é ponto final e ninguém sabe explicar por quê.,Forty characters in a row. One is a period and nobody can explain why.
+Um Verso,Um Verso,A Line of Verse
+Uma linha de poema. Sem rima e sem métrica — mas com o tamanho certo.,Uma linha de poema. Sem rima e sem métrica — mas com o tamanho certo.,One line of a poem. No rhyme and no meter — but the right length.
+Uma Senha Forte,Uma Senha Forte,A Strong Password
+Impossível de adivinhar. O macaco adivinhou por acidente e esqueceu.,Impossível de adivinhar. O macaco adivinhou por acidente e esqueceu.,Impossible to guess. The monkey guessed it by accident and forgot.
+Uma Mensagem,Uma Mensagem,A Message
+Já dá para dizer alguma coisa na internet. Não necessariamente algo bom.,Já dá para dizer alguma coisa na internet. Não necessariamente algo bom.,Enough to say something on the internet. Not necessarily something good.
+Um Parágrafo,Um Parágrafo,A Paragraph
+Cinco frases seguidas. Se você apertar os olhos parece quase um assunto.,Cinco frases seguidas. Se você apertar os olhos parece quase um assunto.,Five sentences in a row. Squint and it almost looks like a subject.
+Um Soneto,Um Soneto,A Sonnet
+Catorze versos. Nenhum deles sabe que faz parte de um soneto.,Catorze versos. Nenhum deles sabe que faz parte de um soneto.,Fourteen lines. None of them knows it is part of a sonnet.
+Uma Receita,Uma Receita,A Recipe
+Ingredientes e modo de preparo. Um dos ingredientes é banana.,Ingredientes e modo de preparo. Um dos ingredientes é banana.,Ingredients and instructions. One of the ingredients is banana.
+Uma Página,Uma Página,One Page
+Você já digitou caracteres suficientes para encher uma página inteira. Ninguém vai ler.,Você já digitou caracteres suficientes para encher uma página inteira. Ninguém vai ler.,You have typed enough characters to fill an entire page. Nobody is going to read it.
+Uma Bula de Remédio,Uma Bula de Remédio,A Medicine Leaflet
+Efeitos colaterais que ninguém lê. Agora existem em quantidade suficiente.,Efeitos colaterais que ninguém lê. Agora existem em quantidade suficiente.,Side effects nobody reads. Now there are enough of them.
+Uma Carta,Uma Carta,A Letter
+Duas páginas e meia para alguém que não pediu notícias.,Duas páginas e meia para alguém que não pediu notícias.,Two and a half pages for somebody who did not ask how you were.
+Um Discurso,Um Discurso,A Speech
+Vinte minutos falando sem parar. A plateia é composta por um macaco.,Vinte minutos falando sem parar. A plateia é composta por um macaco.,Twenty minutes of uninterrupted talking. The audience is one monkey.
+Um Contrato,Um Contrato,A Contract
+Cláusulas suficientes para alguém assinar sem ler.,Cláusulas suficientes para alguém assinar sem ler.,Enough clauses for somebody to sign without reading.
+Um Capítulo,Um Capítulo,A Chapter
+Onze páginas com começo e sem fim. O macaco parou no meio de uma palavra.,Onze páginas com começo e sem fim. O macaco parou no meio de uma palavra.,Eleven pages with a beginning and no end. The monkey stopped mid-word.
+Um Conto,Um Conto,A Short Story
+Curto o bastante para ser lido de uma vez. Ninguém leu.,Curto o bastante para ser lido de uma vez. Ninguém leu.,Short enough to read in one sitting. Nobody read it.
+Uma Tese,Uma Tese,A Thesis
+Quatro anos de trabalho. Ou quarenta segundos de macaco.,Quatro anos de trabalho. Ou quarenta segundos de macaco.,Four years of work. Or forty seconds of monkey.
+Um Roteiro,Um Roteiro,A Screenplay
+Cento e vinte páginas de filme. Cabeçalhos de cena inclusive.,Cento e vinte páginas de filme. Cabeçalhos de cena inclusive.,One hundred and twenty pages of film. Scene headings included.
+Uma Novela,Uma Novela,A Novella
+Personagens. Enredo. Nada disso está lá — mas o tamanho está.,Personagens. Enredo. Nada disso está lá — mas o tamanho está.,Characters. Plot. None of that is in there — but the length is.
+Um Manual,Um Manual,A Manual
+Todas as instruções de um aparelho que ninguém liga.,Todas as instruções de um aparelho que ninguém liga.,Every instruction for a device nobody turns on.
+Um Livro,Um Livro,One Book
+Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras.,Você já escreveu um livro. Sem enredo e sem personagens — mas com o mesmo número de letras.,You have written a book. No plot and no characters — but the same number of letters.
+Uma Caixa de Livros,Uma Caixa de Livros,A Box of Books
+Quatro livros numa caixa de papelão. A mudança vai ser fácil.,Quatro livros numa caixa de papelão. A mudança vai ser fácil.,Four books in a cardboard box. The move will be easy.
+Dom Quixote,Dom Quixote,Don Quixote
+O tamanho exato do livro. O conteúdo continua sendo outro assunto.,O tamanho exato do livro. O conteúdo continua sendo outro assunto.,The exact length of the book. The contents remain another matter.
+A Bíblia,A Bíblia,The Bible
+Setecentas e oitenta mil palavras. O macaco levou menos tempo que os autores.,Setecentas e oitenta mil palavras. O macaco levou menos tempo que os autores.,Seven hundred and eighty thousand words. The monkey took less time than the authors.
+A Obra de Shakespeare,A Obra de Shakespeare,The Works of Shakespeare
+Trinta e sete peças e cento e cinquenta e quatro sonetos. Em caracteres.,Trinta e sete peças e cento e cinquenta e quatro sonetos. Em caracteres.,Thirty-seven plays and one hundred and fifty-four sonnets. By the character.
+Uma Série Inteira,Uma Série Inteira,A Whole Series
+Sete volumes com continuidade. A continuidade é acidental.,Sete volumes com continuidade. A continuidade é acidental.,Seven volumes with continuity. The continuity is accidental.
+Uma Prateleira,Uma Prateleira,A Shelf
+Vinte livros lado a lado. A madeira já reclama.,Vinte livros lado a lado. A madeira já reclama.,Twenty books side by side. The wood is already complaining.
+Uma Obra Completa,Uma Obra Completa,A Complete Works
+Tudo que um autor escreveu na vida. Um autor produtivo.,Tudo que um autor escreveu na vida. Um autor produtivo.,Everything one author wrote in a lifetime. A productive one.
+Um Carrinho de Devoluções,Um Carrinho de Devoluções,A Returns Trolley
+Sessenta livros esperando alguém devolver à prateleira certa.,Sessenta livros esperando alguém devolver à prateleira certa.,Sixty books waiting for somebody to shelve them properly.
+Um Dia da Sua Vida,Um Dia da Sua Vida,One Day of Your Life
+Tudo que você disse hoje. Inclusive o que você preferia não ter dito.,Tudo que você disse hoje. Inclusive o que você preferia não ter dito.,Everything you said today. Including what you would rather not have.
+Uma Estante,Uma Estante,One Bookcase
+Cem livros. O suficiente para encher uma estante e envergar a prateleira do meio.,Cem livros. O suficiente para encher uma estante e envergar a prateleira do meio.,A hundred books. Enough to fill a bookcase and bend the middle plank.
+Um Ano de Conversa,Um Ano de Conversa,A Year of Talking
+Trezentos e sessenta e cinco dias de você falando.,Trezentos e sessenta e cinco dias de você falando.,Three hundred and sixty-five days of you talking.
+Uma Enciclopédia,Uma Enciclopédia,An Encyclopedia
+Trinta volumes que ninguém abre desde 1998.,Trinta volumes que ninguém abre desde 1998.,Thirty volumes nobody has opened since 1998.
+Tudo Que Você Já Falou,Tudo Que Você Já Falou,Everything You Have Ever Said
+Cada palavra que saiu da sua boca desde que você aprendeu a falar. Cabe aqui.,Cada palavra que saiu da sua boca desde que você aprendeu a falar. Cabe aqui.,Every word out of your mouth since you learned to speak. It fits in here.
+Uma Biblioteca Escolar,Uma Biblioteca Escolar,A School Library
+Três mil títulos e uma placa pedindo silêncio.,Três mil títulos e uma placa pedindo silêncio.,Three thousand titles and a sign asking for silence.
+Uma Livraria,Uma Livraria,A Bookstore
+Dez mil títulos diferentes. O macaco não organizou por gênero.,Dez mil títulos diferentes. O macaco não organizou por gênero.,Ten thousand different titles. The monkey did not sort them by genre.
+Uma Vida de Conversa,Uma Vida de Conversa,A Lifetime of Talking
+Oitenta anos falando sem parar. Alguém teria reclamado.,Oitenta anos falando sem parar. Alguém teria reclamado.,Eighty years of talking without stopping. Somebody would have complained.
+Um Catálogo de Editora,Um Catálogo de Editora,A Publisher Catalogue
+Cinquenta mil títulos publicados. Nenhum deles passou por revisão.,Cinquenta mil títulos publicados. Nenhum deles passou por revisão.,Fifty thousand published titles. None of them was proofread.
+Uma Wikipédia,Uma Wikipédia,A Wikipedia
+Sete milhões de artigos escritos por voluntários. E agora por um macaco.,Sete milhões de artigos escritos por voluntários. E agora por um macaco.,Seven million articles written by volunteers. And now by a monkey.
+Uma Biblioteca,Uma Biblioteca,One Library
+Você já poderia preencher uma biblioteca inteira. As pessoas costumam levar séculos para isso.,Você já poderia preencher uma biblioteca inteira. As pessoas costumam levar séculos para isso.,You could already fill an entire library. People usually take centuries to do that.
+Uma Família Inteira,Uma Família Inteira,An Entire Family
+Todas as conversas de uma família durante gerações. Inclusive as brigas.,Todas as conversas de uma família durante gerações. Inclusive as brigas.,Every conversation in one family across generations. The arguments included.
+Um Bairro em Um Dia,Um Bairro em Um Dia,A Neighbourhood in One Day
+Tudo que um bairro disse hoje. Ninguém percebeu que estava sendo contado.,Tudo que um bairro disse hoje. Ninguém percebeu que estava sendo contado.,Everything a neighbourhood said today. Nobody noticed they were being counted.
+A Biblioteca de Alexandria,A Biblioteca de Alexandria,The Library of Alexandria
+O acervo que o mundo antigo perdeu num incêndio. Seus macacos refizeram numa tarde.,O acervo que o mundo antigo perdeu num incêndio. Seus macacos refizeram numa tarde.,The collection the ancient world lost in a fire. Your monkeys redid it in an afternoon.
+Uma Biblioteca Nacional,Uma Biblioteca Nacional,A National Library
+Dois milhões de volumes. O acervo de um país inteiro.,Dois milhões de volumes. O acervo de um país inteiro.,Two million volumes. An entire country's collection.
+Uma Cidade em Um Dia,Uma Cidade em Um Dia,A City in One Day
+Tudo que uma cidade grande disse hoje. Inclusive o que foi dito baixinho.,Tudo que uma cidade grande disse hoje. Inclusive o que foi dito baixinho.,Everything a large city said today. Including what was said quietly.
+Todas as Bibliotecas do País,Todas as Bibliotecas do País,Every Library in the Country
+Seis mil bibliotecas públicas somadas. Nenhuma delas sabe da outra.,Seis mil bibliotecas públicas somadas. Nenhuma delas sabe da outra.,Six thousand public libraries added up. None of them knows about the others.
+A Biblioteca do Congresso,A Biblioteca do Congresso,The Library of Congress
+A maior biblioteca do mundo. Dezesseis milhões de livros catalogados.,A maior biblioteca do mundo. Dezesseis milhões de livros catalogados.,The largest library in the world. Sixteen million catalogued books.
+Um País em Um Dia,Um País em Um Dia,A Country in One Day
+Duzentos e vinte milhões de pessoas conversando ao mesmo tempo. Por um dia.,Duzentos e vinte milhões de pessoas conversando ao mesmo tempo. Por um dia.,Two hundred and twenty million people talking at the same time. For one day.
+Todos os Adjetivos,Todos os Adjetivos,Every Adjective
+Cada adjetivo do português apareceu em algum lugar dessa pilha. Estatisticamente.,Cada adjetivo do português apareceu em algum lugar dessa pilha. Estatisticamente.,Every adjective in the language is somewhere in that pile. Statistically.
+Um Dicionário Inteiro,Um Dicionário Inteiro,An Entire Dictionary
+Todas as palavras e todos os significados. Fora de ordem.,Todas as palavras e todos os significados. Fora de ordem.,Every word and every meaning. Out of order.
+Todos os Livros Já Escritos,Todos os Livros Já Escritos,Every Book Ever Written
+"Cento e trinta milhões de títulos. Toda a literatura humana, em número de letras.","Cento e trinta milhões de títulos. Toda a literatura humana, em número de letras.",One hundred and thirty million titles. All of human literature — by the letter.
+Todos os Verbos Conjugados,Todos os Verbos Conjugados,Every Verb Conjugated
+Cada verbo em cada tempo e cada pessoa. Inclusive os que ninguém usa.,Cada verbo em cada tempo e cada pessoa. Inclusive os que ninguém usa.,Every verb in every tense and person. Including the ones nobody uses.
+Todos os Jornais Já Impressos,Todos os Jornais Já Impressos,Every Newspaper Ever Printed
+Cada edição de cada jornal desde a invenção da imprensa.,Cada edição de cada jornal desde a invenção da imprensa.,Every edition of every newspaper since the printing press.
+A Língua Portuguesa,A Língua Portuguesa,The Portuguese Language
+Caracteres suficientes para representar o vocabulário inteiro de um idioma vivo.,Caracteres suficientes para representar o vocabulário inteiro de um idioma vivo.,Enough characters to represent the entire vocabulary of a living language.
+A Humanidade em Um Dia,A Humanidade em Um Dia,Humanity in One Day
+Oito bilhões de pessoas. Um dia. Todas as conversas ao mesmo tempo.,Oito bilhões de pessoas. Um dia. Todas as conversas ao mesmo tempo.,Eight billion people. One day. Every conversation at once.
+Toda a Internet,Toda a Internet,The Entire Internet
+Cada página que alguém já publicou. O macaco não leu os comentários.,Cada página que alguém já publicou. O macaco não leu os comentários.,Every page anyone ever published. The monkey did not read the comments.
+Todo o Código Já Escrito,Todo o Código Já Escrito,All Code Ever Written
+Cada linha de programa que alguém escreveu. Inclusive as que não compilam.,Cada linha de programa que alguém escreveu. Inclusive as que não compilam.,Every line of program anybody wrote. Including the ones that do not compile.
+Cem Idiomas,Cem Idiomas,A Hundred Languages
+Cem línguas humanas inteiras. Nenhuma delas foi escrita de propósito.,Cem línguas humanas inteiras. Nenhuma delas foi escrita de propósito.,A hundred entire human languages. None written on purpose.
+Todos os E-mails de Um Ano,Todos os E-mails de Um Ano,A Year of Email
+Trezentos e cinquenta bilhões por dia. A maioria não precisava ter sido enviada.,Trezentos e cinquenta bilhões por dia. A maioria não precisava ter sido enviada.,Three hundred and fifty billion a day. Most of them did not need to be sent.
+Um Ano da Humanidade,Um Ano da Humanidade,A Year of Humanity
+Trezentos e sessenta e cinco dias de tudo que todo mundo disse.,Trezentos e sessenta e cinco dias de tudo que todo mundo disse.,Three hundred and sixty-five days of everything everybody said.
+Dez Anos da Humanidade,Dez Anos da Humanidade,Ten Years of Humanity
+Uma década de tudo que a espécie disse em voz alta.,Uma década de tudo que a espécie disse em voz alta.,A decade of everything the species said out loud.
+Todas as Línguas Humanas,Todas as Línguas Humanas,Every Human Language
+Sete mil idiomas. Inclusive os que ninguém fala mais.,Sete mil idiomas. Inclusive os que ninguém fala mais.,Seven thousand languages. Including the ones nobody speaks any more.
+Um Caractere por Grão de Areia,Um Caractere por Grão de Areia,One Character per Grain of Sand
+Um caractere para cada grão de areia de todas as praias do planeta.,Um caractere para cada grão de areia de todas as praias do planeta.,One character for every grain of sand on every beach on the planet.
+Tudo Que a Humanidade Escreveu,Tudo Que a Humanidade Escreveu,Everything Humanity Has Written
+Todo texto produzido desde a escrita cuneiforme. Cinco mil anos de registro.,Todo texto produzido desde a escrita cuneiforme. Cinco mil anos de registro.,Every text produced since cuneiform. Five thousand years of record.
+Um Século da Humanidade,Um Século da Humanidade,A Century of Humanity
+Cem anos de conversa. Três gerações que não se conheceram.,Cem anos de conversa. Três gerações que não se conheceram.,A hundred years of talking. Three generations who never met.
+Todas as Mensagens Já Trocadas,Todas as Mensagens Já Trocadas,Every Message Ever Sent
+Cada conversa digitada desde que existe teclado.,Cada conversa digitada desde que existe teclado.,Every conversation typed since keyboards existed.
+Tudo Que a Humanidade Já Falou,Tudo Que a Humanidade Já Falou,Everything Humanity Has Ever Said
+Desde a primeira palavra até esta frase. Toda conversa que já existiu.,Desde a primeira palavra até esta frase. Toda conversa que já existiu.,From the first word to this sentence. Every conversation that ever happened.
+Todo Vídeo Já Legendado,Todo Vídeo Já Legendado,Every Video Ever Subtitled
+A transcrição de tudo que já foi dito em frente a uma câmera.,A transcrição de tudo que já foi dito em frente a uma câmera.,The transcript of everything ever said in front of a camera.
+Todo Dado Já Armazenado,Todo Dado Já Armazenado,All Data Ever Stored
+"Cem zetabytes. Fotos, vídeos, planilhas e uma quantidade absurda de backups.","Cem zetabytes. Fotos, vídeos, planilhas e uma quantidade absurda de backups.","One hundred zettabytes. Photos, videos, spreadsheets and an absurd amount of backups."
+Um Caractere por Estrela,Um Caractere por Estrela,One Character per Star
+Um caractere para cada estrela do universo observável. Sobrou macaco.,Um caractere para cada estrela do universo observável. Sobrou macaco.,One character for every star in the observable universe. There are monkeys left over.
+A Humanidade Só Escrevendo,A Humanidade Só Escrevendo,Humanity Doing Nothing but Typing
+Oito bilhões de pessoas digitando sem parar durante um ano. Nada mais.,Oito bilhões de pessoas digitando sem parar durante um ano. Nada mais.,Eight billion people typing nonstop for a year. Nothing else.
+Mil Anos de Dados,Mil Anos de Dados,A Thousand Years of Data
+Se a humanidade continuar guardando tudo no ritmo de hoje.,Se a humanidade continuar guardando tudo no ritmo de hoje.,If humanity keeps storing everything at today's rate.
+Mil Anos de Humanidade,Mil Anos de Humanidade,A Thousand Years of Humanity
+Um milênio inteiro de tudo que a espécie disse e escreveu.,Um milênio inteiro de tudo que a espécie disse e escreveu.,An entire millennium of everything the species said and wrote.
+As Comparações Acabaram,As Comparações Acabaram,Comparisons Have Run Out
+Não existem mais comparações humanas úteis. A partir daqui é só escala.,Não existem mais comparações humanas úteis. A partir daqui é só escala.,There are no useful human comparisons left. From here on it is only scale.
+Bibliotecas Não Medem Mais,Bibliotecas Não Medem Mais,Libraries No Longer Measure Anything
+Bibliotecas deixaram de ser uma unidade de medida relevante.,Bibliotecas deixaram de ser uma unidade de medida relevante.,Libraries have stopped being a relevant unit of measurement.
+Todas as Palavras Possíveis,Todas as Palavras Possíveis,Every Possible Word
+Cada sequência de até vinte letras. A maioria não significa nada em idioma nenhum.,Cada sequência de até vinte letras. A maioria não significa nada em idioma nenhum.,Every sequence of up to twenty letters. Most mean nothing in any language.
+Todos os Nomes Possíveis,Todos os Nomes Possíveis,Every Possible Name
+Inclusive o seu. Inclusive o de quem ainda não nasceu.,Inclusive o seu. Inclusive o de quem ainda não nasceu.,Yours included. Including people not born yet.
+Todas as Mensagens Possíveis,Todas as Mensagens Possíveis,Every Possible Message
+Cada frase de vinte caracteres que poderia existir. Inclusive as que ninguém diria.,Cada frase de vinte caracteres que poderia existir. Inclusive as que ninguém diria.,Every twenty-character sentence that could exist. Including the ones nobody would say.
+Um Caractere por Átomo da Terra,Um Caractere por Átomo da Terra,One Character per Atom of Earth
+"Um caractere para cada átomo deste planeta. O planeta inteiro, escrito.","Um caractere para cada átomo deste planeta. O planeta inteiro, escrito.","One character for every atom on this planet. The whole planet, written down."
+Você Não Produz Mais Texto,Você Não Produz Mais Texto,You Are No Longer Producing Text
+Você não está mais produzindo textos. Você está percorrendo possibilidades.,Você não está mais produzindo textos. Você está percorrendo possibilidades.,You are not producing texts any more. You are walking through possibilities.
+Todas as Páginas Possíveis,Todas as Páginas Possíveis,Every Possible Page
+Toda página de mil e oitocentos caracteres que poderia ser escrita. Quase todas são lixo.,Toda página de mil e oitocentos caracteres que poderia ser escrita. Quase todas são lixo.,Every eighteen-hundred-character page that could be written. Almost all of it is garbage.
+Um Caractere por Átomo do Universo,Um Caractere por Átomo do Universo,One Character per Atom in the Universe
+Um caractere para cada átomo do universo observável. Ainda sobra macaco digitando.,Um caractere para cada átomo do universo observável. Ainda sobra macaco digitando.,One character for every atom in the observable universe. There are still monkeys typing.
+Uma Única Letra Diferente,Uma Única Letra Diferente,A Single Different Letter
+Para cada história que poderia ser escrita existem incontáveis versões nas quais uma única letra é diferente.,Para cada história que poderia ser escrita existem incontáveis versões nas quais uma única letra é diferente.,For every story that could be written there are countless versions where one single letter differs.
+Todos os Parágrafos Possíveis,Todos os Parágrafos Possíveis,Every Possible Paragraph
+Cada parágrafo de quinhentos caracteres que poderia existir. Um deles descreve você.,Cada parágrafo de quinhentos caracteres que poderia existir. Um deles descreve você.,Every five-hundred-character paragraph that could exist. One of them describes you.
+Todos os Universos Descritos,Todos os Universos Descritos,Every Universe Described
+Para cada universo descrito existem outros textos descrevendo universos quase idênticos.,Para cada universo descrito existem outros textos descrevendo universos quase idênticos.,For every universe described there are other texts describing nearly identical universes.
+Todos os Capítulos Possíveis,Todos os Capítulos Possíveis,Every Possible Chapter
+Inclusive o capítulo em que alguém desiste de contar.,Inclusive o capítulo em que alguém desiste de contar.,Including the chapter where somebody gives up counting.
+Todos os Livros Possíveis,Todos os Livros Possíveis,Every Possible Book
+Todo livro que poderia existir em qualquer idioma. Inclusive este.,Todo livro que poderia existir em qualquer idioma. Inclusive este.,Every book that could exist in any language. Including this one.
+A Combinação Inevitável,A Combinação Inevitável,The Inevitable Combination
+Se existe uma combinação finita de caracteres seus macacos inevitavelmente chegarão até ela.,Se existe uma combinação finita de caracteres seus macacos inevitavelmente chegarão até ela.,If a finite combination of characters exists your monkeys will inevitably reach it.
+Todas as Bibliotecas Possíveis,Todas as Bibliotecas Possíveis,Every Possible Library
+Não uma biblioteca com todos os livros: todas as bibliotecas que poderiam existir.,Não uma biblioteca com todos os livros: todas as bibliotecas que poderiam existir.,Not one library with every book: every library that could exist.
+A Biblioteca do Infinito,A Biblioteca do Infinito,The Library of Infinity
+Todos os textos possíveis. Tudo que foi escrito e tudo que poderia ter sido.,Todos os textos possíveis. Tudo que foi escrito e tudo que poderia ter sido.,Every possible text. Everything written and everything that could have been.

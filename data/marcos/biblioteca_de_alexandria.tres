@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "biblioteca_de_alexandria"
+requisito = "2e11"
+titulo = "A Biblioteca de Alexandria"
+texto = "O acervo que o mundo antigo perdeu num incêndio. Seus macacos refizeram numa tarde."
+categoria = 2
+era = 3
+nota = "Estimativa alta do acervo: 400.000 rolos x 500.000 caracteres."

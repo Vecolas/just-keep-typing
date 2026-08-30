@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "tudo_que_a_humanidade_falou"
+requisito = "1.3e20"
+titulo = "Tudo Que a Humanidade Já Falou"
+texto = "Desde a primeira palavra até esta frase. Toda conversa que já existiu."
+categoria = 3
+era = 5
+nota = "100 bilhoes de humanos x 40 anos falantes x 3,3e7 caracteres por ano."

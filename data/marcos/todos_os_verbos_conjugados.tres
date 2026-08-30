@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMarco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_marco.gd" id="1_dados_marco"]
+
+[resource]
+script = ExtResource("1_dados_marco")
+id = "todos_os_verbos_conjugados"
+requisito = "1e14"
+titulo = "Todos os Verbos Conjugados"
+texto = "Cada verbo em cada tempo e cada pessoa. Inclusive os que ninguém usa."
+categoria = 3
+era = 4
+nota = "12.000 verbos x 66 formas x 12 letras x 1e7 repeticoes para cobertura."
