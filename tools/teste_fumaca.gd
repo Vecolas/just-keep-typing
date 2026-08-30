@@ -133,6 +133,38 @@ func _ready() -> void:
 		_falhar("o macaco comprado nao apareceu na producao")
 		return
 
+	# 6. o Panorama abre, e abre com os tres estados montados (issue #11)
+	var panorama := raiz.find_child("Panorama", true, false) as Control
+	if panorama == null:
+		_falhar("o Panorama nao subiu junto da cena principal")
+		return
+	if panorama.visible:
+		_falhar("o Panorama comecou aberto")
+		return
+
+	Economia.digitar(2000)
+	Marcos.verificar()
+	if Jogo.marcos_alcancados.is_empty():
+		_falhar("dois mil caracteres nao cruzaram marco nenhum")
+		return
+
+	EventBus.panorama_pedido.emit()
+	await get_tree().process_frame
+	if not panorama.visible:
+		_falhar("o Panorama nao abriu com o pedido do EventBus")
+		return
+
+	var lista := panorama.find_child("Lista", true, false) as Control
+	if lista == null or lista.get_child_count() < Jogo.marcos_alcancados.size() + 1:
+		_falhar("o Panorama abriu sem os alcancados mais a silhueta do proximo")
+		return
+
+	panorama.call("fechar")
+	await get_tree().process_frame
+	if panorama.visible:
+		_falhar("o Panorama nao fechou")
+		return
+
 	print("PASSOU (%d cliques, %s comprado, cps %s)" % [
 		CLIQUES, UPGRADE_INICIAL, Jogo.caracteres_por_segundo.para_texto(),
 	])

@@ -35,3 +35,12 @@ signal jogo_carregado()
 ## quanto e com quantos segundos contaram de fato -- que pode ser menos do que o jogador
 ## ficou fora, por causa do teto.
 signal voltou_do_offline(produzido: Grande, segundos: float)
+
+## Emitido quando o total cruza o requisito de um marco, depois de o id ja estar em
+## Jogo.marcos_alcancados. Marco nao da bonus: quem escuta mostra, nao concede nada.
+signal marco_alcancado(marco: DadosMarco)
+
+## Pedido de abrir o Panorama. Imperativo seria chamada de metodo disfarcada de sinal --
+## este e no passado porque o que aconteceu foi o jogador PEDIR, e quem decide o que fazer
+## com o pedido e a tela.
+signal panorama_pedido()
