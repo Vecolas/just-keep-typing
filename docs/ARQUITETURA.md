@@ -56,7 +56,7 @@ perfeito. Detalhes e como não cair na armadilha ao diagnosticar: `../CONVENCOES
 | `src/autoload/` | Autoloads. Um arquivo por autoload. |
 | `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`. Testável headless. |
 | `src/producao/` | Macacos, máquinas, salas — quem gera caractere |
-| `src/progressao/` | Marcos, descobertas, teoremas |
+| `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) |
 | `src/ui/` | Telas: HUD, Panorama, Descobertas, Estatísticas, Opções |
 | `src/cena/` | A cena das eras e a câmera que se afasta |
 | `data/` | `.tres` de balanceamento — nenhum código |
