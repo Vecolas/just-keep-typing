@@ -33,7 +33,7 @@ nenhum teste é escrito antes de existir lógica para testar.
 | Régua | Mede | Estado |
 |---|---|---|
 | `medir_ritmo` | tempo até cada marco do Panorama, com a produção no momento | **existe** |
-| `medir_quadro` | tempo de quadro: média, p95, p99, frames perdidos | **existe** |
+| `medir_quadro` | tempo de quadro por era: média, p95, p99, frames perdidos | **existe** |
 | `medir_economia` | curva do prestígio: quando vale provar o Teorema | entra com os Teoremas (#29) |
 
 ```bash
@@ -72,9 +72,21 @@ régua nenhuma, porque ela dá confiança.
 O regime permanente do jogo fica em **14 rótulos** (9 por segundo × 1,6 s de vida). O teto
 de 64 é margem de mais de quatro vezes, e com ela cheia o quadro ainda cabe no orçamento.
 
-⚠️ **A medição varia entre execuções.** Uma rodada isolada marcou 120 quadros perdidos na
-faixa de 500 mil; duas rodadas seguintes deram zero na mesma faixa. Rode pelo menos duas
-vezes antes de acreditar num pico — a máquina tem outras coisas acontecendo.
+⚠️ **A medição varia entre execuções, e vale saber distinguir os dois casos.**
+
+**Ruído do ambiente.** Em oito rodadas seguidas, sete linhas saíram limpas e três marcaram
+**exatamente 120 de 240** quadros perdidos — metade certinha, e alternando qual linha era a
+atingida. Metade exata não é custo de código: é a janela sendo estrangulada pelo
+compositor quando perde foco. Rode pelo menos duas vezes e ignore o pico que muda de
+lugar.
+
+**Custo de verdade.** Ele aparece igual em toda rodada. Foi assim que a transição de era
+foi pega: **35 a 41 quadros perdidos em três rodadas seguidas**, todos dentro do 1,4 s da
+troca. A primeira versão escalava e reposicionava cem rótulos por quadro; agora a grade
+inteira vive dentro de um nó e a transição mexe em **um** transform. Depois disso a linha
+passou a sair limpa nas rodadas sem ruído.
+
+O sintoma que separa os dois: custo de código repete, ruído de ambiente pula de linha.
 
 ### `medir_ritmo`
 

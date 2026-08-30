@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c0g3r4rg4l3r14"]
+
+[ext_resource type="Script" path="res://tools/gerar_galeria.gd" id="1_gerar_galeria"]
+
+[node name="GerarGaleria" type="Node"]
+script = ExtResource("1_gerar_galeria")

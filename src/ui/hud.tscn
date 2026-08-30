@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://ck3ttg32a6emh"]
 
 [ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
+[ext_resource type="PackedScene" uid="uid://c3r4sd0j0g000" path="res://src/cena/eras.tscn" id="2_eras"]
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -149,18 +150,10 @@ layout_mode = 2
 alignment = 1
 theme_override_constants/separation = 24
 
-[node name="Maquina" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+[node name="Eras" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro" instance=ExtResource("2_eras")]
 unique_name_in_owner = true
-auto_translate_mode = 2
+custom_minimum_size = Vector2(0, 320)
 layout_mode = 2
-text = "   .---------------------.
-  /    _____________    /|
- /    /   ∞         /  / |
-/    /_____________/  /  |
-|_____________________|  |
-|  [q][w][e][r][t][y]  | /
-|______________________|/"
-horizontal_alignment = 1
 
 [node name="BotaoDigitar" type="Button" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
 unique_name_in_owner = true

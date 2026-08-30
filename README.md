@@ -38,6 +38,15 @@ godot --path . tools/medir_quadro.tscn --resolution 1920x1080     # tempo de qua
 
 `medir_quadro` precisa de janela: headless não renderiza.
 
+## Galeria versionada
+
+Uma captura por era, em `docs/capturas/`. As imagens estão no git de propósito: o diff
+mostra o que mudou na tela.
+
+```bash
+godot --path . tools/gerar_galeria.tscn --resolution 1920x1080
+```
+
 ## Capturas
 
 ```bash

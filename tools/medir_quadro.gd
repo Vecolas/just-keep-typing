@@ -14,6 +14,10 @@
 ## justamente ele que o jogador enxerga.
 extends Node
 
+## A cena das eras, para a tabela dizer em qual era cada linha foi medida. A era mais
+## pesada e a que interessa: e ela que define se o efeito cabe no orcamento (issue #26).
+var _eras: Node = null
+
 const ORCAMENTO_MS: float = 1000.0 / 60.0
 ## Quadros descartados antes de medir. Os primeiros carregam o custo de subir a cena, e
 ## media com o boot dentro nao mede quadro nenhum.
@@ -39,20 +43,23 @@ func _ready() -> void:
 	await get_tree().process_frame
 
 	var letras := raiz.find_child("Letras", true, false)
-	if letras == null:
-		printerr("FALHA  a cena principal nao tem o no Letras")
+	var eras := raiz.find_child("Eras", true, false)
+	if letras == null or eras == null:
+		printerr("FALHA  a cena principal nao tem os nos Letras e Eras")
 		get_tree().quit(1)
 		return
+	_eras = eras
 
 	print("medir_quadro -- orcamento de %.2f ms por quadro, %d quadros por escala" % [
 		ORCAMENTO_MS, QUADROS,
 	])
 	print("")
-	print("%-16s %-8s %-9s %-9s %-9s %s" % [
-		"producao/s", "rotulos", "media", "p95", "p99", "perdidos",
+	print("%-16s %-8s %-8s %-9s %-9s %-9s %s" % [
+		"producao/s", "rotulos", "maquinas", "media", "p95", "p99", "perdidos",
 	])
-	print("%-16s %-8s %-9s %-9s %-9s %s" % [
-		"-".repeat(16), "-".repeat(8), "-".repeat(9), "-".repeat(9), "-".repeat(9), "-".repeat(8),
+	print("%-16s %-8s %-8s %-9s %-9s %-9s %s" % [
+		"-".repeat(16), "-".repeat(8), "-".repeat(8), "-".repeat(9), "-".repeat(9),
+		"-".repeat(9), "-".repeat(8),
 	])
 
 	for escala in ESCALAS:
@@ -98,9 +105,10 @@ func _medir(letras: Node, producao: float, saturar: bool = false) -> void:
 		if valor > ORCAMENTO_MS:
 			perdidos += 1
 
-	print("%-16s %-8d %-9s %-9s %-9s %d de %d" % [
+	print("%-16s %-8d %-8d %-9s %-9s %-9s %d de %d" % [
 		("SATURADO" if saturar else Formatador.formatar(Grande.de_float(producao))),
 		letras.call("vivos"),
+		_eras.call("visiveis"),
 		"%.3f ms" % (soma / float(amostras.size())),
 		"%.3f ms" % ordenadas[int(float(ordenadas.size()) * 0.95)],
 		"%.3f ms" % ordenadas[mini(int(float(ordenadas.size()) * 0.99), ordenadas.size() - 1)],
