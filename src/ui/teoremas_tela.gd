@@ -32,8 +32,16 @@ func _ready() -> void:
 	%Aviso.add_theme_font_size_override("font_size", NO_TEXTO)
 	%Aviso.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
 
-	for botao in [%BotaoFechar, %BotaoProvar, %BotaoConfirmar, %BotaoCancelar]:
+	for botao in [
+		%BotaoFechar, %BotaoProvar, %BotaoConfirmar, %BotaoCancelar,
+		%BotaoReescrever, %ConfirmarReescrita, %CancelarReescrita,
+	]:
 		botao.focus_mode = Control.FOCUS_NONE
+	%GanhoFragmentos.add_theme_font_size_override("font_size", GANHO)
+	%GanhoFragmentos.add_theme_color_override("font_color", Paleta.INFINITY_CYAN)
+	%BotaoReescrever.pressed.connect(_ao_pedir_reescrita)
+	%ConfirmarReescrita.pressed.connect(_ao_confirmar_reescrita)
+	%CancelarReescrita.pressed.connect(_ao_cancelar)
 	%BotaoFechar.pressed.connect(fechar)
 	%BotaoProvar.pressed.connect(_ao_pedir_prestigio)
 	%BotaoConfirmar.pressed.connect(_ao_confirmar)
@@ -42,6 +50,7 @@ func _ready() -> void:
 	EventBus.teoremas_pedidos.connect(abrir)
 	EventBus.teorema_comprado.connect(_ao_mudar)
 	EventBus.teorema_provado.connect(_ao_provar)
+	EventBus.universo_reescrito.connect(_ao_reescrever)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 
 
@@ -71,6 +80,63 @@ func _ao_provar(_pontos: Grande) -> void:
 	_ao_cancelar()
 
 
+func _ao_reescrever(_fragmentos: Grande) -> void:
+	_ao_cancelar()
+
+
+## O segundo prestigio so aparece quando ja da para faze-lo, ou depois do primeiro: um
+## botao que apaga a Arvore inteira nao pode ficar na tela desde o comeco, ao lado de um
+## que so apaga a run.
+func _ao_pedir_reescrita() -> void:
+	%BotaoReescrever.visible = false
+	%ConfirmarReescrita.visible = true
+	%CancelarReescrita.visible = true
+
+
+func _ao_confirmar_reescrita() -> void:
+	Fragmentos.reescrever()
+
+
+## As duas listas, item por item. A confirmacao precisa dizer O QUE se perde -- "isto
+## reinicia bastante coisa" nao e confirmacao, e um susto adiado. E precisa dizer o que
+## FICA, senao o jogador supoe que perde tudo e nunca aperta o botao.
+func _montar_reescrita() -> void:
+	%Reescrever.visible = Fragmentos.pode_reescrever() or Jogo.reescritas > 0
+	if not %Reescrever.visible:
+		return
+
+	%GanhoFragmentos.text = tr("Você levaria %s Fragmentos do Infinito.") % Formatador.formatar(
+		Fragmentos.ao_reescrever()
+	)
+	%BotaoReescrever.disabled = not Fragmentos.pode_reescrever()
+
+	for antigo in %Listas.get_children():
+		%Listas.remove_child(antigo)
+		antigo.queue_free()
+	%Listas.add_child(_coluna("Você perde", Fragmentos.o_que_se_perde(), Paleta.MAGENTA_COSMICO))
+	%Listas.add_child(_coluna("Você mantém", Fragmentos.o_que_fica(), Paleta.INFINITY_CYAN))
+
+
+func _coluna(titulo: String, itens: PackedStringArray, cor: Color) -> Control:
+	var caixa := VBoxContainer.new()
+	caixa.add_theme_constant_override("separation", 2)
+
+	var cabeca := Label.new()
+	cabeca.text = tr(titulo)
+	cabeca.add_theme_font_size_override("font_size", NO_TEXTO)
+	cabeca.add_theme_color_override("font_color", cor)
+	caixa.add_child(cabeca)
+
+	for item in itens:
+		var linha := Label.new()
+		# "— %s" e marca de formato, nao texto
+		linha.text = "— %s" % tr(item)
+		linha.add_theme_font_size_override("font_size", NO_TEXTO)
+		linha.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
+		caixa.add_child(linha)
+	return caixa
+
+
 func _ao_mudar_idioma(_codigo: String) -> void:
 	if visible:
 		_montar()
@@ -89,6 +155,9 @@ func _ao_cancelar() -> void:
 	%BotaoProvar.visible = true
 	%BotaoConfirmar.visible = false
 	%BotaoCancelar.visible = false
+	%BotaoReescrever.visible = true
+	%ConfirmarReescrita.visible = false
+	%CancelarReescrita.visible = false
 	_montar()
 
 
@@ -105,12 +174,22 @@ func _montar() -> void:
 	%Contagem.text = "%s: %s" % [
 		tr("Pontos disponíveis"), Formatador.formatar(Jogo.pontos_de_teorema),
 	]
+	# O saldo de Fragmentos so entra na barra depois da primeira reescrita: antes disso ele
+	# seria um zero perguntando o que e Fragmento, e a resposta ainda nao aconteceu.
+	#
+	# ⚠️ Sem esta linha o jogador ve quanto LEVARIA e nunca quanto TEM -- e o multiplicador
+	# do segundo prestigio ficaria sendo o unico numero do jogo sem lugar na tela.
+	if Jogo.reescritas > 0:
+		%Contagem.text += "    %s: %s" % [
+			tr("Fragmentos"), Formatador.formatar(Jogo.fragmentos),
+		]
 
 	for antigo in %Lista.get_children():
 		%Lista.remove_child(antigo)
 		antigo.queue_free()
 	for no in Teoremas.nos():
 		%Lista.add_child(_item(no))
+	_montar_reescrita()
 
 
 func _item(no: DadosTeorema) -> Control:

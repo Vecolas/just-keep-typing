@@ -349,7 +349,37 @@ func _ready() -> void:
 		_falhar("o no da Arvore nao mudou a producao da run seguinte")
 		return
 
-	# 12. a sala enche e a expansao libera vaga (issue #15)
+	# 12. o segundo prestigio: Reescrever o Universo apaga a Arvore e devolve Fragmentos
+	#     (issue #31)
+	Jogo.pontos_totais = Grande.de_float(1e6)
+	Jogo.pontos_de_teorema = Grande.de_float(1e6)
+	if not Teoremas.comprar("memoria_genetica"):
+		_falhar("nao deu para comprar um no da Arvore antes de reescrever")
+		return
+	var total_antes_da_reescrita := Jogo.total_caracteres
+	var marcos_antes_da_reescrita := Jogo.marcos_alcancados.size()
+	if not Fragmentos.pode_reescrever():
+		_falhar("um milhao de pontos nao chegou para reescrever o Universo")
+		return
+	if Fragmentos.reescrever().sinal() <= 0:
+		_falhar("reescrever o Universo nao rendeu Fragmento nenhum")
+		return
+	if not Jogo.teoremas.is_empty() or not Jogo.pontos_totais.e_zero():
+		_falhar("reescrever nao apagou a Arvore e os pontos")
+		return
+	if not Jogo.total_caracteres.igual_a(total_antes_da_reescrita):
+		_falhar("reescrever apagou o total do Panorama, que devia sobreviver")
+		return
+	if Jogo.marcos_alcancados.size() != marcos_antes_da_reescrita:
+		_falhar("reescrever apagou os marcos alcancados")
+		return
+
+	# a run recomeca do zero depois da reescrita, e a fumaca segue jogando dali -- que e
+	# exatamente o que o jogador faz
+	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+	Jogo.macacos = Grande.de_float(10.0)
+
+	# 13. a sala enche e a expansao libera vaga (issue #15)
 	var sala := Economia.sala_atual()
 	Economia.digitar(100000)
 	Economia.comprar_macacos(Economia.macacos_que_cabem())
@@ -373,7 +403,7 @@ func _ready() -> void:
 		_falhar("expandir liberou %s vagas em vez de %s" % [liberou, diferenca])
 		return
 
-	# 13. gravar, sujar tudo e carregar: o estado tem que voltar identico
+	# 14. gravar, sujar tudo e carregar: o estado tem que voltar identico
 	var total_antes := Jogo.total_caracteres
 	var macacos_no_save := Jogo.macacos
 	var upgrades_antes := Jogo.upgrades_comprados.size()
@@ -405,7 +435,7 @@ func _ready() -> void:
 		_falhar("os marcos alcancados nao voltaram")
 		return
 
-	# 14. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 15. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)

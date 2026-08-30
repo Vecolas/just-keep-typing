@@ -105,6 +105,44 @@ visible = false
 layout_mode = 2
 text = "Cancelar"
 
+[node name="Reescrever" type="VBoxContainer" parent="Margem/Painel/MargemPainel/Coluna"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="GanhoFragmentos" type="Label" parent="Margem/Painel/MargemPainel/Coluna/Reescrever"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
+[node name="Listas" type="HBoxContainer" parent="Margem/Painel/MargemPainel/Coluna/Reescrever"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="BotoesReescrever" type="HBoxContainer" parent="Margem/Painel/MargemPainel/Coluna/Reescrever"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BotaoReescrever" type="Button" parent="Margem/Painel/MargemPainel/Coluna/Reescrever/BotoesReescrever"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Reescrever o Universo"
+
+[node name="ConfirmarReescrita" type="Button" parent="Margem/Painel/MargemPainel/Coluna/Reescrever/BotoesReescrever"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Confirmar"
+
+[node name="CancelarReescrita" type="Button" parent="Margem/Painel/MargemPainel/Coluna/Reescrever/BotoesReescrever"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Cancelar"
+
 [node name="Rolagem" type="ScrollContainer" parent="Margem/Painel/MargemPainel/Coluna"]
 unique_name_in_owner = true
 layout_mode = 2

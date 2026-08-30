@@ -111,6 +111,9 @@ var prestigios: int = 0
 ## Sobrevive ao prestigio: automacao comprada e conquista de vida, e nao de run.
 var automacoes: Dictionary = {}
 
+## Quantas vezes o Universo foi reescrito (GDD §20). Nao zera nunca.
+var reescritas: int = 0
+
 ## Segundos desta run, que zeram no prestigio. tempo_jogado nao zera.
 var tempo_da_run: float = 0.0
 
