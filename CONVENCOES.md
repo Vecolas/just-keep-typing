@@ -430,7 +430,7 @@ justamente para pegar erro de tuning. Erros dessa família, dos projetos anterio
 
 ```bash
 godot --path . tools/gerar_galeria.tscn                    # galeria versionada
-godot --path . tools/capturar.tscn --resolution 1920x1080  # quadro avulso
+godot --path . tools/capturar.tscn                          # quadro avulso
 ```
 
 A galeria são capturas fixas sobrescritas em `docs/capturas/` e **versionadas**: como as

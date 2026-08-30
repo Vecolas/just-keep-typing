@@ -1,7 +1,7 @@
 ## Captura um quadro parado da cena principal, para olhar leitura visual.
 ##
-##   godot --path . tools/capturar.tscn --resolution 1920x1080
-##   godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama
+##   godot --path . tools/capturar.tscn
+##   godot --path . tools/capturar.tscn -- cenario=panorama
 ##
 ## SEM --headless de proposito: headless nao renderiza (DisplayServer.get_name()
 ## devolve "headless"), entao a imagem sairia vazia. Sai em user://capturas, que existe
@@ -22,6 +22,15 @@ const CENARIO_PADRAO := "principal"
 
 ## Lido de "-- cenario=<nome>" na linha de comando. Argumento depois de -- e o jeito do
 ## Godot passar coisa para o jogo sem a engine tentar interpretar.
+## ⚠️ O TAMANHO SAI DAQUI, e nao do --resolution. O Config aplica a resolucao guardada
+## durante os autoloads, que rodam DEPOIS do que a linha de comando pediu -- e a tentativa
+## de ler o --resolution de volta em OS.get_cmdline_args() saiu vazia. Numero que a
+## ferramenta precisa e numero que a ferramenta diz.
+##
+## "largura=" e "altura=" depois do -- mudam isto quando fizer falta.
+const TAMANHO := Vector2i(1920, 1080)
+
+
 func _cenario() -> String:
 	for argumento in OS.get_cmdline_user_args():
 		if argumento.begins_with("cenario="):
@@ -62,10 +71,11 @@ func _ready() -> void:
 	# mesmo tamanho.
 	Config.caminho = "user://capturas/opcoes_da_captura.json"
 	Config.modelo_de_slot = "user://capturas/save_da_captura_%d.json"
-	DisplayServer.window_set_size(Vector2i(
-		int(_argumento("largura", get_window().size.x)),
-		int(_argumento("altura", get_window().size.y)),
-	))
+	var pedida := Vector2i(
+		int(_argumento("largura", TAMANHO.x)), int(_argumento("altura", TAMANHO.y))
+	)
+	DisplayServer.window_set_size(pedida)
+	get_window().content_scale_size = pedida
 
 	var caminho: String = ProjectSettings.get_setting("application/run/main_scene", "")
 	var empacotada := load(caminho) as PackedScene
