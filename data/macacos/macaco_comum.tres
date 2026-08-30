@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosMacaco" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_macaco.gd" id="1_dados_macaco"]
+
+[resource]
+script = ExtResource("1_dados_macaco")
+id = "macaco_comum"
+nome = "Macaco Comum"
+descricao = "Um macaco e uma máquina de escrever. É por onde tudo começa."
+custo_base = 10.0
+crescimento_custo = 1.15
+producao_base = 1.0
+requisito_desbloqueio = 0.0
