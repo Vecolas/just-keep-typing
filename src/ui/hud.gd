@@ -288,8 +288,18 @@ func _montar_upgrades() -> void:
 ##
 ## O teste de fumaca pegou este bug com o contador em 6 de 12: metade dos cliques dele e
 ## por mouse.
+##
+## ⚠️ ROLAGEM E BARRA FICAM DE FORA. IGNORE nao e "deixa passar", e "nem me pergunte": um
+## ScrollContainer ignorado nao recebe a roda do mouse, e a coluna que acabou de ganhar
+## rolagem nao rolaria. PASS resolve os dois lados -- a roda e consumida por quem rola, e o
+## clique esquerdo, que ela nao usa, segue adiante e vira caractere.
 func _liberar_clique(no: Node) -> void:
-	if no is Control and not (no is Button):
+	if no is ScrollContainer:
+		(no as Control).mouse_filter = Control.MOUSE_FILTER_PASS
+	elif no is ScrollBar:
+		# arrastar a barra e clique, e clique que passa adiante arrastaria e digitaria junto
+		(no as Control).mouse_filter = Control.MOUSE_FILTER_STOP
+	elif no is Control and not (no is Button):
 		(no as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for filho in no.get_children():
 		_liberar_clique(filho)

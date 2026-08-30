@@ -49,91 +49,96 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="ListaRecursos" type="VBoxContainer" parent="Margem/Colunas/Recursos/MargemRecursos"]
+[node name="RolagemRecursos" type="ScrollContainer" parent="Margem/Colunas/Recursos/MargemRecursos"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ListaRecursos" type="VBoxContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos"]
+size_flags_horizontal = 3
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="BotaoPanorama" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="BotaoPanorama" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "PANORAMA"
 
-[node name="BotaoDescobertas" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="BotaoDescobertas" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "DESCOBERTAS"
 
-[node name="BotaoEstatisticas" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="BotaoEstatisticas" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "ESTATÍSTICAS"
 
-[node name="BotaoTeoremas" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="BotaoTeoremas" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "TEOREMAS"
 
-[node name="BotaoOpcoes" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="BotaoOpcoes" type="Button" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "OPÇÕES"
 
-[node name="EspacoPanorama" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="EspacoPanorama" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 
-[node name="ValorCaracteres" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="ValorCaracteres" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="NomeCaracteres" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="NomeCaracteres" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "caracteres"
 
-[node name="EspacoUm" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="EspacoUm" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="ValorPorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="ValorPorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="NomePorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="NomePorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "caracteres por segundo"
 
-[node name="EspacoDois" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="EspacoDois" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="ValorDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="ValorDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="NomeDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="NomeDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "para gastar"
 
-[node name="EspacoTres" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="EspacoTres" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="ValorDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="ValorDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="NomeDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/ListaRecursos"]
+[node name="NomeDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "descobertas"
@@ -198,130 +203,135 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="ListaLoja" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja"]
+[node name="RolagemLoja" type="ScrollContainer" parent="Margem/Colunas/Loja/MargemLoja"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ListaLoja" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja"]
+size_flags_horizontal = 3
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="TituloMacacos" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="TituloMacacos" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "MACACOS"
 
-[node name="ValorMacacos" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="ValorMacacos" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "1"
 
-[node name="VagasMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="VagasMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = ""
 
-[node name="CustoMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="CustoMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="BotoesMacaco" type="GridContainer" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="BotoesMacaco" type="GridContainer" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 layout_mode = 2
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 columns = 2
 
-[node name="Comprar1" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+[node name="Comprar1" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja/BotoesMacaco"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Comprar 1"
 
-[node name="Comprar10" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+[node name="Comprar10" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja/BotoesMacaco"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Comprar 10"
 
-[node name="Comprar100" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+[node name="Comprar100" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja/BotoesMacaco"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Comprar 100"
 
-[node name="ComprarMaximo" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja/BotoesMacaco"]
+[node name="ComprarMaximo" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja/BotoesMacaco"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Comprar Máximo"
 
-[node name="EspacoSala" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="EspacoSala" type="Control" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="TituloSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="TituloSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "SALA"
 
-[node name="NomeSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="NomeSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = ""
 
-[node name="BotaoSala" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="BotaoSala" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = ""
 
-[node name="EspacoMaquina" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="EspacoMaquina" type="Control" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="TituloMaquina" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="TituloMaquina" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "MÁQUINA"
 
-[node name="NomeMaquina" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="NomeMaquina" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = ""
 
-[node name="BotaoMaquina" type="Button" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="BotaoMaquina" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = ""
 
-[node name="EspacoAutomacao" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="EspacoAutomacao" type="Control" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="TituloAutomacao" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="TituloAutomacao" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "AUTOMAÇÃO"
 
-[node name="ListaAutomacao" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="ListaAutomacao" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="EspacoLoja" type="Control" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="EspacoLoja" type="Control" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="TituloUpgrades" type="Label" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="TituloUpgrades" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "UPGRADES"
 
-[node name="ListaUpgrades" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja/ListaLoja"]
+[node name="ListaUpgrades" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
@@ -330,17 +340,17 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -220.0
-offset_top = -44.0
-offset_right = -16.0
-offset_bottom = -16.0
-grow_horizontal = 0
+offset_left = -160.0
+offset_top = -60.0
+offset_right = 160.0
+offset_bottom = -32.0
+grow_horizontal = 2
 grow_vertical = 0
 text = "Salvando..."
-horizontal_alignment = 2
+horizontal_alignment = 1
 vertical_alignment = 2

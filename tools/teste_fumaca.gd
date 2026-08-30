@@ -28,6 +28,12 @@ const UPGRADE_INICIAL := "instinto_digitador"
 const CAMINHO_DO_SAVE := "user://teste_fumaca_save.json"
 const HORAS_OFFLINE := 4.0
 
+## A tela logica do jogo: display/window/size/viewport_* do project.godot.
+const _TELA_DE_PROJETO := Vector2i(1920, 1080)
+
+## Quadros ate um container terminar de ordenar os filhos dele.
+const QUADROS_ATE_O_LAYOUT_ASSENTAR := 8
+
 func _ready() -> void:
 	# fixa a lingua como o runner faz, e pelo mesmo motivo: as opcoes moram em
 	# user://opcoes.json, que e da INSTALACAO. Sem isto a fumaca roda no idioma em que o
@@ -570,7 +576,54 @@ func _ready() -> void:
 	Config.modelo_de_slot = modelo_de_slot
 	Save.caminho = caminho_de_save
 
-	# 16. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
+	# 16. ⚠️ NADA VAZA PARA FORA DA TELA, com a loja no pior caso que o jogo produz.
+	#
+	#     Depois de um prestigio o jogador tem total alto e NENHUM upgrade comprado: os
+	#     vinte aparecem de uma vez na coluna da loja. Sem rolagem, a altura minima da
+	#     coluna passava da tela inteira, e MarginContainer cresce para os dois lados --
+	#     medido em 1617 px de conteudo numa tela de 1080, com a lista comecando em
+	#     y = -268. Os botoes do topo saiam por cima, a loja saia por baixo, e as bordas
+	#     dos tres paineis ficavam fora da imagem.
+	#
+	#     Vale em qualquer resolucao porque a tela logica e sempre a mesma (1920x1080,
+	#     canvas_items): o que quebrava nao era a resolucao, era a altura do conteudo.
+	var total_antes_do_layout := Jogo.total_caracteres
+	var dinheiro_antes_do_layout := Jogo.dinheiro
+	var upgrades_antes_do_layout := Jogo.upgrades_comprados.duplicate()
+	Jogo.total_caracteres = Grande.new(1.0, 60)
+	Jogo.dinheiro = Grande.new(1.0, 60)
+	Jogo.upgrades_comprados = [] as Array[String]
+	EventBus.idioma_mudou.emit(Config.idioma())
+
+	# ⚠️ A TELA LOGICA E FIXADA NA DO PROJETO ANTES DE MEDIR. Headless nao tem janela e cai
+	# no window_*_override de 1280x720; com aspect=expand isso vira uma area logica de
+	# 1920x1920 -- meio ecra a mais de altura, exatamente na direcao em que o defeito
+	# acontece. A primeira versao deste portao passou com a cena quebrada na frente dele
+	# por causa disso, que e a unica coisa pior do que nao ter portao.
+	get_window().size = _TELA_DE_PROJETO
+	get_window().content_scale_size = _TELA_DE_PROJETO
+
+	# ⚠️ E MAIS DE UM QUADRO. Container ordena filho de forma diferida: medir no quadro
+	# seguinte ao remontar a loja mede o layout ANTERIOR.
+	for i in QUADROS_ATE_O_LAYOUT_ASSENTAR:
+		await get_tree().process_frame
+
+	var vazando := _controles_fora_da_tela()
+	if not vazando.is_empty():
+		_falhar("%d controles vazaram para fora da tela, a comecar por %s" % [
+			vazando.size(), ", ".join(vazando.slice(0, 4)),
+		])
+		return
+
+	# a run continua de onde estava: a producao offline logo abaixo precisa do Instinto
+	# Digitador, e a loja cheia foi um cenario montado, nao o estado da partida
+	Jogo.total_caracteres = total_antes_do_layout
+	Jogo.dinheiro = dinheiro_antes_do_layout
+	Jogo.upgrades_comprados = upgrades_antes_do_layout
+	EventBus.idioma_mudou.emit(Config.idioma())
+	await get_tree().process_frame
+
+	# 17. quatro horas offline. O relogio e ARGUMENTO, entao o teste acelera em vez de
 	# esperar -- esperar 4 h para provar 4 h e o motivo de essa conta nunca ser testada
 	var antes_do_offline := Jogo.total_caracteres
 	var creditado := Economia.creditar_offline(HORAS_OFFLINE * 3600.0)
@@ -612,6 +665,39 @@ func _clicar() -> void:
 	soltar.button_index = MOUSE_BUTTON_LEFT
 	soltar.pressed = false
 	Input.parse_input_event(soltar)
+
+
+## Todo Control visivel que passa da area da tela, pelo nome.
+##
+## Conteudo dentro de um ScrollContainer nao conta: ele passar da area e o motivo de a
+## rolagem existir, e o proprio ScrollContainer recorta o que sobra. O que nao pode e a
+## MOLDURA vazar -- painel, coluna e barra de botoes tem que caber.
+##
+## Layout nao e desenho: headless calcula retangulo de Control normalmente, entao este
+## portao roda na fumaca sem precisar de janela.
+func _controles_fora_da_tela() -> PackedStringArray:
+	var tela := get_viewport().get_visible_rect()
+	var vazando := PackedStringArray()
+	for no in get_tree().root.find_children("*", "Control", true, false):
+		var controle := no as Control
+		if not controle.is_visible_in_tree() or _dentro_de_rolagem(controle):
+			continue
+		var area := controle.get_global_rect()
+		if area.size.x <= 0.0 or area.size.y <= 0.0:
+			continue
+		# uma folga de um pixel: arredondamento de layout nao e vazamento
+		if not tela.grow(1.0).encloses(area):
+			vazando.append("%s %s" % [controle.name, area])
+	return vazando
+
+
+func _dentro_de_rolagem(controle: Control) -> bool:
+	var pai := controle.get_parent()
+	while pai != null:
+		if pai is ScrollContainer:
+			return true
+		pai = pai.get_parent()
+	return false
 
 
 ## Espera o aviso de gravacao sumir sozinho. Devolve se ele sumiu -- aviso que fica na tela

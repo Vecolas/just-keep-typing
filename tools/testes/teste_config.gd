@@ -37,6 +37,7 @@ func executar() -> void:
 
 	_campo_generico()
 	_resolucao_cabe_no_monitor()
+	_a_janela_inteira_cabe_na_tela()
 	_tela_cheia_apaga_a_resolucao()
 	_idioma_troca_as_convencoes_junto()
 	_ida_e_volta_do_arquivo()
@@ -110,6 +111,59 @@ func _resolucao_cabe_no_monitor() -> void:
 		Config.indice_de("resolucao"), lista.size() - 1,
 		"a resolucao escolhida e a que fica",
 	)
+
+
+## ⚠️ O segundo portao da mesma familia, e o que faltava: nao basta a resolucao caber no
+## monitor, a JANELA INTEIRA tem que caber -- e ela tem que ser colocada onde cabe.
+##
+## Dois defeitos medidos nesta maquina, num monitor de 1920x1080:
+##
+##   a moldura come 16x39, entao a janela de cliente 1920x1080 pedia 1936x1119 e nao cabia
+##   em tela nenhuma, mesmo a resolucao sendo exatamente a do monitor;
+##
+##   e window_set_size cresce a partir do canto onde a janela estava: escolher 1920x1080
+##   deixou o canto em (320, 180) e o jogo terminando em (2240, 1260) -- trezentos e vinte
+##   pixels de interface fora da tela, sem rolagem nenhuma que alcance.
+##
+## E logica pura de proposito: headless nao tem monitor, e um portao que so roda com janela
+## e um portao que nunca roda na suite.
+func _a_janela_inteira_cabe_na_tela() -> void:
+	var area := Rect2i(Vector2i.ZERO, Vector2i(1920, 1080))
+	var moldura := Vector2i(16, 39)
+
+	for tamanho in [Vector2i(1280, 720), Vector2i(1600, 900), Vector2i(1904, 1041)]:
+		var canto := Config.posicao_centralizada(tamanho, area, moldura)
+		var inteira := Rect2i(
+			canto - Vector2i(moldura.x / 2, moldura.y), tamanho + moldura
+		)
+		ok(
+			area.encloses(inteira),
+			"%s: a janela INTEIRA (%s) cabe na area util" % [tamanho, inteira],
+		)
+		ok(canto.y >= moldura.y, "%s: a barra de titulo fica dentro da tela" % tamanho)
+		ok(canto.x >= 0 and canto.y >= 0, "%s: e o canto nunca sai pela esquerda nem por cima" % tamanho)
+
+	# centralizada mesmo, e nao encostada num canto
+	var meio := Config.posicao_centralizada(Vector2i(1280, 720), area, moldura)
+	igual(meio.x, (1920 - 1280 - 16) / 2 + 8, "sobra a mesma largura dos dois lados")
+
+	# janela do tamanho da area, ou maior que ela: nao ha o que centralizar, e o que nao
+	# pode acontecer e o canto ir para valor negativo
+	var apertada := Config.posicao_centralizada(Vector2i(3840, 2160), area, moldura)
+	ok(apertada.x >= 0 and apertada.y >= 0, "janela grande demais nao vai para fora da tela")
+
+	# area que nao comeca na origem: monitor secundario, a direita do principal
+	var segunda := Rect2i(Vector2i(1920, 0), Vector2i(1440, 900))
+	var nela := Config.posicao_centralizada(Vector2i(1280, 720), segunda, moldura)
+	ok(nela.x >= segunda.position.x, "no monitor secundario a janela fica NELE")
+
+	# e a lista oferecida respeita a mesma conta: nada maior que a area util
+	var util := Config.area_util()
+	for tamanho in Config.resolucoes():
+		ok(
+			tamanho.x <= util.x and tamanho.y <= util.y or util.x <= 0,
+			"%dx%d cabe na area util de %s" % [tamanho.x, tamanho.y, util],
+		)
 
 
 ## Campo que nao faz nada tem que PARECER que nao faz nada.
