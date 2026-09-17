@@ -99,8 +99,8 @@ static func tempos() -> Array[Dictionary]:
 	]
 
 
-## "%02d:%02d:%02d" e marca de formato e nao texto: nao passa por traducao, e e igual em
-## qualquer lingua.
+## ⚠️ MUDOU DE CASA NA ISSUE #40, e este atalho existe para nao haver duas contas. A tela
+## de Arquivos tambem escreve tempo jogado; deixar uma copia aqui daria dois tempos
+## diferentes para o MESMO Manuscrito, em duas telas do mesmo jogo, sem erro nenhum.
 static func duracao(segundos: float) -> String:
-	var inteiros := int(maxf(segundos, 0.0))
-	return "%02d:%02d:%02d" % [inteiros / 3600, (inteiros / 60) % 60, inteiros % 60]
+	return Relogio.duracao(segundos)

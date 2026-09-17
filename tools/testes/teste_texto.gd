@@ -100,14 +100,31 @@ func _texto_do_codigo() -> void:
 
 ## O PONTO CEGO QUE SOBRA, e por isso ele e cobrado pela FONTE e nao pela varredura.
 ##
-## Molde que mora numa constante -- "%s mil", "%s milhoes" -- chega ao jogador por uma
-## variavel, e nenhuma varredura de literal alcanca variavel. Este bloco le a propria
-## tabela do Formatador e exige linha no CSV para cada molde dela: tabela nova entra aqui
-## junto, e o dia em que alguem acrescentar "%s trilhoes" sem traduzir, o portao morde.
+## Texto que mora numa constante -- "%s mil", "Hamlet Talvez" -- chega ao jogador por uma
+## VARIAVEL, e nenhuma varredura de literal alcanca variavel. Estas duas tabelas sao lidas
+## direto da fonte: tabela nova entra nesta lista junto, e o dia em que alguem acrescentar
+## "%s trilhoes" ou um nome tematico novo sem traduzir, o portao morde.
+##
+## ⚠️ E A LISTA E DIVIDA DECLARADA: constante de texto que NAO estiver aqui nao e cobrada
+## por ninguem. Ao criar uma, acrescente a linha -- ou o texto dela some do CSV em silencio,
+## que e a familia de bug que este arquivo inteiro existe para pegar.
 func _moldes_em_constante() -> void:
 	for escala in Formatador.ESCALAS:
 		_exigir(str(escala["singular"]), "Formatador.ESCALAS")
 		_exigir(str(escala["plural"]), "Formatador.ESCALAS")
+	ok(
+		not NomesDeManuscrito.SUGESTOES.is_empty(),
+		"ha nome tematico sugerido para Manuscrito novo",
+	)
+	for sugestao in NomesDeManuscrito.SUGESTOES:
+		_exigir(sugestao, "NomesDeManuscrito.SUGESTOES")
+		# ⚠️ E A PIADA TEM QUE SOBREVIVER AO INGLES. Nome tematico com a coluna en igual a
+		# pt nao e traducao: e a linha que alguem preencheu copiando, e o jogo em ingles
+		# passa a ter um "Operação Banana" no meio de uma tela em ingles.
+		ok(
+			str(_chaves.get(sugestao, "")) != sugestao,
+			"%s tem versao propria em ingles, e nao uma copia do portugues" % sugestao,
+		)
 
 
 ## O segundo portao. Quem escreve num .text usando Formatador ou tr() precisa escutar

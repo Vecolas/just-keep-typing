@@ -77,10 +77,21 @@ func existe() -> bool:
 ## menu listar um Manuscrito que nao existe mais -- e o backup sozinho ressuscitaria a
 ## partida que o jogador acabou de mandar apagar.
 func apagar() -> void:
-	if existe():
-		DirAccess.remove_absolute(caminho)
-	Manuscrito.apagar_de(caminho)
-	var reserva := caminho_do_backup(caminho)
+	apagar_arquivos(caminho)
+
+
+## O mesmo, para um slot que NAO e o aberto. A tela de Arquivos exclui o Manuscrito que o
+## jogador apontou, e apontar nao e abrir (issue #40).
+##
+## ⚠️ E ELA PRECISA SER ESTA FUNCAO, e nao um apagar() com Save.caminho trocado na mao em
+## volta. Trocar e devolver o caminho e uma operacao com duas metades, e a metade que
+## devolve e a que se perde num `return` no meio -- deixando o jogo inteiro gravando no
+## slot que a pessoa acabou de mandar apagar, sem um erro sequer.
+func apagar_arquivos(caminho_do_save: String) -> void:
+	if FileAccess.file_exists(caminho_do_save):
+		DirAccess.remove_absolute(caminho_do_save)
+	Manuscrito.apagar_de(caminho_do_save)
+	var reserva := caminho_do_backup(caminho_do_save)
 	if FileAccess.file_exists(reserva):
 		DirAccess.remove_absolute(reserva)
 	Manuscrito.apagar_de(reserva)

@@ -25,6 +25,11 @@ extends Node
 const FRAMES := 120
 const CLIQUES := 12
 const UPGRADE_INICIAL := "instinto_digitador"
+
+## O nome que a fumaca escreve no campo ao criar o Manuscrito. Nao passa por tr(): e texto
+## do JOGADOR, e nao texto de jogo -- o que se prova e que ele chega ao cartao como foi
+## escrito.
+const NOME_DO_MANUSCRITO := "Fumaça"
 const HORAS_OFFLINE := 4.0
 
 ## A tela logica do jogo: display/window/size/viewport_* do project.godot.
@@ -142,10 +147,41 @@ func _ready() -> void:
 	if arquivos == null:
 		_falhar("a tela de Arquivos nao foi montada")
 		return
-	(arquivos.find_child("BotaoSlot1", true, false) as Button).pressed.emit()
+
+	# 0.1. criar um Manuscrito com nome (issue #40). O nome entra pelo CAMPO e nao por
+	#      Jogo.nome: o que esta sob prova e o caminho inteiro -- campo, limpeza, gravacao
+	#      e cartao --, e escrever no autoload provaria o autoload e a tela nunca.
+	var criar := arquivos.find_child("BotaoNovo1", true, false) as Button
+	if criar == null:
+		_falhar("o cartao do slot vazio nao oferece CRIAR")
+		return
+	criar.pressed.emit()
 	await get_tree().process_frame
+
+	var campo := arquivos.find_child("CampoDeNome1", true, false) as LineEdit
+	if campo == null:
+		_falhar("CRIAR nao abriu o campo de nome")
+		return
+	if campo.text.strip_edges().is_empty():
+		_falhar("o campo de nome abriu sem sugestao nenhuma")
+		return
+	if campo.max_length != NomesDeManuscrito.LIMITE:
+		_falhar("o campo de nome aceita mais do que o cartao mostra")
+		return
+	campo.text = NOME_DO_MANUSCRITO
+	(arquivos.find_child("BotaoCriar1", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+
 	if Cenas.atual() != "partida":
-		_falhar("escolher o Manuscrito 1 nao abriu a partida, e sim %s" % Cenas.atual())
+		_falhar("criar o Manuscrito 1 nao abriu a partida, e sim %s" % Cenas.atual())
+		return
+	if Jogo.nome != NOME_DO_MANUSCRITO:
+		_falhar("o Manuscrito nasceu chamado \"%s\"" % Jogo.nome)
+		return
+	# criar e um gesto em que o jogador espera que o arquivo passe a existir: ele nao pode
+	# depender do autosave de trinta segundos
+	if not FileAccess.file_exists(Config.caminho_do_slot(1)):
+		_falhar("criar o Manuscrito nao gravou nada no disco")
 		return
 	if raiz.find_child("MenuTela", true, false) != null:
 		_falhar("o menu continuou montado depois de a partida abrir")
@@ -756,6 +792,62 @@ func _ready() -> void:
 		return
 	await get_tree().process_frame
 
+	# 19. o cartao de Arquivos conta a partida de volta, e excluir apaga o Manuscrito
+	#     (issue #40). E o fecho do caminho: criar, jogar, voltar, ver, excluir.
+	Cenas.voltar_ao_menu()
+	await get_tree().process_frame
+	var menu_final := raiz.find_child("MenuTela", true, false)
+	(menu_final.find_child("BotaoJogar", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	for i in QUADROS_ATE_O_LAYOUT_ASSENTAR:
+		await get_tree().process_frame
+
+	var arquivos_final := raiz.find_child("ArquivosTela", true, false)
+	if arquivos_final == null:
+		_falhar("JOGAR nao levou de volta aos Arquivos")
+		return
+	var cartao := arquivos_final.find_child("CartaoSlot1", true, false)
+	if cartao == null:
+		_falhar("a tela de Arquivos nao desenhou o cartao do slot 1")
+		return
+	# o cartao se apresenta pelo nome que o jogador escreveu la atras, e pelo total dele
+	var escrito := _texto_de(cartao)
+	if not escrito.contains(NOME_DO_MANUSCRITO):
+		_falhar("o cartao nao mostra o nome %s: \"%s\"" % [NOME_DO_MANUSCRITO, escrito])
+		return
+	if not escrito.contains(Formatador.formatar(Jogo.total_caracteres)):
+		_falhar("o cartao nao mostra o total da partida: \"%s\"" % escrito)
+		return
+
+	# ⚠️ EXCLUIR EM DOIS PASSOS, E O SEGUNDO E UMA PRESSAO. O toque curto tem que NAO
+	# apagar: sem esta metade, um botao que apagasse no primeiro clique passaria no teste.
+	(arquivos_final.find_child("BotaoExcluir1", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	var segurar := arquivos_final.find_child("BotaoSegurarExcluir1", true, false) as BotaoDeSegurar
+	if segurar == null:
+		_falhar("EXCLUIR nao pediu a segunda confirmacao")
+		return
+	await _segurar(segurar, BotaoDeSegurar.SEGUNDOS * 0.25)
+	if not FileAccess.file_exists(Config.caminho_do_slot(1)):
+		_falhar("um toque curto ja apagou o Manuscrito")
+		return
+
+	segurar = arquivos_final.find_child("BotaoSegurarExcluir1", true, false) as BotaoDeSegurar
+	if segurar == null:
+		_falhar("o toque curto derrubou a confirmacao de exclusao")
+		return
+	await _segurar(segurar, BotaoDeSegurar.SEGUNDOS + 0.5)
+	if FileAccess.file_exists(Config.caminho_do_slot(1)):
+		_falhar("segurar o botao nao apagou o Manuscrito")
+		return
+	if FileAccess.file_exists(Manuscrito.caminho_do_meta(Config.caminho_do_slot(1))):
+		_falhar("o .meta sobreviveu a exclusao -- o cartao continuaria na tela")
+		return
+	await get_tree().process_frame
+	if arquivos_final.find_child("BotaoNovo1", true, false) == null:
+		_falhar("depois de excluir, o cartao do slot 1 nao virou NOVO MANUSCRITO")
+		return
+
 	for numero in range(1, Config.SLOTS + 1):
 		Save.caminho = Config.caminho_do_slot(numero)
 		Save.apagar()
@@ -803,6 +895,41 @@ func _abre_e_fecha(menu: Node, nome_do_botao: String, nome_da_tela: String) -> b
 		_falhar("o ESC nao fechou a %s" % nome_da_tela)
 		return false
 	return true
+
+
+## Segura um botao pelo tempo pedido e solta. O caminho e o do TECLADO: com o botao
+## focado, ui_accept em baixo deixa button_pressed verdadeiro -- que e o que o
+## BotaoDeSegurar conta. Press e release vem separados de proposito; _apertar() manda os
+## dois juntos e nunca chegaria a segurar nada.
+func _segurar(botao: Button, segundos: float) -> void:
+	botao.grab_focus()
+	await get_tree().process_frame
+
+	var apertar := InputEventAction.new()
+	apertar.action = &"ui_accept"
+	apertar.pressed = true
+	Input.parse_input_event(apertar)
+
+	var ate := Time.get_ticks_msec() + int(segundos * 1000.0)
+	while Time.get_ticks_msec() < ate:
+		await get_tree().process_frame
+
+	var soltar := InputEventAction.new()
+	soltar.action = &"ui_accept"
+	soltar.pressed = false
+	Input.parse_input_event(soltar)
+	await get_tree().process_frame
+
+
+## Todo texto visivel dentro de um no, junto. Existe para a fumaca poder afirmar o que um
+## CARTAO diz sem saber em qual Label cada pedaco mora -- afirmar por caminho de no
+## quebraria na primeira vez que alguem reorganizasse o cartao.
+func _texto_de(no: Node) -> String:
+	var pedacos := PackedStringArray()
+	for rotulo in no.find_children("*", "Label", true, false):
+		pedacos.append((rotulo as Label).text)
+	return "
+".join(pedacos)
 
 
 func _apertar(acao: StringName) -> void:

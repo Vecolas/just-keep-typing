@@ -470,3 +470,30 @@ Um incremental sobre o Teorema do Macaco Infinito.,Um incremental sobre o Teorem
 Jogo e código,Jogo e código,Game and code
 Motor,Motor,Engine
 "Tempo infinito, uma máquina de escrever, e nenhuma pressa.","Tempo infinito, uma máquina de escrever, e nenhuma pressa.","Infinite time, one typewriter, and no hurry."
+ARQUIVOS,ARQUIVOS,FILES
+NOVO MANUSCRITO,NOVO MANUSCRITO,NEW MANUSCRIPT
+Nada escrito ainda.,Nada escrito ainda.,Nothing written yet.
+CRIAR,CRIAR,CREATE
+CANCELAR,CANCELAR,CANCEL
+ABRIR,ABRIR,OPEN
+EXCLUIR,EXCLUIR,DELETE
+SEGURE PARA EXCLUIR,SEGURE PARA EXCLUIR,HOLD TO DELETE
+"Isto não tem volta: o Manuscrito, o metadado e a cópia de segurança somem.","Isto não tem volta: o Manuscrito, o metadado e a cópia de segurança somem.","There is no undo: the Manuscript, its metadata and its backup are gone."
+O arquivo deste slot não abre. Excluir libera o slot.,O arquivo deste slot não abre. Excluir libera o slot.,This slot's file does not open. Deleting frees the slot.
+Nome do Manuscrito,Nome do Manuscrito,Manuscript name
+"Até %d caracteres. Em branco, o Manuscrito fica com o número do slot.","Até %d caracteres. Em branco, o Manuscrito fica com o número do slot.","Up to %d characters. Left blank, the Manuscript keeps the slot number."
+Era,Era,Era
+Caracteres,Caracteres,Characters
+Tempo jogado,Tempo jogado,Time played
+Criado em %s,Criado em %s,Created on %s
+%s por segundo,%s por segundo,%s per second
+Prestígios: %d,Prestígios: %d,Prestiges: %d
+Hamlet Talvez,Hamlet Talvez,Maybe Hamlet
+Operação Banana,Operação Banana,Operation Banana
+Quase Shakespeare,Quase Shakespeare,Almost Shakespeare
+Rascunho Infinito,Rascunho Infinito,Infinite Draft
+Obra Sem Título,Obra Sem Título,Untitled Work
+O Primeiro Capítulo,O Primeiro Capítulo,The First Chapter
+"Em branco, o Manuscrito fica com o número do slot.","Em branco, o Manuscrito fica com o número do slot.","Left blank, the Manuscript keeps the slot number."
+Até %d caracteres.,Até %d caracteres.,Up to %d characters.
+"Este nome não cabe no cartão: até %d caracteres, e sem quebra de linha.","Este nome não cabe no cartão: até %d caracteres, e sem quebra de linha.","This name does not fit the card: up to %d characters, and no line breaks."

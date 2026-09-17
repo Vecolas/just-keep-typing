@@ -32,6 +32,10 @@ const SEGUNDOS_POR_DIA: int = 86_400
 ## Marca de formato, nao texto: "14:32" e igual em toda lingua que use relogio de 24 h.
 const MOLDE_24H := "%02d:%02d"
 
+## Idem para a duracao. Ela NAO ganha dois digitos de hora: uma partida de incremental
+## passa de cem horas, e "100:03:12" cortado em "00:03:12" seria um numero errado calado.
+const MOLDE_DURACAO := "%d:%02d:%02d"
+
 ## O texto de um instante, relativo a AGORA. E o que o menu e os Arquivos mostram.
 ##
 ## `agora` entra por parametro e nao e lido aqui dentro para a suite poder afirmar a
@@ -45,6 +49,19 @@ static func quando(instante: float, agora: float) -> String:
 	if dias == 1:
 		return _traduzir("Ontem às %s") % hora(instante)
 	return data(instante)
+
+
+## Quanto tempo DUROU alguma coisa -- tempo jogado, tempo de run. Nao e o mesmo que hora do
+## relogio, e por isso nao passa pela convencao de idioma: duracao se escreve igual em
+## qualquer lingua.
+##
+## Veio das Estatisticas (issue #21), onde era o unico lugar que precisava dela. Com a tela
+## de Arquivos (issue #40) passaram a ser dois, e duas copias da mesma conta divergiriam na
+## primeira vez que alguem mexesse numa delas -- aparecendo como dois tempos diferentes
+## para o MESMO Manuscrito, em duas telas do mesmo jogo.
+static func duracao(segundos: float) -> String:
+	var inteiros := int(maxf(segundos, 0.0))
+	return MOLDE_DURACAO % [inteiros / 3600, (inteiros / 60) % 60, inteiros % 60]
 
 
 ## Quantos dias de CALENDARIO separam os dois instantes. Zero e o mesmo dia; um e ontem.
