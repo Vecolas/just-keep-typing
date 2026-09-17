@@ -94,14 +94,37 @@ func ir_para_arquivos() -> bool:
 ## ⚠️ QUEM CARREGA O SAVE E AQUI, e nao mais a Partida no _ready dela. Com menu, o slot e
 ## escolhido antes de a cena existir; deixar a Partida carregar de novo creditaria a
 ## producao offline DUAS VEZES -- uma aqui e outra ao montar.
-func comecar_partida(slot: int) -> bool:
+## `nome` so vale para slot VAZIO (issue #40): e o que o jogador escreveu no cartao antes
+## de apertar CRIAR. Chamar com nome no caminho de ABRIR nao renomeia nada -- renomear a
+## partida de alguem por engano nao imprime erro, so troca o rotulo que a pessoa escolheu.
+##
+## O Manuscrito novo e GRAVADO na hora, e nao no proximo autosave: criar e o gesto em que o
+## jogador espera que o arquivo passe a existir. Sem isto, fechar o jogo nos primeiros
+## trinta segundos apagaria um Manuscrito que a tela ja mostrava.
+func comecar_partida(slot: int, nome: String = "") -> bool:
+	# ⚠️ QUEM DIZ SE HA PARTIDA AQUI E O MESMO CARTAO QUE A TELA DESENHOU. A versao
+	# anterior perguntava Save.existe(), que olha so o arquivo principal -- e desde o
+	# backup (issue #36) um slot com o principal perdido e o .backup intacto E uma partida:
+	# o cartao dizia CHEIO e abrir comecava do zero por cima dele. Duas fontes para a mesma
+	# verdade, e a que valia era a errada.
+	var manuscrito := Config.manuscrito_do_slot(slot)
 	Config.abrir_slot(slot)
-	if Save.existe():
+	if manuscrito.cheio():
 		Save.carregar()
 	else:
 		Save.recomecar()
+
+	if manuscrito.vazio() and not nome.is_empty():
+		Jogo.nome = nome
+
 	_creditar_offline(slot)
 	Marcos.verificar()
+
+	# ⚠️ SO SLOT VAZIO GRAVA NA ENTRADA. Manuscrito ILEGIVEL tambem caiu no recomecar acima
+	# -- ele precisa de um Jogo em estado valido para a cena abrir --, mas gravar por cima
+	# dele apagaria o arquivo que o jogador ainda pode querer recuperar na mao.
+	if manuscrito.vazio():
+		Autosave.gravar_agora()
 	return _trocar("partida", PARTIDA)
 
 

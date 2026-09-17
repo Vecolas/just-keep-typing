@@ -82,8 +82,8 @@ que é quem sabe se há partida aberta.
 | `src/autoload/` | Autoloads. Um arquivo por autoload. |
 | `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`, `Relogio`. Testável headless. |
 | `src/producao/` | Macacos, máquinas, salas — quem gera caractere |
-| `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) |
-| `src/ui/` | Telas: Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — e `TelaSobreposta`, a base das que abrem por cima |
+| `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) e `NomesDeManuscrito` (o que o nome pode ser) |
+| `src/ui/` | Telas: Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — mais `TelaSobreposta` (base das que abrem por cima) e `BotaoDeSegurar` |
 | `src/cena/` | O Boot, a Partida, a cena das eras e a câmera que se afasta |
 | `data/` | `.tres` de balanceamento — nenhum código |
 | `i18n/` | `textos.csv`: `keys,pt_BR,en`. A chave É o texto em português. |
