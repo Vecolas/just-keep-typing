@@ -194,10 +194,24 @@ func _ready() -> void:
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
 	elif cenario == "opcoes":
-		# a captura que a issue #34 pede: em ingles, para conferir que nenhum rotulo estoura
-		# o botao. "Fullscreen" e "Save slot" sao mais longos que os originais.
+		# a captura que as issues #34 e #41 pedem: em ingles, para conferir que nenhum
+		# rotulo estoura o campo. "Frame rate limit" e "Power saving mode" sao bem mais
+		# longos que os originais.
+		#
+		# ⚠️ UMA FOTO POR ABA. Fotografar so a primeira mediria um quinto da tela, e o
+		# rotulo que estoura costuma estar justamente na aba que ninguem olhou.
 		Economia.digitar(20000)
 		EventBus.opcoes_pedidas.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+		var abas := get_tree().root.find_children("Abas", "TabContainer", true, false)
+		for painel in abas:
+			var tabulado := painel as TabContainer
+			if not tabulado.is_visible_in_tree():
+				continue
+			tabulado.current_tab = clampi(
+				int(_argumento("aba", 0.0)), 0, maxi(tabulado.get_tab_count() - 1, 0)
+			)
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
 	elif cenario == "fim":
@@ -261,7 +275,13 @@ func _ready() -> void:
 
 	DirAccess.make_dir_recursive_absolute(PASTA)
 	var imagem := get_viewport().get_texture().get_image()
-	var destino := PASTA.path_join(cenario + ("_" + idioma if not idioma.is_empty() else "") + ".png")
+	# a aba entra no nome do arquivo: cinco fotos com o mesmo nome seriam uma foto so
+	var sufixo := ""
+	if cenario == "opcoes":
+		sufixo += "_aba%d" % int(_argumento("aba", 0.0))
+	if not idioma.is_empty():
+		sufixo += "_" + idioma
+	var destino := PASTA.path_join(cenario + sufixo + ".png")
 	var erro := imagem.save_png(destino)
 	if erro != OK:
 		printerr("FALHA  nao salvou %s (erro %d)" % [destino, erro])

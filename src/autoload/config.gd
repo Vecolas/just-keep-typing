@@ -4,10 +4,21 @@
 ## da partida: trocar de slot nao pode mudar a resolucao de quem joga. Ver CONVENCOES.md,
 ## "Video e opcoes".
 ##
-## CAMPO DE LISTA E GENERICO. rotulos_de / indice_de / escolher sao a API inteira que a
-## tela de opcoes usa, e ela nao sabe o que campo nenhum contem -- monta um OptionButton
-## para cada nome de CAMPOS e pronto. Opcao nova e uma entrada em PADRAO, uma em CAMPOS e
-## um ramo em cada uma das tres funcoes; nenhuma linha da tela muda.
+## CAMPO E GENERICO, E A ABA E SO MAIS UMA COLUNA DA TABELA (issue #41). rotulos_de /
+## indice_de / escolher sao a API dos campos de LISTA; faixa_de / valor_de / definir, a dos
+## de FAIXA. A tela percorre a tabela e nao sabe o que campo nenhum contem -- no dia em que
+## aparecer um `if campo == "resolucao"` la dentro, a generalizacao ja quebrou e o conserto
+## e aqui.
+##
+## Opcao nova e UMA LINHA em CAMPOS mais uma entrada em PADRAO. As enumeradas trazem os
+## proprios valores e rotulos na linha; so as que o jogo calcula em runtime -- idioma e
+## resolucao -- tem ramo em codigo.
+##
+## ⚠️ O CAMPO "slot" SAIU DAQUI. Escolher Manuscrito e a tela de Arquivos (issue #40);
+## trocar de save por dentro das opcoes, no meio da partida, e o gesto que apaga progresso
+## sem querer. O slot continua GUARDADO aqui -- e onde mora "qual foi o ultimo" --, mas
+## quem o troca e Cenas.comecar_partida, e o unico caminho ate la passa por
+## Cenas.voltar_ao_menu, que grava antes de sair.
 ##
 ## O que a tela nao consegue quebrar, porque nao esta na mao dela:
 ##
@@ -31,17 +42,111 @@ var caminho: String = CAMINHO_PADRAO
 ## O modelo do caminho de cada slot -- tambem variavel, e tambem para a suite.
 var modelo_de_slot: String = "user://save_%d.json"
 
-## Os campos de lista, na ordem em que a tela os desenha.
-const CAMPOS: PackedStringArray = ["idioma", "resolucao", "tela_cheia", "slot"]
+## O que um campo e para a tela. LISTA vira um OptionButton; FAIXA, uma barra.
+##
+## Volume nao e lista de proposito: uma lista de numeros arbitrarios onde o mundo inteiro
+## usa uma barra e interface que faz a pessoa procurar o valor dela.
+enum Tipo { LISTA, FAIXA }
+
+## As abas, na ordem em que a tela as desenha. Aba sem campo nenhum NAO e desenhada -- aba
+## vazia ensina o jogador a nao clicar nas outras.
+const ABAS: PackedStringArray = ["GERAL", "ÁUDIO", "VÍDEO", "INTERFACE", "ACESSIBILIDADE"]
+
+## A tabela de campos, na ordem em que a tela os desenha dentro de cada aba.
+##
+## Colunas:
+##   nome     a chave em PADRAO e no arquivo
+##   aba      uma de ABAS
+##   tipo     LISTA ou FAIXA
+##   valores  LISTA enumerada: os valores crus, na ordem dos indices
+##   rotulos  LISTA enumerada: o que o jogador le, um por valor (passa por tr())
+##   faixa    FAIXA: minimo, maximo e passo
+##   aplicar  o que chamar depois de escolher. Vazio = nada a aplicar: o valor e lido na
+##            hora de usar por quem se importa, que e a regra 2 da CONVENCOES.md
+##
+## ⚠️ Campo sem `valores` tem ramo em codigo porque a lista DELE muda em runtime: os
+## idiomas vem da tabela IDIOMAS e as resolucoes sao filtradas pelo monitor. Os outros nao
+## tem, e nao devem ganhar.
+const CAMPOS: Array[Dictionary] = [
+	{"nome": "idioma", "aba": "GERAL", "tipo": Tipo.LISTA, "aplicar": "_aplicar_idioma"},
+	{
+		"nome": "autosave", "aba": "GERAL", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"], "aplicar": "",
+	},
+	{
+		"nome": "confirmacoes", "aba": "GERAL", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"], "aplicar": "",
+	},
+	{
+		"nome": "aviso_de_marco", "aba": "GERAL", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"], "aplicar": "",
+	},
+	{
+		"nome": "aviso_de_descoberta", "aba": "GERAL", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"], "aplicar": "",
+	},
+	{
+		"nome": "volume", "aba": "ÁUDIO", "tipo": Tipo.FAIXA,
+		"faixa": {"minimo": 0.0, "maximo": 1.0, "passo": 0.05},
+		"aplicar": "_aplicar_audio",
+	},
+	{"nome": "resolucao", "aba": "VÍDEO", "tipo": Tipo.LISTA, "aplicar": "_aplicar_video"},
+	{
+		"nome": "tela_cheia", "aba": "VÍDEO", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Janela", "Tela cheia"],
+		"aplicar": "_aplicar_video",
+	},
+	{
+		"nome": "vsync", "aba": "VÍDEO", "tipo": Tipo.LISTA,
+		# os valores sao os do DisplayServer.VSyncMode, e nao uma numeracao propria: dois
+		# jeitos de numerar a mesma coisa divergem na primeira versao da engine
+		"valores": [
+			DisplayServer.VSYNC_DISABLED,
+			DisplayServer.VSYNC_ENABLED,
+			DisplayServer.VSYNC_ADAPTIVE,
+		],
+		"rotulos": ["Desligado", "Ligado", "Adaptativo"],
+		"aplicar": "_aplicar_video",
+	},
+	{
+		"nome": "limite_de_fps", "aba": "VÍDEO", "tipo": Tipo.LISTA,
+		# ⚠️ ZERO E "SEM LIMITE", e nao "nao configurado". E o valor que o Godot entende
+		# por ilimitado em Engine.max_fps, e inventar um sentinela proprio ao lado dele
+		# seria uma segunda numeracao para a mesma coisa
+		"valores": [0, 30, 60, 120, 144],
+		"rotulos": ["Sem limite", "30", "60", "120", "144"],
+		"aplicar": "_aplicar_video",
+	},
+	{
+		"nome": "modo_economico", "aba": "VÍDEO", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"],
+		"aplicar": "_aplicar_video",
+	},
+]
+
+## Quantos quadros por segundo o jogo desenha com a janela em segundo plano e o modo
+## economico ligado. Limite de DESIGN e nao botao de tuning: este e um jogo que fica aberto
+## atras de outra coisa, e dez quadros por segundo ainda e uma animacao.
+const FPS_EM_SEGUNDO_PLANO: int = 10
 
 ## Instalacao nova. Tambem e o que preenche opcao que falta num arquivo antigo -- o mesmo
 ## cuidado do save: campo novo ganha padrao, nunca zero em cima do que a pessoa ja tinha
 ## escolhido.
+##
+## ⚠️ "slot" CONTINUA AQUI e nao esta em CAMPOS: e estado da instalacao (qual Manuscrito
+## foi o ultimo), e nao uma opcao que a tela ofereca.
 const PADRAO := {
 	"idioma": "pt_BR",
+	"autosave": true,
+	"confirmacoes": true,
+	"aviso_de_marco": true,
+	"aviso_de_descoberta": true,
+	"volume": 0.8,
 	"resolucao": "1280x720",
 	"tela_cheia": false,
-	"volume": 0.8,
+	"vsync": DisplayServer.VSYNC_ENABLED,
+	"limite_de_fps": 60,
+	"modo_economico": true,
 	"slot": 1,
 }
 
@@ -73,6 +178,11 @@ const RESOLUCOES: Array[Vector2i] = [
 const SLOTS: int = 3
 
 var _opcoes: Dictionary = PADRAO.duplicate(true)
+
+## Se a janela do jogo esta na frente. Comeca verdadeiro: o jogo abre com foco, e comecar
+## em falso deixaria a primeira sessao presa no limite de segundo plano ate o primeiro
+## alt-tab de ida e volta.
+var _em_primeiro_plano: bool = true
 
 
 func _ready() -> void:
@@ -112,9 +222,30 @@ func carregar() -> void:
 		push_error("Config: %s nao contem um objeto JSON" % caminho)
 		return
 	# so o que o jogo conhece entra: opcao de uma versao futura nao vira estado aqui
-	for campo in PADRAO:
-		if cru.has(campo):
-			_opcoes[campo] = cru[campo]
+	for nome in PADRAO:
+		if cru.has(nome):
+			_opcoes[nome] = _do_tipo_de(PADRAO[nome], cru[nome])
+
+
+## O valor lido, convertido para o TIPO que o padrao declara.
+##
+## ⚠️ ISTO NAO E ZELO, E CONSERTO DE UM BUG MEDIDO. O JSON devolve todo numero como FLOAT:
+## um vsync gravado como 1 volta 1.0. E a comparacao de Variant do Godot confere o TIPO
+## antes do valor -- [0, 1, 2].find(1.0) devolve -1, nao 1. O efeito foi uma tela de
+## opcoes em que TODO campo numerico voltava do arquivo mostrando a primeira opcao, como
+## se a escolha da pessoa nunca tivesse sido gravada. Nenhum erro, nenhum aviso: so a
+## configuracao dela desaparecendo a cada abertura do jogo.
+static func _do_tipo_de(modelo: Variant, lido: Variant) -> Variant:
+	match typeof(modelo):
+		TYPE_INT:
+			return int(lido)
+		TYPE_FLOAT:
+			return float(lido)
+		TYPE_BOOL:
+			return bool(lido)
+		TYPE_STRING:
+			return str(lido)
+	return lido
 
 
 func gravar() -> bool:
@@ -138,34 +269,69 @@ func aplicar() -> void:
 
 # -------------------------------------------------------------------------- API generica
 
+## A linha da tabela de um campo, ou vazia quando ele nao existe.
+func campo(nome: String) -> Dictionary:
+	for linha in CAMPOS:
+		if linha["nome"] == nome:
+			return linha
+	return {}
+
+
+## Os nomes de todos os campos declarados. E o que a suite percorre para exigir que cada um
+## responda a API inteira: campo declarado sem resposta apareceria na tela vazio.
+func nomes_de_campo() -> PackedStringArray:
+	var nomes := PackedStringArray()
+	for linha in CAMPOS:
+		nomes.append(str(linha["nome"]))
+	return nomes
+
+
+## Os campos de uma aba, na ordem da tabela. Aba sem campo devolve lista vazia, e a tela
+## nao a desenha.
+func campos_da_aba(aba: String) -> Array[Dictionary]:
+	var desta: Array[Dictionary] = []
+	for linha in CAMPOS:
+		if linha["aba"] == aba:
+			desta.append(linha)
+	return desta
+
+
+func tipo_de(nome: String) -> Tipo:
+	var linha := campo(nome)
+	return linha["tipo"] if linha.has("tipo") else Tipo.LISTA
+
+
 ## Os rotulos de um campo de lista, na ordem dos indices. A tela nao sabe o que sao.
-func rotulos_de(campo: String) -> PackedStringArray:
+func rotulos_de(nome: String) -> PackedStringArray:
 	var rotulos := PackedStringArray()
-	match campo:
+	match nome:
 		"idioma":
 			# cada idioma escrito NO PROPRIO idioma, e por isso nao passa por tr(): quem
 			# abriu a tela sem querer numa lingua que nao le precisa reconhecer a dele
 			for tabela in IDIOMAS:
 				rotulos.append(str(tabela["nome"]))
+			return rotulos
 		"resolucao":
 			for tamanho in resolucoes():
 				rotulos.append(_rotulo_de(tamanho))
-		"tela_cheia":
-			rotulos.append(tr("Janela"))
-			rotulos.append(tr("Tela cheia"))
-		"slot":
-			# numero cru: marca de formato, nao texto (CONVENCOES.md)
-			for numero in range(1, SLOTS + 1):
-				rotulos.append(str(numero))
-		_:
-			push_error("Config: campo %s nao tem rotulos" % campo)
+			return rotulos
+
+	var linha := campo(nome)
+	if not linha.has("rotulos"):
+		push_error("Config: campo %s nao tem rotulos" % nome)
+		return rotulos
+	for texto in linha["rotulos"]:
+		# numero cru continua numero: "30" nao muda de idioma, e a tabela de traducao nao
+		# tem linha para ele. tr() de chave ausente devolve a propria chave, entao isto e
+		# seguro para os dois casos.
+		rotulos.append(tr(str(texto)))
 	return rotulos
 
 
 ## O indice escolhido agora. Sempre valido: opcao que saiu do catalogo -- resolucao que nao
 ## cabe mais porque a pessoa trocou de monitor -- cai no primeiro.
-func indice_de(campo: String) -> int:
-	match campo:
+func indice_de(nome: String) -> int:
+	match nome:
 		"idioma":
 			for i in IDIOMAS.size():
 				if IDIOMAS[i]["codigo"] == _opcoes["idioma"]:
@@ -177,51 +343,88 @@ func indice_de(campo: String) -> int:
 				if _rotulo_de(lista[i]) == str(_opcoes["resolucao"]):
 					return i
 			return 0
-		"tela_cheia":
-			return 1 if tela_cheia() else 0
-		"slot":
-			return clampi(slot() - 1, 0, SLOTS - 1)
-	push_error("Config: campo %s nao tem indice" % campo)
-	return 0
+
+	var linha := campo(nome)
+	if not linha.has("valores"):
+		push_error("Config: campo %s nao tem indice" % nome)
+		return 0
+	var indice: int = (linha["valores"] as Array).find(_opcoes.get(nome))
+	# valor que saiu da tabela -- opcao de uma versao anterior -- cai no primeiro, e nao
+	# num indice negativo que a tela usaria para indexar
+	return maxi(indice, 0)
+
+
+## O minimo, o maximo e o passo de um campo de FAIXA.
+func faixa_de(nome: String) -> Dictionary:
+	var linha := campo(nome)
+	if not linha.has("faixa"):
+		push_error("Config: campo %s nao e de faixa" % nome)
+		return {"minimo": 0.0, "maximo": 1.0, "passo": 0.1}
+	return linha["faixa"]
+
+
+func valor_de(nome: String) -> float:
+	var limites := faixa_de(nome)
+	return clampf(float(_opcoes.get(nome, 0.0)), limites["minimo"], limites["maximo"])
+
+
+## Define um campo de FAIXA e aplica. Grava na hora, pelo mesmo motivo do escolher().
+func definir(nome: String, valor: float) -> void:
+	var linha := campo(nome)
+	if not linha.has("faixa"):
+		push_error("Config: campo %s nao e de faixa" % nome)
+		return
+	var limites: Dictionary = linha["faixa"]
+	_opcoes[nome] = clampf(valor, limites["minimo"], limites["maximo"])
+	_efeito_de(linha)
+	gravar()
 
 
 ## Escolhe e aplica. Grava na hora: opcao que so persiste ao fechar o jogo e opcao perdida
 ## quando o jogo fecha de outro jeito.
-func escolher(campo: String, indice: int) -> void:
-	match campo:
+##
+## ⚠️ RECUSA INDICE QUE NAO EXISTE, e nao grampeia. A primeira versao usava clampi, e um
+## indice invalido levava o jogador para a ULTIMA opcao da lista -- que, no campo de slot
+## que morava aqui, trocava a partida dele por outra sem ninguem ter pedido. O campo saiu
+## (issue #41); a regra fica, porque ela vale para qualquer campo que venha depois.
+func escolher(nome: String, indice: int) -> void:
+	var linha := campo(nome)
+	if linha.is_empty():
+		push_error("Config: campo %s nao existe" % nome)
+		return
+	if indice < 0 or indice >= rotulos_de(nome).size():
+		return
+
+	match nome:
 		"idioma":
-			if indice < 0 or indice >= IDIOMAS.size():
-				return
 			_opcoes["idioma"] = IDIOMAS[indice]["codigo"]
-			_aplicar_idioma()
 		"resolucao":
-			var lista := resolucoes()
-			if indice < 0 or indice >= lista.size():
-				return
-			_opcoes["resolucao"] = _rotulo_de(lista[indice])
-			_aplicar_video()
-		"tela_cheia":
-			_opcoes["tela_cheia"] = indice == 1
-			_aplicar_video()
-		"slot":
-			# ⚠️ RECUSA, e nao clampi. A primeira versao grampeava o indice, e um indice
-			# invalido levava o jogador para o ULTIMO slot -- trocando a partida dele por
-			# outra sem ninguem ter pedido. Campo de lista recusa o que nao existe; o unico
-			# que nao pode e o que mexe em save.
-			if indice < 0 or indice >= SLOTS:
-				return
-			_trocar_de_slot(indice + 1)
+			_opcoes["resolucao"] = _rotulo_de(resolucoes()[indice])
 		_:
-			push_error("Config: campo %s nao existe" % campo)
-			return
+			if not linha.has("valores"):
+				push_error("Config: campo %s nao tem valores" % nome)
+				return
+			_opcoes[nome] = (linha["valores"] as Array)[indice]
+
+	_efeito_de(linha)
 	gravar()
+
+
+## O que rodar depois de mudar um campo. Vazio e legitimo e comum: opcao lida na hora de
+## usar -- avisos, confirmacoes, autosave -- nao tem o que aplicar, e inventar um efeito
+## para ela seria inventar um segundo lugar onde o valor vale.
+func _efeito_de(linha: Dictionary) -> void:
+	var metodo := str(linha.get("aplicar", ""))
+	if metodo.is_empty():
+		return
+	Callable(self, metodo).call()
 
 
 ## Se o campo esta apagado agora. Resolucao em tela cheia nao faz nada, e campo que nao faz
 ## nada tem que PARECER que nao faz nada -- senao a pessoa mexe nele e conclui que o jogo
 ## ignorou a escolha dela.
-func apagado(campo: String) -> bool:
-	return campo == "resolucao" and tela_cheia()
+func apagado(nome: String) -> bool:
+	return nome == "resolucao" and tela_cheia()
 
 
 # ------------------------------------------------------------------------------ consultas
@@ -307,13 +510,37 @@ func tela_cheia() -> bool:
 
 
 func volume() -> float:
-	return clampf(float(_opcoes["volume"]), 0.0, 1.0)
+	return valor_de("volume")
 
 
-func definir_volume(valor: float) -> void:
-	_opcoes["volume"] = clampf(valor, 0.0, 1.0)
-	_aplicar_audio()
-	gravar()
+## Se uma opcao de liga/desliga esta ligada. Quem se importa LE NA HORA DE USAR, e nunca
+## guarda o resultado (CONVENCOES.md, regra 2): a pessoa muda a opcao no meio da partida, e
+## uma copia guardada continuaria valendo a escolha antiga sem dar erro nenhum.
+func ligado(nome: String) -> bool:
+	return bool(_opcoes.get(nome, false))
+
+
+## O limite de quadros que vale AGORA -- derivado, e nunca guardado.
+##
+## ⚠️ E O UNICO LUGAR QUE ESCREVE Engine.max_fps. Duas fontes para o mesmo global -- o
+## campo de limite e o modo economico -- e a familia de bug em que a janela volta do
+## segundo plano presa em dez quadros por segundo, sem uma linha no console.
+func fps_efetivo() -> int:
+	if ligado("modo_economico") and not _em_primeiro_plano:
+		return FPS_EM_SEGUNDO_PLANO
+	return int(_opcoes.get("limite_de_fps", 0))
+
+
+## ⚠️ QUEM LIGA, DESLIGA, E NO MESMO LUGAR. O modo economico so existe porque este autoload
+## sabe se a janela esta na frente; espalhar esse par pelas cenas seria garantir que uma
+## delas esquecesse de religar (CONVENCOES.md).
+func _notification(que: int) -> void:
+	if que == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_em_primeiro_plano = false
+		_aplicar_ritmo_do_quadro()
+	elif que == NOTIFICATION_APPLICATION_FOCUS_IN:
+		_em_primeiro_plano = true
+		_aplicar_ritmo_do_quadro()
 
 
 func slot() -> int:
@@ -354,6 +581,7 @@ func _aplicar_idioma() -> void:
 
 
 func _aplicar_video() -> void:
+	_aplicar_ritmo_do_quadro()
 	if tela_cheia():
 		# FULLSCREEN e nao EXCLUSIVE_FULLSCREEN: a exclusiva pisca a tela a cada alt-tab
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
@@ -370,6 +598,26 @@ func _aplicar_video() -> void:
 	))
 
 
+## O ritmo do quadro: vsync e teto de quadros por segundo.
+##
+## ⚠️ NAO SE APLICA SEM JANELA, e isto ja custou uma tarde. Headless nao desenha nada, mas
+## Engine.max_fps continua ritmando o laco principal -- com o teto em 60, cada
+## `await process_frame` da fumaca passou a esperar um sexagesimo de segundo, e o teste que
+## roda em trinta segundos parou de terminar. Ele nao quebrou: ficou LENTO, que e a versao
+## mais cara desse defeito.
+##
+## O que se perde ao pular: nada que a suite prove. A conta esta em fps_efetivo(), que e
+## logica pura e tem portao proprio; o que se pula aqui e so a aplicacao dela numa janela
+## que nao existe.
+func _aplicar_ritmo_do_quadro() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	DisplayServer.window_set_vsync_mode(
+		int(_opcoes.get("vsync", DisplayServer.VSYNC_ENABLED)) as DisplayServer.VSyncMode
+	)
+	Engine.max_fps = fps_efetivo()
+
+
 func _aplicar_audio() -> void:
 	var barramento := AudioServer.get_bus_index("Master")
 	if barramento < 0:
@@ -380,11 +628,14 @@ func _aplicar_audio() -> void:
 
 ## Aponta o jogo para um slot SEM gravar o que estava aberto, e guarda a escolha.
 ##
-## ⚠️ E A DIFERENCA ENTRE O MENU E A TELA DE OPCOES. escolher("slot") grava a partida
-## anterior porque la existe uma partida anterior -- o jogador esta jogando e resolveu dar
-## uma olhada no outro save. Vindo do menu nao ha partida nenhuma aberta: o Jogo esta no
-## estado de partida nova que os autoloads deixaram, e gravar isso seria escrever um
-## Manuscrito VAZIO por cima do Manuscrito de quem so passou pela tela de Arquivos.
+## ⚠️ NAO GRAVAR AQUI E DE PROPOSITO. Isto so e chamado a partir do menu ou dos Arquivos, e
+## la nao ha partida aberta: o Jogo esta no estado de partida nova que os autoloads
+## deixaram, e gravar isso escreveria um Manuscrito VAZIO por cima do Manuscrito de quem so
+## passou pela tela. Quem grava a partida que estava aberta e Cenas.voltar_ao_menu, antes
+## de chegar ate aqui.
+##
+## ⚠️ RECUSA, e nao clampi: slot invalido levaria o jogador para o ULTIMO Manuscrito, e
+## trocar a partida de alguem por outra sem ninguem ter pedido nao tem desfazer.
 ##
 ## Quem carrega o save depois disto e o Cenas -- aqui so se aponta o caminho.
 func abrir_slot(numero: int) -> void:
@@ -397,19 +648,10 @@ func abrir_slot(numero: int) -> void:
 	EventBus.slot_mudou.emit(numero)
 
 
-## Trocar de slot GRAVA O QUE ESTAVA ABERTO ANTES. Sem isto, mudar de slot so para dar uma
-## olhada apagaria os minutos desde o ultimo autosave -- e o jogador nao pediu isso.
+## ⚠️ AQUI MORAVA _trocar_de_slot, E ELE SAIU NA ISSUE #41. Ele so era alcancado pelo
+## campo "slot" da tela de opcoes, que foi removido; codigo morto que afirma uma regra --
+## "trocar de slot grava o que estava aberto" -- volta a rodar no dia em que alguem criar o
+## primeiro caminho que o alcance, e faz a coisa errada sem uma linha no console.
 ##
-## Slot vazio comeca partida nova a partir do MESMO dicionario de padroes que a migracao de
-## save usa: duas definicoes de "partida nova" divergiriam na primeira issue.
-func _trocar_de_slot(numero: int) -> void:
-	if numero == slot():
-		return
-	Save.gravar()
-	_opcoes["slot"] = numero
-	Save.caminho = caminho_do_slot(numero)
-	if Save.existe():
-		Save.carregar()
-	else:
-		Save.recomecar()
-	EventBus.slot_mudou.emit(numero)
+## A regra continua valendo, por outra porta: o unico jeito de trocar de Manuscrito agora e
+## voltar ao menu, e Cenas.voltar_ao_menu grava antes de sair.

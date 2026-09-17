@@ -17,6 +17,10 @@
 extends TesteBase
 
 const CAMINHO_DE_TESTE := "user://teste_opcoes.json"
+
+## Os rotulos que a tela de opcoes usa, lidos do PROPRIO arquivo dela. Copiar a lista para
+## ca criaria uma terceira fonte para a mesma coisa, e a terceira e sempre a que mente.
+const _ROTULOS_DA_TELA: Dictionary = preload("res://src/ui/opcoes_tela.gd").ROTULOS
 const SLOT_DE_TESTE := "user://teste_slot_%d.json"
 
 var _caminho_original: String = ""
@@ -41,6 +45,7 @@ func executar() -> void:
 	_tela_cheia_apaga_a_resolucao()
 	_idioma_troca_as_convencoes_junto()
 	_ida_e_volta_do_arquivo()
+	_o_ritmo_do_quadro()
 	_slots()
 
 	_limpar()
@@ -50,32 +55,101 @@ func executar() -> void:
 	Config.carregar()
 
 
-## A API generica responde por TODO campo declarado. E o portao que faz a promessa da
-## CONVENCOES.md valer: "opcao nova e um ramo em cada uma das tres, e nenhuma linha da tela
-## de opcoes muda". Campo declarado sem os tres ramos apareceria na tela vazio.
+## A API generica responde por TODO campo declarado, e todo campo declarado PERTENCE A UMA
+## ABA (issue #41). E o portao que faz a promessa da CONVENCOES.md valer: "opcao nova e uma
+## linha na tabela, e nenhuma linha da tela muda". Campo declarado sem resposta apareceria
+## na tela vazio; campo sem aba nao apareceria em lugar nenhum -- e sumir e pior que
+## reprovar, porque ninguem procura o que nunca esteve la.
 func _campo_generico() -> void:
 	ok(not Config.CAMPOS.is_empty(), "existe campo de opcao")
-	for campo in Config.CAMPOS:
-		var rotulos := Config.rotulos_de(campo)
-		ok(not rotulos.is_empty(), "%s -- tem rotulos" % campo)
-		for rotulo in rotulos:
-			ok(not rotulo.strip_edges().is_empty(), "%s -- nenhum rotulo vazio" % campo)
-		var indice := Config.indice_de(campo)
+	# ⚠️ contador proprio: um laco que caisse inteiro no `continue` imprimiria "tudo certo"
+	# com ZERO campos medidos, e portao com zero verificacoes tem que reprovar
+	var medidos := 0
+
+	for nome in Config.nomes_de_campo():
+		medidos += 1
+		var linha := Config.campo(nome)
+		ok(not linha.is_empty(), "%s -- esta na tabela" % nome)
 		ok(
-			indice >= 0 and indice < rotulos.size(),
-			"%s -- o indice escolhido existe na lista (%d de %d)" % [
-				campo, indice, rotulos.size(),
-			],
+			Config.ABAS.has(str(linha.get("aba", ""))),
+			"%s -- mora numa aba declarada (%s)" % [nome, linha.get("aba", "")],
 		)
 		# e o campo tem que estar em PADRAO, senao instalacao nova abre sem ele
-		ok(Config.PADRAO.has(campo), "%s -- tem padrao de instalacao nova" % campo)
+		ok(Config.PADRAO.has(nome), "%s -- tem padrao de instalacao nova" % nome)
+		# ⚠️ e ter rotulo na tela: as duas tabelas sao fontes separadas da MESMA lista de
+		# campos, e sem este cruzamento um campo novo apareceria com o nome interno dele
+		ok(
+			_ROTULOS_DA_TELA.has(nome),
+			"%s -- tem rotulo na tela de opcoes" % nome,
+		)
+
+		if Config.tipo_de(nome) == Config.Tipo.FAIXA:
+			_campo_de_faixa(nome)
+			continue
+		_campo_de_lista(nome)
+
+	igual(medidos, Config.CAMPOS.size(), "o portao mediu todos os campos, e nao um subconjunto")
+	ok(medidos > 0, "⚠️ e mediu pelo menos um -- tabela vazia nao e aprovacao")
+
+	# ⚠️ E O CAMPO "slot" NAO ESTA AQUI (issue #41). Trocar de Manuscrito por dentro das
+	# opcoes, no meio da partida, e o gesto que apaga progresso sem querer -- quem escolhe
+	# save e a tela de Arquivos. Esta linha e a metade que impede o campo de voltar calado.
+	ok(
+		not Config.nomes_de_campo().has("slot"),
+		"o campo de slot NAO e uma opcao da tela",
+	)
+
+	# toda aba desenhada tem campo: aba vazia ensina o jogador a nao clicar nas outras
+	var abas_com_campo := 0
+	for aba in Config.ABAS:
+		if not Config.campos_da_aba(aba).is_empty():
+			abas_com_campo += 1
+	ok(abas_com_campo > 0, "ha aba com campo para desenhar")
+
+
+func _campo_de_lista(nome: String) -> void:
+	var rotulos := Config.rotulos_de(nome)
+	ok(not rotulos.is_empty(), "%s -- tem rotulos" % nome)
+	for rotulo in rotulos:
+		ok(not rotulo.strip_edges().is_empty(), "%s -- nenhum rotulo vazio" % nome)
+	var indice := Config.indice_de(nome)
+	ok(
+		indice >= 0 and indice < rotulos.size(),
+		"%s -- o indice escolhido existe na lista (%d de %d)" % [
+			nome, indice, rotulos.size(),
+		],
+	)
 
 	# indice fora da lista nao muda nada, e nao quebra
-	for campo in Config.CAMPOS:
-		var antes := Config.indice_de(campo)
-		Config.escolher(campo, -1)
-		Config.escolher(campo, 9999)
-		igual(Config.indice_de(campo), antes, "%s -- indice invalido nao muda a escolha" % campo)
+	var antes := Config.indice_de(nome)
+	Config.escolher(nome, -1)
+	Config.escolher(nome, 9999)
+	igual(Config.indice_de(nome), antes, "%s -- indice invalido nao muda a escolha" % nome)
+
+	# e o que se escolhe e o que fica: ida e volta por todos os indices do campo
+	for i in rotulos.size():
+		Config.escolher(nome, i)
+		igual(Config.indice_de(nome), i, "%s -- escolher %d devolve %d" % [nome, i, i])
+	Config.escolher(nome, antes)
+
+
+func _campo_de_faixa(nome: String) -> void:
+	var limites := Config.faixa_de(nome)
+	ok(limites.has("minimo") and limites.has("maximo"), "%s -- declara a faixa" % nome)
+	ok(float(limites["maximo"]) > float(limites["minimo"]), "%s -- a faixa nao e vazia" % nome)
+	ok(float(limites.get("passo", 0.0)) > 0.0, "%s -- o passo nao e zero" % nome)
+
+	var antes := Config.valor_de(nome)
+	Config.definir(nome, float(limites["minimo"]))
+	perto(Config.valor_de(nome), float(limites["minimo"]), 1e-6, "%s -- vai ao minimo" % nome)
+	# ⚠️ valor fora da faixa e GRAMPEADO, e nao recusado: barra nao tem indice invalido, e
+	# um volume de 5,0 escrito na mao no arquivo nao pode virar audio de 500%
+	Config.definir(nome, float(limites["maximo"]) * 10.0)
+	perto(
+		Config.valor_de(nome), float(limites["maximo"]), 1e-6,
+		"%s -- valor acima do maximo e grampeado" % nome,
+	)
+	Config.definir(nome, antes)
 
 
 ## ⚠️ O PORTAO. Resolucao maior que o monitor deixa a barra de titulo fora da area visivel,
@@ -221,13 +295,32 @@ func _idioma_troca_as_convencoes_junto() -> void:
 func _ida_e_volta_do_arquivo() -> void:
 	Config.escolher("idioma", 1)
 	Config.escolher("tela_cheia", 1)
-	Config.definir_volume(0.35)
+	Config.definir("volume", 0.35)
 	var idioma_gravado := Config.idioma()
 
 	Config.carregar()
 	igual(Config.idioma(), idioma_gravado, "o idioma sobrevive ao arquivo")
 	ok(Config.tela_cheia(), "a tela cheia sobrevive")
 	perto(Config.volume(), 0.35, 1e-6, "o volume sobrevive")
+
+	# ⚠️ E TODO CAMPO SOBREVIVE A IDA E VOLTA PELO DISCO, um indice de cada vez. Este
+	# portao existe por um bug medido: o JSON devolve numero como FLOAT, a comparacao de
+	# Variant do Godot confere o TIPO antes do valor, e [0, 1, 2].find(1.0) e -1. Todo
+	# campo numerico voltava do arquivo mostrando a primeira opcao -- a configuracao da
+	# pessoa sumindo a cada abertura, sem um erro sequer. Afirmar so em memoria nao pegava:
+	# em memoria o valor ainda e int.
+	for linha in Config.CAMPOS:
+		var nome := str(linha["nome"])
+		if Config.tipo_de(nome) == Config.Tipo.FAIXA:
+			continue
+		for i in Config.rotulos_de(nome).size():
+			Config.escolher(nome, i)
+			Config.carregar()
+			igual(
+				Config.indice_de(nome), i,
+				"%s -- o indice %d sobrevive a ida e volta pelo arquivo" % [nome, i],
+			)
+		Config.escolher(nome, 0)
 
 	# arquivo com campo desconhecido nao vira estado, e nao quebra
 	var arquivo := FileAccess.open(CAMINHO_DE_TESTE, FileAccess.WRITE)
@@ -243,65 +336,103 @@ func _ida_e_volta_do_arquivo() -> void:
 	Config.escolher("idioma", 0)
 
 
-## Trocar de slot GRAVA O QUE ESTAVA ABERTO. E slot vazio comeca partida nova a partir do
-## mesmo dicionario de padroes que a migracao de save usa.
+## O modo economico e o limite de quadros escrevem NO MESMO lugar, e por isso ha uma conta
+## so: fps_efetivo(). Duas fontes para Engine.max_fps seriam a janela voltando do segundo
+## plano presa em dez quadros por segundo, sem uma linha no console.
+##
+## ⚠️ E ela e afirmada aqui, e nao onde e aplicada, de proposito: sem janela o jogo nao
+## aplica ritmo nenhum (Engine.max_fps em headless ritmaria a fumaca inteira), entao um
+## portao que dependesse da aplicacao nunca rodaria na suite.
+func _o_ritmo_do_quadro() -> void:
+	var fps_antes := Config.indice_de("limite_de_fps")
+	var economico_antes := Config.indice_de("modo_economico")
+	var valores: Array = Config.campo("limite_de_fps")["valores"]
+
+	Config.escolher("modo_economico", 0)
+	for i in valores.size():
+		Config.escolher("limite_de_fps", i)
+		igual(
+			Config.fps_efetivo(), int(valores[i]),
+			"sem modo economico, o limite efetivo e o escolhido",
+		)
+
+	# com a janela na frente o modo economico nao muda nada: ele e sobre segundo plano
+	Config.escolher("modo_economico", 1)
+	Config.escolher("limite_de_fps", valores.find(60))
+	Config._em_primeiro_plano = true
+	igual(Config.fps_efetivo(), 60, "modo economico com a janela na frente nao baixa nada")
+
+	Config._em_primeiro_plano = false
+	igual(
+		Config.fps_efetivo(), Config.FPS_EM_SEGUNDO_PLANO,
+		"⚠️ e em segundo plano ele baixa -- e este e o botao inteiro",
+	)
+
+	# o controle: desligado, o segundo plano nao muda nada. Sem ele, um fps_efetivo que
+	# baixasse SEMPRE passaria na afirmacao acima
+	Config.escolher("modo_economico", 0)
+	igual(Config.fps_efetivo(), 60, "desligado, o segundo plano nao baixa quadro nenhum")
+
+	# e "sem limite" continua sendo zero, e nao um sentinela inventado ao lado dele
+	Config.escolher("limite_de_fps", valores.find(0))
+	igual(Config.fps_efetivo(), 0, "sem limite e zero, que e o que o Engine entende")
+
+	Config._em_primeiro_plano = true
+	Config.escolher("limite_de_fps", fps_antes)
+	Config.escolher("modo_economico", economico_antes)
+
+
+## ⚠️ O QUE MUDOU DE CASA NA ISSUE #41, e o que NAO mudou.
+##
+## "Trocar de slot grava o que estava aberto" saiu daqui junto com o campo de slot da tela
+## de opcoes: o unico caminho ate outro Manuscrito agora passa por Cenas.voltar_ao_menu,
+## que grava antes de sair -- e quem afirma isso e o teste_cenas. A regra nao foi
+## afrouxada, ela mudou de porta, e o portao foi junto.
+##
+## O que continua sendo deste arquivo e a outra metade, que nunca teve a ver com a tela:
+## abrir_slot RECUSA o que nao existe. A primeira versao grampeava, e um numero invalido
+## levava o jogador para o ULTIMO Manuscrito -- trocando a partida dele por outra sem
+## ninguem ter pedido, e isso nao tem desfazer.
 func _slots() -> void:
-	var guardado_total := Jogo.total_caracteres
-	var guardado_macacos := Jogo.macacos
-
 	for numero in range(1, Config.SLOTS + 1):
-		var caminho := Config.caminho_do_slot(numero)
-		if FileAccess.file_exists(caminho):
-			DirAccess.remove_absolute(caminho)
+		Save.apagar_arquivos(Config.caminho_do_slot(numero))
 
-	# vai ao slot 2 e volta, para que o Save.caminho passe a apontar para os arquivos DESTA
-	# suite. Escolher o slot em que ja se esta nao faz nada -- de proposito, e afirmado
-	# logo abaixo --, entao um escolher("slot", 0) sozinho aqui nao trocaria caminho nenhum
-	Config.escolher("slot", 1)
-	Config.escolher("slot", 0)
-	igual(Config.slot(), 1, "comeca no slot 1")
-	igual(Save.caminho, Config.caminho_do_slot(1), "e o Save aponta para o arquivo dele")
-	for numero in range(1, Config.SLOTS + 1):
-		var caminho := Config.caminho_do_slot(numero)
-		if FileAccess.file_exists(caminho):
-			DirAccess.remove_absolute(caminho)
+	Config.abrir_slot(1)
+	igual(Config.slot(), 1, "abrir_slot aponta para o slot pedido")
+	igual(Save.caminho, Config.caminho_do_slot(1), "e o Save vai junto")
 
-	# uma partida qualquer no slot 1
-	Jogo.total_caracteres = Grande.de_float(12345.0)
-	Jogo.macacos = Grande.de_float(7.0)
-	Config.escolher("slot", 1)
+	Config.abrir_slot(2)
+	igual(Config.slot(), 2, "e para o seguinte")
+	igual(Save.caminho, Config.caminho_do_slot(2), "com o Save atras")
 
-	igual(Config.slot(), 2, "trocou para o slot 2")
-	igual(Save.caminho, Config.caminho_do_slot(2), "e o Save foi junto")
-	ok(
-		FileAccess.file_exists(Config.caminho_do_slot(1)),
-		"⚠️ o slot que estava aberto foi GRAVADO antes de sair dele",
-	)
-	# slot vazio = partida nova, e nao o estado do slot anterior sobrando na memoria
-	ok(Jogo.total_caracteres.e_zero(), "e o slot 2, vazio, comecou partida nova")
-	ok(Jogo.macacos.igual_a(Grande.um()), "com o macaco do GDD §3")
-
-	# e voltar traz a partida de volta inteira
-	Config.escolher("slot", 0)
-	igual(Config.slot(), 1, "voltou para o slot 1")
-	perto(
-		Jogo.total_caracteres.para_float(), 12345.0, 1e-6,
-		"e a partida dele voltou como estava",
+	# ⚠️ O PORTAO. Fora da faixa nao muda NADA -- nem o slot, nem o caminho do Save.
+	print("    (as duas linhas ERROR abaixo sao de proposito -- slot invalido sob teste)")
+	Config.abrir_slot(0)
+	igual(Config.slot(), 2, "slot zero e recusado, e o aberto continua o mesmo")
+	Config.abrir_slot(Config.SLOTS + 1)
+	igual(Config.slot(), 2, "slot alem do ultimo tambem")
+	igual(
+		Save.caminho, Config.caminho_do_slot(2),
+		"e o Save nao foi reapontado por um slot que nao existe",
 	)
 
-	# escolher o slot em que ja se esta nao mexe em nada
-	var antes := Jogo.total_caracteres
-	Config.escolher("slot", 0)
-	ok(Jogo.total_caracteres.igual_a(antes), "escolher o slot atual nao faz nada")
+	# arquivo de opcoes adulterado na mao nao pode virar indice invalido na leitura: aqui
+	# grampear e o certo, porque nao ha jogador escolhendo nada
+	Config._opcoes["slot"] = 99
+	igual(Config.slot(), Config.SLOTS, "slot fora da faixa NO ARQUIVO e grampeado na leitura")
+	Config._opcoes["slot"] = -5
+	igual(Config.slot(), 1, "e pelo outro lado tambem")
 
-	Jogo.total_caracteres = guardado_total
-	Jogo.macacos = guardado_macacos
+	Config.abrir_slot(1)
+	for numero in range(1, Config.SLOTS + 1):
+		Save.apagar_arquivos(Config.caminho_do_slot(numero))
 
 
+## Apaga os arquivos DESTA suite. Save.apagar_arquivos leva o .meta e o .backup junto --
+## deixar qualquer um dos tres faria a suite seguinte achar um Manuscrito que ela nao
+## gravou.
 func _limpar() -> void:
 	if FileAccess.file_exists(CAMINHO_DE_TESTE):
 		DirAccess.remove_absolute(CAMINHO_DE_TESTE)
 	for numero in range(1, Config.SLOTS + 1):
-		var caminho := Config.caminho_do_slot(numero)
-		if FileAccess.file_exists(caminho):
-			DirAccess.remove_absolute(caminho)
+		Save.apagar_arquivos(Config.caminho_do_slot(numero))

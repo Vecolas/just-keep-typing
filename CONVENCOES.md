@@ -299,10 +299,34 @@ quem joga.
   esticam e um pixel quadrado passa a ter larguras diferentes na mesma imagem. Elas existem
   porque monitor menor que o canvas é real — diga isso na dica da tela
 
-**Campo de lista é genérico.** `Config.rotulos_de` / `indice_de` / `escolher` são a API que
-a tela de opções usa para montar **qualquer** campo do tipo lista sem saber o que ela
-contém. Opção nova é uma entrada em `PADRAO`, uma em `CAMPOS` e um ramo em cada uma das
-três — nenhuma linha da tela de opções muda.
+**Campo é genérico, e a aba é só mais uma coluna.** `Config.CAMPOS` é uma tabela: nome,
+aba, tipo, valores, rótulos e o que aplicar. A tela percorre `Config.ABAS`, pergunta quais
+campos moram em cada uma e monta o controle do **tipo** declarado — `rotulos_de` /
+`indice_de` / `escolher` para lista, `faixa_de` / `valor_de` / `definir` para barra. Opção
+nova é **uma linha** na tabela mais um rótulo na tela; nenhuma linha de lógica muda.
+
+- Aba **sem campo não é desenhada** — aba vazia ensina o jogador a não clicar nas outras
+- ⚠️ **O campo "slot" não mora nas opções.** Escolher Manuscrito é a tela de Arquivos;
+  trocar de save por dentro das opções, no meio da partida, é o gesto que apaga progresso
+  sem querer
+- ⚠️ **Opção declarada precisa fazer alguma coisa.** Configuração sem consumidor é arquivo
+  órfão: a entrega que a ajustou não muda nada no produto. E opção que faz **menos** do que
+  o nome promete declara o resto na dica — "salvamento automático" desligado ainda grava ao
+  sair e ao prestigiar, porque não existe botão de gravar na mão neste jogo
+- ⚠️ **Um lugar só escreve `Engine.max_fps`.** O limite de quadros e o modo econômico
+  entram os dois em `Config.fps_efetivo()`. Duas fontes para o mesmo global seriam a janela
+  voltando do segundo plano presa em dez quadros por segundo, sem uma linha no console
+- ⚠️ **Sem janela, ritmo de quadro não se aplica.** `Engine.max_fps` continua ritmando o
+  laço principal em headless: com o teto em 60, cada `await process_frame` da fumaça passou
+  a esperar um sexagésimo de segundo e o teste de trinta segundos parou de terminar. Ele não
+  quebrou — ficou **lento**, que é a versão mais cara desse defeito
+
+⚠️ **JSON devolve número como `float`, e a comparação de `Variant` do Godot confere o TIPO
+antes do valor**: `[0, 1, 2].find(1.0)` é `-1`. Todo campo numérico voltava do arquivo
+mostrando a primeira opção — a configuração da pessoa sumindo a cada abertura do jogo, sem
+um erro sequer. O que fecha isso é converter o lido para o tipo que o **padrão** declara, na
+leitura, e um portão que faça a ida e volta **pelo disco** para cada índice de cada campo:
+afirmar em memória não pega, porque em memória o valor ainda é `int`.
 
 ---
 
@@ -351,11 +375,19 @@ nenhuma vez.
 ## Antes de mergear
 
 ```bash
+godot --headless --path . --import                   # só se você mexeu no textos.csv
 godot --headless --path . tools/testes/runner.tscn   # segundos
 godot --headless --path . tools/teste_fumaca.tscn    # minutos
 ```
 
-Os dois precisam imprimir `PASSOU`. Rode o de cima primeiro — termina em segundos.
+Os dois últimos precisam imprimir `PASSOU`. Rode o de cima primeiro — termina em segundos.
+
+⚠️ **Mexeu no `i18n/textos.csv`? Reimporte antes de rodar.** Os `.translation` são gerados
+na importação e não são versionados: linha acrescentada e não importada fica escrita, passa
+em todos os portões de texto — a chave existe! — e mesmo assim sai em português no jogo em
+inglês. Foi assim que uma tela inteira de configurações saiu metade em cada língua numa
+captura, com a suíte verde. Hoje o portão de texto confere **toda** linha cujo inglês
+difere do português, então ele reprova em vez de deixar passar.
 
 | | Responde | Quando quebra |
 |---|---|---|

@@ -30,9 +30,9 @@ var _ate_gravar: float = INTERVALO
 
 
 func _ready() -> void:
-	# os tres gatilhos que ja existem. "Voltar ao menu" e o quarto, e entra na issue #39
-	# chamando gravar_agora() -- nao ha sinal para ele porque nao ha menu ainda, e sinal
-	# que ninguem emite e combinado esquecido.
+	# os tres gatilhos por sinal. O quarto e o quinto nao tem sinal e chamam gravar_agora()
+	# direto: voltar ao menu (Cenas.voltar_ao_menu) e sair do jogo (Cenas.sair), os dois
+	# da issue #39. Sinal que ninguem emite e combinado esquecido.
 	EventBus.teorema_provado.connect(_ao_acontecer_algo_que_o_jogador_nao_quer_perder)
 	EventBus.universo_reescrito.connect(_ao_acontecer_algo_que_o_jogador_nao_quer_perder)
 	EventBus.era_mudou.connect(_ao_acontecer_algo_que_o_jogador_nao_quer_perder)
@@ -40,7 +40,19 @@ func _ready() -> void:
 
 ## Quem tem quadro chama, como chama Eventos.tique e Automacao.tique. Este autoload nao tem
 ## _process de proposito: a ordem em que as coisas acontecem no quadro e da cena.
+##
+## ⚠️ A OPCAO "salvamento automatico" DESLIGA SO O CRONOMETRO (issue #41), e nunca os
+## gatilhos. Nao existe botao de gravar na mao neste jogo: uma opcao que desligasse TODA
+## gravacao seria uma opcao que apaga centenas de horas, e a pessoa que a desligou queria
+## menos escrita em disco, nao perder a partida. A dica embaixo do campo diz isso com
+## todas as letras -- opcao que faz menos do que o nome promete tem que declarar o que
+## ainda faz.
+##
+## ⚠️ E ELA E LIDA AQUI, no quadro, e nunca guardada. Mudar a opcao no meio da partida vale
+## na hora; uma copia lida na abertura continuaria valendo a escolha antiga sem dar erro.
 func tique(delta: float) -> void:
+	if not Config.ligado("autosave"):
+		return
 	_ate_gravar -= delta
 	if _ate_gravar <= 0.0:
 		gravar_agora()

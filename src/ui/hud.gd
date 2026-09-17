@@ -27,9 +27,9 @@ var _relogios: Dictionary = {}
 ## Quantidades do GDD §32. Comprar Maximo e a entrada 0, resolvida na hora do clique.
 const LOTES: Array[int] = [1, 10, 100]
 
-## Quanto tempo o "Salvando..." fica na tela (issue #37). Curto porque ele e confirmacao e
-## nao informacao: quem esta olhando ve, e quem nao esta nao perde nada.
-const AVISO_DE_GRAVACAO_VISIVEL: float = 1.6
+## Quanto tempo um aviso fica na tela (issue #37). Curto porque ele e confirmacao e nao
+## informacao: quem esta olhando ve, e quem nao esta nao perde nada.
+const AVISO_VISIVEL: float = 1.6
 
 var _ate_esconder_o_aviso: float = 0.0
 
@@ -53,11 +53,13 @@ func _ready() -> void:
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
 	EventBus.jogo_gravado.connect(_ao_gravar)
+	EventBus.marco_alcancado.connect(_ao_alcancar_marco)
+	EventBus.descoberta_encontrada.connect(_ao_encontrar_descoberta)
 
 
 func _process(delta: float) -> void:
 	_pintar()
-	_apagar_o_aviso_de_gravacao(delta)
+	_apagar_o_aviso(delta)
 
 
 # --- pintura --------------------------------------------------------------------------
@@ -387,27 +389,51 @@ func _ao_voltar_do_offline(produzido: Grande, _segundos: float) -> void:
 		%AvisoOffline.text = tr("Enquanto você esteve fora: %s") % Formatador.formatar(produzido)
 
 
-## ⚠️ AVISO, E NAO POPUP. Um Label no canto que aparece e some sozinho: nao rouba foco, nao
-## para o jogo e nao pede clique nenhum. Este e um jogo que fica aberto atras de outra
+## ⚠️ AVISO, E NAO POPUP. Um Label no rodape que aparece e some sozinho: nao rouba foco,
+## nao para o jogo e nao pede clique nenhum. Este e um jogo que fica aberto atras de outra
 ## coisa -- o mesmo motivo pelo qual a tela cheia nao e exclusiva (issue #34) --, e uma
 ## janelinha modal a cada trinta segundos seria motivo para fechar o jogo.
 ##
-## O texto vem da CENA, e por isso o Godot o retraduz sozinho: aqui so a visibilidade muda.
+## ⚠️ E E UM SO PARA TODOS OS AVISOS. Um Label por assunto seria dois avisos empilhados no
+## quadro em que um marco cai junto de uma gravacao -- e o de baixo aparece por cima da
+## loja. O ultimo a chegar manda, e o anterior ja tinha sido lido ou nao seria lido nunca.
+func _avisar(texto: String) -> void:
+	%Aviso.text = texto
+	%Aviso.visible = true
+	%Aviso.modulate.a = 1.0
+	_ate_esconder_o_aviso = AVISO_VISIVEL
+
+
 func _ao_gravar() -> void:
-	%AvisoDeGravacao.visible = true
-	%AvisoDeGravacao.modulate.a = 1.0
-	_ate_esconder_o_aviso = AVISO_DE_GRAVACAO_VISIVEL
+	_avisar(tr("Salvando..."))
 
 
-func _apagar_o_aviso_de_gravacao(delta: float) -> void:
+## ⚠️ AS DUAS OPCOES SAO LIDAS NO INSTANTE DO AVISO, e nunca guardadas (issue #41): o
+## jogador desliga no meio da partida e vale na hora. E elas so calam o AVISO -- o marco
+## continua caindo e a descoberta continua valendo bonus, porque opcao de interface que
+## mexesse em progressao seria dificuldade disfarcada de conforto.
+func _ao_alcancar_marco(marco: DadosMarco) -> void:
+	if not Config.ligado("aviso_de_marco"):
+		return
+	# o tr() vem ANTES da substituicao: traduz-se o molde, nunca o resultado
+	_avisar(tr("Marco: %s") % tr(marco.titulo))
+
+
+func _ao_encontrar_descoberta(descoberta: DadosDescoberta) -> void:
+	if not Config.ligado("aviso_de_descoberta"):
+		return
+	_avisar(tr("Descoberta: %s") % tr(descoberta.nome))
+
+
+func _apagar_o_aviso(delta: float) -> void:
 	if _ate_esconder_o_aviso <= 0.0:
 		return
 	_ate_esconder_o_aviso -= delta
 	# desaparece nos ultimos segundos em vez de sumir num quadro: aviso que pisca vira
 	# ruido, e o jogador passa a nao ler nenhum deles
-	%AvisoDeGravacao.modulate.a = clampf(_ate_esconder_o_aviso, 0.0, 1.0)
+	%Aviso.modulate.a = clampf(_ate_esconder_o_aviso, 0.0, 1.0)
 	if _ate_esconder_o_aviso <= 0.0:
-		%AvisoDeGravacao.visible = false
+		%Aviso.visible = false
 
 
 func _ao_mudar_idioma(_codigo: String) -> void:
@@ -429,8 +455,8 @@ func _estilizar() -> void:
 	%AvisoOffline.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
 	# discreto de proposito: marrom apagado, corpo de legenda. O aviso confirma, e nao
 	# disputa atencao com o contador.
-	%AvisoDeGravacao.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
-	%AvisoDeGravacao.add_theme_font_size_override("font_size", Tema.TITULO)
+	%Aviso.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
+	%Aviso.add_theme_font_size_override("font_size", Tema.TITULO)
 	# sala cheia e o unico aviso da loja: cor de alerta, e nao mais um creme apagado
 	%VagasMacaco.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
 	%VagasMacaco.add_theme_font_size_override("font_size", Tema.TITULO)
