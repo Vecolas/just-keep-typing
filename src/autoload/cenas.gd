@@ -113,6 +113,22 @@ func voltar_ao_menu() -> bool:
 	return ir_para_menu()
 
 
+## Fecha o jogo pelo caminho que grava.
+##
+## ⚠️ get_tree().quit() NAO DISPARA NOTIFICATION_WM_CLOSE_REQUEST. O fechar-pelo-X da
+## janela grava porque a Partida escuta aquela notificacao; o botao SAIR do menu nao
+## passaria por ela, e sairia comendo os minutos desde o ultimo autosave -- calado, e no
+## gesto em que o jogador mais espera que o jogo tenha guardado. Os dois caminhos de saida
+## precisam gravar, e o par mora aqui, que e quem sabe se ha partida aberta.
+func sair() -> void:
+	if _atual == "partida":
+		Autosave.gravar_agora()
+	# as opcoes ja gravam a cada escolha; isto e o cinto de seguranca de um campo que tenha
+	# mudado sem passar por escolher()
+	Config.gravar()
+	get_tree().quit(0)
+
+
 func atual() -> String:
 	return _atual
 

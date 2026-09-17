@@ -9,7 +9,7 @@
 ##
 ##   .tscn de src/   o text de cada Control, menos os marcados como nao traduziveis
 ##   .tres de data/  nome, descricao, titulo e texto de todo dado
-##   .gd de src/     todo tr("...") com literal dentro
+##   .gd de src/     todo tr("...") e todo _traduzir("...") com literal dentro
 ##
 ## PORTAO 2 -- TELA QUE FORMATA SEM ESCUTAR. Arquivo de src/ que escreve num .text usando
 ## Formatador ou tr() com % tem que conectar EventBus.idioma_mudou. O Godot retraduz
@@ -49,6 +49,7 @@ func executar() -> void:
 	_texto_das_cenas()
 	_texto_dos_dados()
 	_texto_do_codigo()
+	_moldes_em_constante()
 	_telas_escutam_idioma()
 	_a_traducao_traduz()
 
@@ -84,10 +85,29 @@ func _texto_dos_dados() -> void:
 				_exigir(texto, caminho)
 
 
+## ⚠️ DUAS CHAMADAS, E NAO UMA. Classe estatica nao tem self e por isso nao tem tr(): o
+## Formatador e o Relogio traduzem por _traduzir(), que e o mesmo TranslationServer por
+## baixo. Varrer so `tr("` deixaria todo literal de classe estatica fora da conta deste
+## portao -- e fora da conta e exatamente onde o texto sem linha no CSV se esconde.
 func _texto_do_codigo() -> void:
 	for caminho in _listar(RAIZ_CODIGO, ".gd"):
-		for texto in _textos_de(_ler(caminho), "tr(\""):
+		var conteudo := _ler(caminho)
+		for texto in _textos_de(conteudo, "tr(\""):
 			_exigir(texto, caminho)
+		for texto in _textos_de(conteudo, "_traduzir(\""):
+			_exigir(texto, caminho)
+
+
+## O PONTO CEGO QUE SOBRA, e por isso ele e cobrado pela FONTE e nao pela varredura.
+##
+## Molde que mora numa constante -- "%s mil", "%s milhoes" -- chega ao jogador por uma
+## variavel, e nenhuma varredura de literal alcanca variavel. Este bloco le a propria
+## tabela do Formatador e exige linha no CSV para cada molde dela: tabela nova entra aqui
+## junto, e o dia em que alguem acrescentar "%s trilhoes" sem traduzir, o portao morde.
+func _moldes_em_constante() -> void:
+	for escala in Formatador.ESCALAS:
+		_exigir(str(escala["singular"]), "Formatador.ESCALAS")
+		_exigir(str(escala["plural"]), "Formatador.ESCALAS")
 
 
 ## O segundo portao. Quem escreve num .text usando Formatador ou tr() precisa escutar

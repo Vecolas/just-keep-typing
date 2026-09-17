@@ -306,6 +306,36 @@ três — nenhuma linha da tela de opções muda.
 
 ---
 
+## Foco, teclado e controle
+
+Teclado, mouse e controle funcionam **juntos**, e não um de cada vez. Quem decide isso é
+uma propriedade só, `focus_mode`, e ela tem **dois valores certos em lugares diferentes**:
+
+| Onde | `focus_mode` | Por quê |
+|---|---|---|
+| HUD e telas de dentro da partida | `FOCUS_NONE` | ⚠️ o espaço **digita um caractere** (issue #6), e `ui_accept` é a mesma ação: botão focado compraria macaco a cada tecla |
+| Menu, Arquivos e telas sobrepostas | `FOCUS_ALL` | ali não há o que digitar, e sem foco não há navegação por teclado nem por controle |
+
+Três consequências, e as três já custaram alguma coisa:
+
+- ⚠️ **A moldura de foco precisa aparecer.** Ela já foi `StyleBoxEmpty` no `Tema`, e fazia
+  sentido enquanto todo botão era `FOCUS_NONE` — ela nunca chegava a desenhar. No menu ela
+  desenha, e é a **única** coisa que diz onde o cursor do teclado está. Sem ela,
+  "navegável sem mouse" vira navegar às cegas
+- ⚠️ **Tela sobreposta toma o foco, e devolve ao fechar.** `_unhandled_input` não alcança o
+  que o foco de interface já consumiu: com um botão do menu focado atrás do painel,
+  apertar espaço aperta o botão **de trás** — inclusive o que acabou de abrir a tela. Quem
+  garante isso é a base `TelaSobreposta`, e é por isso que ela existe em vez de três cópias
+- **Foco não pousa em botão desabilitado.** Abrir o menu com o cursor de teclado parado num
+  CONTINUAR apagado é a versão de teclado do mesmo defeito que a issue #34 consertou no
+  mouse: um controle que não faz nada parecendo que faz
+
+**O que a fumaça prova aqui**: que os botões pegam foco, que a seta **move** o foco (cadeia
+de vizinhos quebrada deixa cada botão focável e nenhum alcançável) e que o ESC fecha a tela
+sobreposta. O que ela **não** prova é como a moldura fica — isso é captura.
+
+---
+
 ## Números vão para `.tres`, não para o código
 
 Se é um número que você vai querer ajustar sem programar, ele é um campo `@export` ou um

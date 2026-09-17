@@ -456,3 +456,17 @@ MENU,MENU,MENU
 Manuscrito vazio,Manuscrito vazio,Empty manuscript
 Manuscrito ilegível,Manuscrito ilegível,Unreadable manuscript
 Manuscrito %d,Manuscrito %d,Manuscript %d
+JOGAR,JOGAR,PLAY
+CONFIGURAÇÕES,CONFIGURAÇÕES,SETTINGS
+CRÉDITOS,CRÉDITOS,CREDITS
+Era: %s,Era: %s,Era: %s
+%s caracteres,%s caracteres,%s characters
+Última sessão: %s,Última sessão: %s,Last session: %s
+Hoje às %s,Hoje às %s,Today at %s
+Ontem às %s,Ontem às %s,Yesterday at %s
+nunca,nunca,never
+Nenhum Manuscrito para continuar.,Nenhum Manuscrito para continuar.,No Manuscript to continue.
+Um incremental sobre o Teorema do Macaco Infinito.,Um incremental sobre o Teorema do Macaco Infinito.,An incremental about the Infinite Monkey Theorem.
+Jogo e código,Jogo e código,Game and code
+Motor,Motor,Engine
+"Tempo infinito, uma máquina de escrever, e nenhuma pressa.","Tempo infinito, uma máquina de escrever, e nenhuma pressa.","Infinite time, one typewriter, and no hurry."

@@ -89,8 +89,50 @@ func _ready() -> void:
 	if continuar == null or not continuar.disabled:
 		_falhar("sem Manuscrito nenhum, o menu ofereceu CONTINUAR")
 		return
+	# e o resumo embaixo dele diz POR QUE, em vez de ficar vazio (issue #39)
+	var resumo := menu.find_child("ResumoDoContinuar", true, false) as Label
+	if resumo == null or resumo.text.strip_edges().is_empty():
+		_falhar("o CONTINUAR apagado nao explicou que nao ha Manuscrito")
+		return
 
-	(menu.find_child("BotaoManuscritos", true, false) as Button).pressed.emit()
+	# as cinco opcoes existem, e todas alcancaveis pelo teclado: menu que so anda no mouse
+	# e menu quebrado para quem joga no controle (issue #39)
+	for nome_do_botao in [
+		"BotaoContinuar", "BotaoJogar", "BotaoConfiguracoes", "BotaoCreditos", "BotaoSair",
+	]:
+		var opcao := menu.find_child(nome_do_botao, true, false) as Button
+		if opcao == null:
+			_falhar("o menu nao tem %s" % nome_do_botao)
+			return
+		if opcao.focus_mode != Control.FOCUS_ALL:
+			_falhar("%s nao pega foco: o menu nao anda sem mouse" % nome_do_botao)
+			return
+
+	# ⚠️ E A NAVEGACAO ANDA DE VERDADE. "Pega foco" nao e o mesmo que "da para chegar la":
+	# uma cadeia de vizinhos quebrada deixa cada botao focavel e nenhum alcancavel, e a
+	# unica forma de perceber isso sem mouse e apertar a seta e olhar onde o foco foi
+	# parar. CONTINUAR esta apagado neste ponto, entao o foco comeca em JOGAR.
+	await get_tree().process_frame
+	var focado_antes := menu.get_viewport().gui_get_focus_owner()
+	if focado_antes == null or focado_antes.name != "BotaoJogar":
+		_falhar("o menu abriu com o foco em %s, e nao no primeiro botao util" % [
+			focado_antes.name if focado_antes != null else "ninguem",
+		])
+		return
+	_apertar(&"ui_down")
+	await get_tree().process_frame
+	var focado_depois := menu.get_viewport().gui_get_focus_owner()
+	if focado_depois == focado_antes or focado_depois == null:
+		_falhar("a seta para baixo nao moveu o foco: o menu nao anda sem mouse")
+		return
+
+	# CONFIGURAÇÕES e CRÉDITOS abrem por cima do menu, e o ESC fecha os dois
+	if not await _abre_e_fecha(menu, "BotaoConfiguracoes", "OpcoesTela"):
+		return
+	if not await _abre_e_fecha(menu, "BotaoCreditos", "CreditosTela"):
+		return
+
+	(menu.find_child("BotaoJogar", true, false) as Button).pressed.emit()
 	await get_tree().process_frame
 	if Cenas.atual() != "arquivos":
 		_falhar("MANUSCRITOS nao levou aos Arquivos, e sim a %s" % Cenas.atual())
@@ -687,6 +729,17 @@ func _ready() -> void:
 		_falhar("com Manuscrito gravado, o menu ainda nao oferece CONTINUAR")
 		return
 
+	# ⚠️ O RESUMO SAI DO METADADO, e e por ele que se ve que o menu esta falando do slot
+	# certo. Um CONTINUAR habilitado apontando para outro Manuscrito passaria em tudo
+	# acima desta linha -- e levaria o jogador para a partida de outra pessoa da casa.
+	var resumo_de_volta := menu_de_volta.find_child("ResumoDoContinuar", true, false) as Label
+	var total_escrito := Formatador.formatar(Jogo.total_caracteres)
+	if resumo_de_volta == null or not resumo_de_volta.text.contains(total_escrito):
+		_falhar("o resumo do CONTINUAR nao mostra %s, e sim \"%s\"" % [
+			total_escrito, resumo_de_volta.text if resumo_de_volta != null else "",
+		])
+		return
+
 	Jogo.total_caracteres = Grande.zero()
 	continuar_de_volta.pressed.emit()
 
@@ -717,6 +770,39 @@ func _ready() -> void:
 		Formatador.formatar(creditado), HORAS_OFFLINE,
 	])
 	get_tree().quit(0)
+
+
+## Aperta um botao do menu, confere que a tela sobreposta apareceu, fecha no ESC e confere
+## que ela sumiu. Devolve se deu certo.
+##
+## O ESC entra por Input.parse_input_event e nao chamando fechar() por baixo: o que esta
+## sob prova e que a tela COME a entrada enquanto esta aberta -- sem isso o espaco vazaria
+## para o menu atras dela e apertaria o proprio botao que a abriu.
+func _abre_e_fecha(menu: Node, nome_do_botao: String, nome_da_tela: String) -> bool:
+	var botao := menu.find_child(nome_do_botao, true, false) as Button
+	if botao == null:
+		_falhar("o menu nao tem %s" % nome_do_botao)
+		return false
+	var tela := menu.find_child(nome_da_tela, true, false) as Control
+	if tela == null:
+		_falhar("o menu nao hospeda a %s" % nome_da_tela)
+		return false
+	if tela.visible:
+		_falhar("a %s ja estava aberta antes de alguem pedir" % nome_da_tela)
+		return false
+
+	botao.pressed.emit()
+	await get_tree().process_frame
+	if not tela.visible:
+		_falhar("%s nao abriu a %s" % [nome_do_botao, nome_da_tela])
+		return false
+
+	_apertar(&"ui_cancel")
+	await get_tree().process_frame
+	if tela.visible:
+		_falhar("o ESC nao fechou a %s" % nome_da_tela)
+		return false
+	return true
 
 
 func _apertar(acao: StringName) -> void:

@@ -12,10 +12,14 @@
 ## O volume e o unico que nao e lista, e por isso tem controle proprio. Lista de volumes
 ## seria uma lista de numeros arbitrarios onde o mundo inteiro usa uma barra.
 ##
+## Herda de TelaSobreposta: ESC fecha, a tela come o resto da entrada enquanto esta aberta,
+## e ela TOMA o foco de quem a abriu -- sem isso, apertar espaco com o painel na frente
+## aperta o botao CONFIGURAÇÕES do menu que esta atras dele (issue #39).
+##
 ## ESCUTA idioma_mudou e se remonta. Os rotulos "Janela" e "Tela cheia" sao montados em
 ## codigo com tr(), e o Godot so retraduz sozinho o que veio da cena -- sem isto eles
 ## ficariam em portugues numa interface ja em ingles (CONVENCOES.md).
-extends Control
+extends TelaSobreposta
 
 const TITULO_TELA: int = 22
 const ROTULO_CAMPO: int = 18
@@ -53,7 +57,7 @@ func _ready() -> void:
 	%Painel.add_theme_stylebox_override("panel", Tema.painel())
 	%Titulo.add_theme_font_size_override("font_size", TITULO_TELA)
 	%Titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
-	%BotaoFechar.focus_mode = Control.FOCUS_NONE
+	%BotaoFechar.focus_mode = Control.FOCUS_ALL
 	%BotaoFechar.pressed.connect(fechar)
 
 	EventBus.opcoes_pedidas.connect(abrir)
@@ -62,21 +66,11 @@ func _ready() -> void:
 
 func abrir() -> void:
 	_montar()
-	visible = true
+	super()
 
 
-func fechar() -> void:
-	visible = false
-
-
-## Esconde no ESC e come o espaco enquanto esta aberta: sem isto o jogador mexeria nas
-## opcoes digitando sem querer.
-func _unhandled_input(evento: InputEvent) -> void:
-	if not visible:
-		return
-	if evento.is_action_pressed("ui_cancel"):
-		fechar()
-	get_viewport().set_input_as_handled()
+func _primeiro_foco() -> Control:
+	return %BotaoFechar
 
 
 func _ao_mudar_idioma(_codigo: String) -> void:
@@ -105,7 +99,10 @@ func _campo(campo: String) -> Control:
 	linha.add_child(rotulo)
 
 	var botao := OptionButton.new()
-	botao.focus_mode = Control.FOCUS_NONE
+	# ⚠️ FOCO LIGADO, ao contrario da HUD: aqui o espaco nao digita caractere nenhum --
+	# a tela e modal e come a entrada solta --, e sem foco nao ha como mexer nas opcoes
+	# por teclado ou por controle (issue #39)
+	botao.focus_mode = Control.FOCUS_ALL
 	botao.custom_minimum_size = Vector2(LARGURA_DO_CAMPO, 0)
 	botao.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	# o rotulo do OptionButton vem dos itens que ele mesmo recebeu, e nao de uma chave do
@@ -149,7 +146,7 @@ func _volume() -> Control:
 	linha.add_child(rotulo)
 
 	var barra := HSlider.new()
-	barra.focus_mode = Control.FOCUS_NONE
+	barra.focus_mode = Control.FOCUS_ALL
 	barra.min_value = 0.0
 	barra.max_value = 1.0
 	barra.step = 0.05
