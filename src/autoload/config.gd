@@ -50,8 +50,14 @@ const PADRAO := {
 ##
 ## Idioma novo e uma linha aqui mais uma coluna no CSV.
 const IDIOMAS: Array[Dictionary] = [
-	{"codigo": "pt_BR", "nome": "Português", "relogio_12h": false, "moeda": &"BRL"},
-	{"codigo": "en", "nome": "English", "relogio_12h": true, "moeda": &"USD"},
+	{
+		"codigo": "pt_BR", "nome": "Português",
+		"relogio_12h": false, "data_dia_primeiro": true, "moeda": &"BRL",
+	},
+	{
+		"codigo": "en", "nome": "English",
+		"relogio_12h": true, "data_dia_primeiro": false, "moeda": &"USD",
+	},
 ]
 
 ## O catalogo inteiro. O que a tela ve e o resultado de resolucoes(), que corta o que nao

@@ -21,6 +21,9 @@ signal slot_mudou(numero: int)
 ## A tela de opcoes foi pedida.
 signal opcoes_pedidas
 
+## A tela de creditos foi pedida (issue #39).
+signal creditos_pedidos
+
 ## Emitido depois que a compra ja aconteceu -- o dinheiro saiu e o id ja esta em
 ## Jogo.upgrades_comprados. Quem escuta repinta; ninguem precisa perguntar de volta se
 ## deu certo.

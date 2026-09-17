@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://cm3nut3l4jkt0"]
+[gd_scene load_steps=4 format=3 uid="uid://cm3nut3l4jkt0"]
 
 [ext_resource type="Script" path="res://src/ui/menu_tela.gd" id="1_menu"]
+[ext_resource type="PackedScene" uid="uid://cd3s0pc0e5000" path="res://src/ui/opcoes_tela.tscn" id="2_opcoes"]
+[ext_resource type="PackedScene" uid="uid://cc3ed1t0s5000" path="res://src/ui/creditos_tela.tscn" id="3_creditos"]
 
 [node name="MenuTela" type="Control"]
 layout_mode = 3
@@ -10,3 +12,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
+
+[node name="Sobreposicoes" type="CanvasLayer" parent="."]
+
+[node name="OpcoesTela" parent="Sobreposicoes" instance=ExtResource("2_opcoes")]
+
+[node name="CreditosTela" parent="Sobreposicoes" instance=ExtResource("3_creditos")]

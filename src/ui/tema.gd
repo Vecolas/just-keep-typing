@@ -42,8 +42,25 @@ static func montar() -> Theme:
 	tema.set_stylebox("hover", "Button", botao(Paleta.MONKEY_BROWN.darkened(0.35)))
 	tema.set_stylebox("pressed", "Button", botao(Paleta.MONKEY_BROWN.darkened(0.7)))
 	tema.set_stylebox("disabled", "Button", botao(Paleta.INK_BROWN, Paleta.MONKEY_BROWN))
-	tema.set_stylebox("focus", "Button", StyleBoxEmpty.new())
+	# ⚠️ O FOCO PRECISA APARECER. Ele ja esteve vazio aqui, e por um bom motivo: na HUD todo
+	# botao e FOCUS_NONE (o espaco digita, issue #6) e a moldura nunca chegava a desenhar.
+	# No menu ela desenha, e e a UNICA coisa que diz onde o cursor do teclado esta -- sem
+	# ela, "navegavel sem mouse" vira navegar as cegas (issue #39).
+	tema.set_stylebox("focus", "Button", foco())
 	return tema
+
+
+## A moldura do foco: so borda, sem preenchimento, para nao apagar o estado do botao que
+## ela emoldura. Dourado claro porque ela tem que vencer o hover -- botao focado E sob o
+## mouse continua sendo um so, e quem manda e o teclado.
+static func foco() -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.draw_center = false
+	estilo.border_color = Paleta.BANANA_GOLD
+	estilo.set_border_width_all(2)
+	estilo.set_corner_radius_all(4)
+	estilo.set_expand_margin_all(2)
+	return estilo
 
 
 static func painel(

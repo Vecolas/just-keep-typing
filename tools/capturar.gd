@@ -31,6 +31,31 @@ const CENARIO_PADRAO := "principal"
 const TAMANHO := Vector2i(1920, 1080)
 
 
+## Poe o jogo na lingua pedida pela linha de comando. A captura em outra lingua e o unico
+## jeito de ver texto estourando botao: caractere nao e pixel, e "Comprar Maximo" e
+## "Buy Max" nao ocupam a mesma largura.
+func _falar(codigo: String) -> void:
+	for i in Config.IDIOMAS.size():
+		if Config.IDIOMAS[i]["codigo"] == codigo:
+			Config.escolher("idioma", i)
+			return
+	printerr("FALHA  idioma %s nao esta em Config.IDIOMAS" % codigo)
+	get_tree().quit(1)
+
+
+## Entra no Manuscrito 1, produz um tanto e volta ao menu pelo caminho que grava. Deixa o
+## jogo NO MENU, que e onde a foto e tirada.
+func _uma_partida_gravada() -> void:
+	Cenas.comecar_partida(1)
+	await get_tree().process_frame
+	Jogo.nome = "Hamlet Talvez"
+	Economia.digitar(180000000000000)
+	Marcos.verificar()
+	Jogo.tempo_jogado = 9142.0
+	Cenas.voltar_ao_menu()
+	await get_tree().process_frame
+
+
 func _cenario() -> String:
 	for argumento in OS.get_cmdline_user_args():
 		if argumento.begins_with("cenario="):
@@ -71,6 +96,15 @@ func _ready() -> void:
 	# mesmo tamanho.
 	Config.caminho = "user://capturas/opcoes_da_captura.json"
 	Config.modelo_de_slot = "user://capturas/save_da_captura_%d.json"
+	# ⚠️ O IDIOMA ENTRA PELA PORTA DO JOGADOR, E ANTES DE A CENA SUBIR. Ele ja foi aplicado
+	# aqui com TranslationServer.set_locale depois de montar, e a foto saia em portugues
+	# pedindo ingles: o Godot so retraduz sozinho o text que veio da CENA, e todo rotulo
+	# deste jogo e montado em codigo -- quem repinta e EventBus.idioma_mudou, que
+	# set_locale nao emite. Config.escolher e o unico caminho que faz as duas coisas.
+	var idioma := _texto_do_argumento("idioma", "")
+	if not idioma.is_empty():
+		_falar(idioma)
+
 	var pedida := Vector2i(
 		int(_argumento("largura", TAMANHO.x)), int(_argumento("altura", TAMANHO.y))
 	)
@@ -92,18 +126,19 @@ func _ready() -> void:
 	# os outros sao fotos de dentro da partida, e sem entrar nela sairiam com o menu na
 	# frente -- inclusive os catorze da galeria.
 	var cenario := _cenario()
-	if cenario == "arquivos":
-		Cenas.ir_para_arquivos()
-	elif cenario != "menu":
+	if cenario.begins_with("menu") or cenario.begins_with("arquivos"):
+		# ⚠️ O MENU SO TEM O QUE MOSTRAR COM UM MANUSCRITO NO DISCO. Sem save, o CONTINUAR
+		# sai apagado e o resumo embaixo dele nao existe -- e o resumo e justamente o que a
+		# issue #39 pede para olhar. Entao o cenario "cheio" JOGA um pouco e volta, em vez
+		# de escrever um .meta na mao: metadado inventado provaria a foto, e nao o jogo.
+		if cenario.ends_with("_cheio"):
+			await _uma_partida_gravada()
+		if cenario.begins_with("arquivos"):
+			Cenas.ir_para_arquivos()
+	else:
 		Cenas.comecar_partida(1)
 	for i in FRAMES_ATE_ESTABILIZAR:
 		await get_tree().process_frame
-
-	# a captura em outra lingua e o unico jeito de ver texto estourando botao: caractere
-	# nao e pixel, e "Comprar Maximo" e "Buy Max" nao ocupam a mesma largura
-	var idioma := _texto_do_argumento("idioma", "")
-	if not idioma.is_empty():
-		TranslationServer.set_locale(idioma)
 
 	if cenario == "eventos":
 		Economia.digitar(50000)

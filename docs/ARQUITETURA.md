@@ -62,6 +62,17 @@ Três regras que valem ouro aqui, e as três já custaram um bug:
 O relógio da produção offline para no instante em que o **jogo** abre, e não no instante em
 que a partida abre — ver [decisão 0005](decisoes/0005-o-relogio-do-offline.md).
 
+**Menu e Partida hospedam as mesmas telas sobrepostas.** Opções e Créditos são instâncias
+dentro do `menu_tela.tscn`; Opções, Panorama, Descobertas, Estatísticas e Teoremas são
+instâncias dentro do `partida.tscn`. Só uma das duas cenas está montada por vez, então as
+duas instâncias de `OpcoesTela` nunca coexistem — e nenhuma delas sabe da outra: as duas
+escutam `EventBus.opcoes_pedidas`.
+
+⚠️ **Sair grava, e pelos dois caminhos.** Fechar pelo X da janela grava porque a Partida
+escuta `NOTIFICATION_WM_CLOSE_REQUEST`; o botão SAIR do menu **não passa por ela** —
+`get_tree().quit()` não dispara aquela notificação. Por isso o par mora em `Cenas.sair()`,
+que é quem sabe se há partida aberta.
+
 ---
 
 ## 2. Pastas
@@ -69,10 +80,10 @@ que a partida abre — ver [decisão 0005](decisoes/0005-o-relogio-do-offline.md
 | Pasta | Conteúdo |
 |---|---|
 | `src/autoload/` | Autoloads. Um arquivo por autoload. |
-| `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`. Testável headless. |
+| `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`, `Relogio`. Testável headless. |
 | `src/producao/` | Macacos, máquinas, salas — quem gera caractere |
 | `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) |
-| `src/ui/` | Telas: Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções |
+| `src/ui/` | Telas: Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — e `TelaSobreposta`, a base das que abrem por cima |
 | `src/cena/` | O Boot, a Partida, a cena das eras e a câmera que se afasta |
 | `data/` | `.tres` de balanceamento — nenhum código |
 | `i18n/` | `textos.csv`: `keys,pt_BR,en`. A chave É o texto em português. |
@@ -111,7 +122,21 @@ Cache só com motivo medido, e com comentário dizendo qual foi.
 
 ## 5. Traduções
 
-`i18n/textos.csv` existe desde o início, ainda sem linhas — não há texto de interface. O
-registro em `[internationalization]` do `project.godot` entra junto do primeiro texto,
-porque os `.translation` são gerados na importação e não são versionados (`*.translation`
-está no `.gitignore`).
+`i18n/textos.csv` tem uma linha por texto que o jogador lê, em três colunas
+(`keys,pt_BR,en`), e a chave **é** o texto em português. Está registrado em
+`[internationalization]` no `project.godot`; os `.translation` são gerados na importação e
+**não** são versionados (`*.translation` está no `.gitignore`).
+
+Quem cobra é o `teste_texto` — e ele varre **três** origens de literal, porque as três já
+deixaram passar texto sem tradução:
+
+| Origem | Como é varrida |
+|---|---|
+| `.tscn` de `src/` | o `text` de cada `Control`, menos o marcado como não traduzível |
+| `.tres` de `data/` | `nome`, `descricao`, `titulo` e `texto` de todo dado |
+| `.gd` de `src/` | os literais das **duas** funções de tradução: a das cenas e a `_traduzir` das classes estáticas, que não têm `self` |
+
+⚠️ **Molde que mora em constante não é literal na hora do uso** — `"%s mil"` chega ao
+jogador por uma variável, e varredura de literal não alcança variável. Esses são cobrados
+pela **fonte**: a suíte lê a própria tabela do `Formatador` e exige linha no CSV para cada
+molde dela.

@@ -59,9 +59,15 @@ godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=letras prod
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama idioma=en
 ```
 
-Cenários: `menu`, `arquivos`, `principal`, `panorama`, `descobertas`, `estatisticas`,
-`letras`. Os dois primeiros param no menu; todos os outros entram numa partida. A captura em
-`idioma=en` é o único jeito de ver texto estourando botão — caractere não é pixel.
+Cenários: `menu`, `menu_cheio`, `arquivos`, `arquivos_cheio`, `principal`, `panorama`,
+`descobertas`, `estatisticas`, `letras`. Os que começam com `menu` e `arquivos` param antes
+da partida; todos os outros entram numa. O sufixo `_cheio` **joga um pouco e volta**, para a
+foto ter um Manuscrito no disco — sem save o CONTINUAR sai apagado e o resumo dele não
+existe.
+
+A captura em `idioma=en` é o único jeito de ver texto estourando botão — caractere não é
+pixel. Ela entra pelo `Config`, e não por `TranslationServer.set_locale`: todo rótulo deste
+jogo é montado em código e quem repinta é `EventBus.idioma_mudou`.
 
 Precisa de janela — headless não renderiza. Sai em `user://capturas`.
 
