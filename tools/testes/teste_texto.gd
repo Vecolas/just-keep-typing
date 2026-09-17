@@ -144,19 +144,43 @@ func _telas_escutam_idioma() -> void:
 		)
 
 
-## A prova de que as traducoes estao REGISTRADAS no project.godot, e nao so escritas no
-## CSV. Sem o registro, tr() devolve a chave e o jogo fica em portugues em qualquer lingua
-## -- sem quebrar nada e sem imprimir erro, que e a assinatura desta familia de bug.
+## A prova de que as traducoes estao REGISTRADAS no project.godot e COMPILADAS, e nao so
+## escritas no CSV. Sem o registro, tr() devolve a chave e o jogo fica em portugues em
+## qualquer lingua -- sem quebrar nada e sem imprimir erro, que e a assinatura desta
+## familia de bug.
+##
+## ⚠️ E A VARREDURA E DE TODA LINHA, e nao de tres escolhidas a dedo. Os `.translation` sao
+## GERADOS na importacao e nao sao versionados: linha acrescentada ao CSV sem reimportar
+## fica escrita, passa em todos os portoes acima -- a chave existe! -- e mesmo assim sai em
+## portugues no jogo em ingles. Foi assim que uma tela inteira de CONFIGURAÇÕES saiu
+## metade em cada lingua numa captura, com a suite verde.
+##
+## So as linhas em que o ingles DIFERE do portugues sao afirmadas: nas outras, tr() devolve
+## o mesmo texto de qualquer jeito e a afirmacao nao mediria nada.
 func _a_traducao_traduz() -> void:
 	var locale_original := TranslationServer.get_locale()
 
 	TranslationServer.set_locale("en")
-	igual(tr("Comprar 1"), "Buy 1", "com locale en, o botao da loja fala ingles")
-	igual(tr("PANORAMA"), "PANORAMA", "chave igual nas duas linguas continua igual")
-	igual(
-		tr("Um Livro"), "One Book",
-		"e o titulo de marco tambem -- .tres passa pela mesma tabela que a cena",
+	var conferidas := 0
+	var nao_traduzidas := PackedStringArray()
+	for chave in _chaves:
+		var em_ingles := str(_chaves[chave])
+		if em_ingles == chave:
+			continue
+		conferidas += 1
+		if tr(str(chave)) != em_ingles:
+			nao_traduzidas.append(str(chave))
+	ok(
+		nao_traduzidas.is_empty(),
+		"toda linha do CSV com traducao propria chega traduzida (%d ficaram para tras: %s)" % [
+			nao_traduzidas.size(), ", ".join(nao_traduzidas.slice(0, 5)),
+		],
 	)
+	# ⚠️ portao com zero verificacoes tem que REPROVAR: um CSV que nao abrisse deixaria a
+	# lista vazia e a afirmacao acima passaria sem ter olhado nada
+	ok(conferidas > 0, "e houve o que conferir (%d linhas com ingles proprio)" % conferidas)
+
+	igual(tr("PANORAMA"), "PANORAMA", "chave igual nas duas linguas continua igual")
 
 	TranslationServer.set_locale("pt_BR")
 	igual(tr("Comprar 1"), "Comprar 1", "e em pt_BR a chave E o texto")

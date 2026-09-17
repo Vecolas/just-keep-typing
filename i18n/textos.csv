@@ -436,16 +436,13 @@ O Próximo Texto,O Próximo Texto,The Next Text
 "Um macaco escreveu o que outro macaco escreveria cinco segundos depois. O segundo leu, e desistiu.","Um macaco escreveu o que outro macaco escreveria cinco segundos depois. O segundo leu, e desistiu.","A monkey wrote what another monkey would write five seconds later. The second one read it, and gave up."
 O Macaco Infinito,O Macaco Infinito,The Infinite Monkey
 Você percebe que nunca esteve tentando fazer o macaco escrever alguma coisa específica. Você estava apenas dando tempo suficiente ao acaso.,Você percebe que nunca esteve tentando fazer o macaco escrever alguma coisa específica. Você estava apenas dando tempo suficiente ao acaso.,You realize you were never trying to make the monkey write anything in particular. You were only giving chance enough time.
-OPÇÕES,OPÇÕES,OPTIONS
 Idioma,Idioma,Language
 Resolução,Resolução,Resolution
 Janela,Janela,Windowed
 Modo de janela,Modo de janela,Display mode
 Tela cheia,Tela cheia,Fullscreen
 Volume,Volume,Volume
-Slot de save,Slot de save,Save slot
 Só aparecem as resoluções que cabem no seu monitor.,Só aparecem as resoluções que cabem no seu monitor.,Only resolutions that fit your monitor are listed.
-Trocar de slot grava a partida aberta antes de sair dela.,Trocar de slot grava a partida aberta antes de sair dela.,Switching slots saves the open game before leaving it.
 Salvando...,Salvando...,Saving...
 JUST KEEP TYPING,JUST KEEP TYPING,JUST KEEP TYPING
 CONTINUAR,CONTINUAR,CONTINUE
@@ -497,3 +494,24 @@ O Primeiro Capítulo,O Primeiro Capítulo,The First Chapter
 "Em branco, o Manuscrito fica com o número do slot.","Em branco, o Manuscrito fica com o número do slot.","Left blank, the Manuscript keeps the slot number."
 Até %d caracteres.,Até %d caracteres.,Up to %d characters.
 "Este nome não cabe no cartão: até %d caracteres, e sem quebra de linha.","Este nome não cabe no cartão: até %d caracteres, e sem quebra de linha.","This name does not fit the card: up to %d characters, and no line breaks."
+GERAL,GERAL,GENERAL
+ÁUDIO,ÁUDIO,AUDIO
+VÍDEO,VÍDEO,VIDEO
+INTERFACE,INTERFACE,INTERFACE
+ACESSIBILIDADE,ACESSIBILIDADE,ACCESSIBILITY
+Desligado,Desligado,Off
+Ligado,Ligado,On
+Adaptativo,Adaptativo,Adaptive
+Sem limite,Sem limite,Unlimited
+Salvamento automático,Salvamento automático,Auto-save
+Confirmações,Confirmações,Confirmations
+Avisar ao alcançar um marco,Avisar ao alcançar um marco,Notify on milestone
+Avisar ao encontrar uma descoberta,Avisar ao encontrar uma descoberta,Notify on discovery
+Sincronização vertical,Sincronização vertical,Vertical sync
+Limite de quadros por segundo,Limite de quadros por segundo,Frame rate limit
+Modo econômico,Modo econômico,Power saving mode
+"Desligado, o jogo ainda grava ao sair e ao prestigiar.","Desligado, o jogo ainda grava ao sair e ao prestigiar.","With it off, the game still saves on exit and on prestige."
+Excluir Manuscrito confirma sempre — essa não tem volta.,Excluir Manuscrito confirma sempre — essa não tem volta.,Deleting a Manuscript always confirms — that one has no undo.
+"Com o jogo em segundo plano, desenha menos quadros.","Com o jogo em segundo plano, desenha menos quadros.",Draws fewer frames while the game is in the background.
+Marco: %s,Marco: %s,Milestone: %s
+Descoberta: %s,Descoberta: %s,Discovery: %s

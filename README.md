@@ -21,11 +21,13 @@ sair de 1 caractere para números que já não cabem em nenhuma comparação hum
 ## Testes
 
 ```bash
+godot --headless --path . --import                   # só se você mexeu no textos.csv
 godot --headless --path . tools/testes/runner.tscn   # segundos
 godot --headless --path . tools/teste_fumaca.tscn    # segundos
 ```
 
-Os dois precisam imprimir `PASSOU`.
+Os dois últimos precisam imprimir `PASSOU`. Os `.translation` são gerados na importação e
+não são versionados — ver `CONVENCOES.md`, "Antes de mergear".
 
 ## Réguas
 
@@ -57,6 +59,7 @@ godot --path . tools/capturar.tscn --resolution 1920x1080
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=letras producao=5e17
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama idioma=en
+godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=opcoes idioma=en aba=2
 ```
 
 Cenários: `menu`, `menu_cheio`, `arquivos`, `arquivos_cheio`, `principal`, `panorama`,

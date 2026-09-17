@@ -87,7 +87,11 @@ func _ao_reescrever(_fragmentos: Grande) -> void:
 ## O segundo prestigio so aparece quando ja da para faze-lo, ou depois do primeiro: um
 ## botao que apaga a Arvore inteira nao pode ficar na tela desde o comeco, ao lado de um
 ## que so apaga a run.
+## O mesmo da prova do Teorema, e pela mesma razao: reescrever o Universo e repetivel.
 func _ao_pedir_reescrita() -> void:
+	if not Config.ligado("confirmacoes"):
+		_ao_confirmar_reescrita()
+		return
 	%BotaoReescrever.visible = false
 	%ConfirmarReescrita.visible = true
 	%CancelarReescrita.visible = true
@@ -145,7 +149,18 @@ func _ao_mudar_idioma(_codigo: String) -> void:
 ## Primeiro clique: some com o botao e mostra confirmar e cancelar. O aviso do que vai ser
 ## apagado ja estava na tela desde antes -- ele nao aparece junto da confirmacao, porque
 ## aviso que aparece na hora de confirmar e aviso que ninguem le.
+##
+## ⚠️ COM "confirmacoes" DESLIGADO O SEGUNDO PASSO SOME (issue #41), e isto e o que aquela
+## opcao faz. Prestigiar e uma decisao cara, mas ela e REPETIVEL: quem ja provou o Teorema
+## quarenta vezes nao esta sendo protegido pela confirmacao, esta sendo atrasado por ela.
+##
+## ⚠️ E ELA NAO ALCANCA EXCLUIR MANUSCRITO. Aquela e a unica acao do jogo que nao tem
+## volta, e a issue #40 poe DOIS passos e um segundo de pressao nela de proposito --
+## opcao nenhuma desliga isso.
 func _ao_pedir_prestigio() -> void:
+	if not Config.ligado("confirmacoes"):
+		_ao_confirmar()
+		return
 	%BotaoProvar.visible = false
 	%BotaoConfirmar.visible = true
 	%BotaoCancelar.visible = true

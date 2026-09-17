@@ -485,9 +485,9 @@ func _ready() -> void:
 	# ⚠️ o prestigio GRAVA (issue #37). Perder um prestigio por um desligamento trinta
 	# segundos depois dele nao e perder trinta segundos: e desfazer a decisao mais cara da
 	# run. E grava UMA vez -- o cronometro reinicia junto com o gatilho.
-	var aviso := hud.find_child("AvisoDeGravacao", true, false) as Label
+	var aviso := hud.find_child("Aviso", true, false) as Label
 	if aviso == null:
-		_falhar("a HUD nao tem o aviso discreto de gravacao")
+		_falhar("a HUD nao tem o aviso discreto do rodape")
 		return
 	# a run ja atravessou era ate aqui, e trocar de era e gatilho de gravacao: espera o
 	# aviso anterior sumir para que o que se mede a seguir seja o do prestigio. Que ele
@@ -645,12 +645,27 @@ func _ready() -> void:
 		_falhar("a tela de opcoes nao abriu com o pedido do EventBus")
 		return
 
-	var campos := opcoes.find_child("Lista", true, false) as Control
-	# um bloco por campo de lista, mais o volume
-	if campos == null or campos.get_child_count() != Config.CAMPOS.size() + 1:
-		_falhar("a tela de opcoes montou %s blocos para %d campos" % [
-			"nenhum" if campos == null else str(campos.get_child_count()),
-			Config.CAMPOS.size() + 1,
+	# ⚠️ UM BLOCO POR CAMPO DECLARADO, ESPALHADOS PELAS ABAS (issue #41). A conta e por
+	#    NOME e nao por contagem de filhos de um container: com abas, contar filhos mediria
+	#    uma aba so -- e uma tabela que perdesse metade dos campos passaria.
+	for linha in Config.CAMPOS:
+		var bloco := opcoes.find_child("Campo_%s" % linha["nome"], true, false)
+		if bloco == null:
+			_falhar("a tela de opcoes nao montou o campo %s" % linha["nome"])
+			return
+		if opcoes.find_child("Controle_%s" % linha["nome"], true, false) == null:
+			_falhar("o campo %s foi montado sem controle nenhum" % linha["nome"])
+			return
+
+	# e cada aba com campo virou uma aba de verdade, na ordem declarada
+	var abas := opcoes.find_child("Abas", true, false) as TabContainer
+	var abas_esperadas := 0
+	for aba in Config.ABAS:
+		if not Config.campos_da_aba(aba).is_empty():
+			abas_esperadas += 1
+	if abas == null or abas.get_tab_count() != abas_esperadas:
+		_falhar("a tela de opcoes montou %s abas em vez de %d" % [
+			"nenhuma" if abas == null else str(abas.get_tab_count()), abas_esperadas,
 		])
 		return
 
