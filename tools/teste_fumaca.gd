@@ -226,6 +226,56 @@ func _ready() -> void:
 		_falhar("a seta para baixo nao moveu o foco: o menu nao anda sem mouse")
 		return
 
+	# 0.06. ⚠️ O EASTER EGG DA TECLA NAO ENCOSTA NO SAVE (issue #49). A brincadeira e
+	#       visual: a letra aparece na folha e o total de caracteres do jogo NAO muda. Esta
+	#       e a metade que importa -- um bug aqui nao pode custar progresso a ninguem.
+	var cenario := menu.find_child("Cenario", true, false) as CenarioDoMenu
+	if cenario == null:
+		_falhar("o menu nao montou o cenario")
+		return
+	var total_antes_do_easter_egg := Jogo.total_caracteres
+	var dinheiro_antes_do_easter_egg := Jogo.dinheiro
+	_teclar("b")
+	_teclar("o")
+	_teclar("m")
+	await get_tree().process_frame
+	if cenario.escrito_no_papel() != "bom":
+		_falhar("a tecla do jogador nao virou letra no papel: \"%s\"" % cenario.escrito_no_papel())
+		return
+	if not Jogo.total_caracteres.igual_a(total_antes_do_easter_egg):
+		_falhar("⚠️ o easter egg da tecla MEXEU no total de caracteres")
+		return
+	if not Jogo.dinheiro.igual_a(dinheiro_antes_do_easter_egg):
+		_falhar("⚠️ o easter egg da tecla MEXEU no dinheiro")
+		return
+
+	# e a folha nao cresce para sempre: ela mostra o FIM do que foi escrito
+	for i in CenarioDoMenu.LIMITE_DO_PAPEL + 6:
+		_teclar("x")
+	await get_tree().process_frame
+	if cenario.escrito_no_papel().length() > CenarioDoMenu.LIMITE_DO_PAPEL:
+		_falhar("a folha aceitou %d caracteres, e o limite e %d" % [
+			cenario.escrito_no_papel().length(), CenarioDoMenu.LIMITE_DO_PAPEL,
+		])
+		return
+
+	# o acontecimento raro do plano §24, disparado em vez de esperado
+	var frase_rara := tr(CenarioDoMenu.FRASES_RARAS[0])
+	cenario.escrever_sozinho(frase_rara)
+	# ⚠️ SO ATE A ULTIMA LETRA, e nao "um tempao". A folha e arrancada sozinha depois de
+	# alguns segundos (e ela tem que ser), entao adiantar demais mede a folha JA LIMPA e
+	# reprova o codigo certo -- foi o que esta linha fez na primeira versao.
+	for i in frase_rara.length() + 1:
+		cenario.adiantar_o_papel(0.2)
+	if cenario.escrito_no_papel() != frase_rara:
+		_falhar("o macaco nao escreveu %s sozinho: \"%s\"" % [
+			CenarioDoMenu.FRASES_RARAS[0], cenario.escrito_no_papel(),
+		])
+		return
+	if not Jogo.total_caracteres.igual_a(total_antes_do_easter_egg):
+		_falhar("⚠️ o acontecimento raro MEXEU no total de caracteres")
+		return
+
 	# CONFIGURAÇÕES e CRÉDITOS abrem por cima do menu, e o ESC fecha os dois
 	if not await _abre_e_fecha(menu, "BotaoConfiguracoes", "OpcoesTela"):
 		return
@@ -1006,6 +1056,12 @@ func _ready() -> void:
 		_falhar("depois de excluir, o cartao do slot 1 nao virou NOVO MANUSCRITO")
 		return
 
+	# 20. ⚠️ O CAMINHO DO §48, DE PONTA A PONTA. Este e o ACEITE DA VERSAO (issue #49), e
+	#     por isso ele roda do zero, em ordem, depois de tudo -- e nao espalhado pelos
+	#     passos acima. Um caminho provado em pedacos e um caminho que ninguem andou.
+	if not await _o_caminho_do_48(raiz):
+		return
+
 	for numero in range(1, Config.SLOTS + 1):
 		Save.caminho = Config.caminho_do_slot(numero)
 		Save.apagar()
@@ -1088,6 +1144,145 @@ func _texto_de(no: Node) -> String:
 		pedacos.append((rotulo as Label).text)
 	return "
 ".join(pedacos)
+
+
+## ⚠️ O ACEITE DA VERSAO v0.5, o caminho §48 do plano do menu (issue #49):
+##
+##   abrir -> abertura -> configurar -> criar Manuscrito -> jogar -> autosave
+##   -> voltar ao menu -> ver o cartao -> fechar -> abrir -> CONTINUAR
+##   -> estar exatamente onde parou
+##
+## Cada seta e um passo, e cada passo afirma alguma coisa. Ele comeca do ZERO: slots
+## apagados, opcoes apagadas, "ja viu abertura" em falso -- senao ele herdaria o estado dos
+## dezenove passos acima e provaria um caminho que ninguem percorre.
+func _o_caminho_do_48(raiz: Node) -> bool:
+	print("  §48: o caminho inteiro")
+
+	# ABRIR -- do zero, como quem instalou o jogo agora
+	for numero in range(1, Config.SLOTS + 1):
+		Save.apagar_arquivos(Config.caminho_do_slot(numero))
+	if FileAccess.file_exists(Config.caminho):
+		DirAccess.remove_absolute(Config.caminho)
+	Config.carregar()
+	Config.aplicar()
+
+	# ABERTURA
+	Cenas.ir_para_abertura()
+	await get_tree().process_frame
+	if Cenas.atual() != "abertura":
+		_falhar("§48: instalacao nova nao viu a abertura")
+		return false
+	_apertar(&"ui_cancel")
+	await get_tree().process_frame
+	if Cenas.atual() != "menu":
+		_falhar("§48: a abertura nao levou ao menu")
+		return false
+
+	# CONFIGURAR -- e a escolha tem que sobreviver ao caminho inteiro
+	var volume_escolhido := 0.35
+	Config.definir("volume", volume_escolhido)
+	Config.escolher("som_de_digitacao", 1)
+
+	# CRIAR MANUSCRITO
+	var menu := raiz.find_child("MenuTela", true, false)
+	(menu.find_child("BotaoJogar", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	var arquivos := raiz.find_child("ArquivosTela", true, false)
+	(arquivos.find_child("BotaoNovo1", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	var campo := arquivos.find_child("CampoDeNome1", true, false) as LineEdit
+	campo.text = NOME_DO_MANUSCRITO
+	(arquivos.find_child("BotaoCriar1", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	if Cenas.atual() != "partida":
+		_falhar("§48: criar o Manuscrito nao abriu a partida")
+		return false
+
+	# JOGAR
+	for i in CLIQUES:
+		_apertar(&"ui_accept")
+		await get_tree().process_frame
+	if Jogo.total_caracteres.sinal() <= 0:
+		_falhar("§48: jogar nao produziu caractere nenhum")
+		return false
+
+	# AUTOSAVE -- pelo gatilho de verdade, e nao chamando Save.gravar
+	var gravou: Array[int] = []
+	var ouvinte := func() -> void: gravou.append(1)
+	EventBus.jogo_gravado.connect(ouvinte)
+	Autosave.tique(Autosave.INTERVALO + 1.0)
+	EventBus.jogo_gravado.disconnect(ouvinte)
+	if gravou.is_empty():
+		_falhar("§48: o cronometro do autosave nao gravou")
+		return false
+
+	# VOLTAR AO MENU
+	var total_ao_sair := Jogo.total_caracteres
+	var hud := raiz.find_child("HUD", true, false)
+	(hud.find_child("BotaoMenu", true, false) as Button).pressed.emit()
+	await get_tree().process_frame
+	if Cenas.atual() != "menu":
+		_falhar("§48: o botao MENU nao voltou ao menu")
+		return false
+
+	# VER O CARTAO -- o resumo do CONTINUAR conta a partida de volta
+	var menu_de_volta := raiz.find_child("MenuTela", true, false)
+	var resumo := menu_de_volta.find_child("ResumoDoContinuar", true, false) as Label
+	if not resumo.text.contains(Formatador.formatar(total_ao_sair)):
+		_falhar("§48: o cartao nao mostra %s" % Formatador.formatar(total_ao_sair))
+		return false
+
+	# FECHAR -> ABRIR. Fechar grava (Cenas.sair faz isso, mas ele encerra o processo),
+	# entao o que se simula aqui e o ESTADO do jogo recem-aberto: memoria limpa e a
+	# abertura ja vista. Se o disco nao tivesse a partida, o CONTINUAR abaixo reprovaria.
+	Jogo.total_caracteres = Grande.zero()
+	Jogo.dinheiro = Grande.zero()
+	Jogo.nome = ""
+	Cenas.ir_para_abertura()
+	await get_tree().process_frame
+	if Cenas.atual() != "menu":
+		_falhar("§48: reabrir nao caiu direto no menu -- a abertura voltou")
+		return false
+
+	# CONTINUAR
+	var menu_reaberto := raiz.find_child("MenuTela", true, false)
+	var continuar := menu_reaberto.find_child("BotaoContinuar", true, false) as Button
+	if continuar.disabled:
+		_falhar("§48: depois de reabrir, o CONTINUAR nao esta disponivel")
+		return false
+	continuar.pressed.emit()
+
+	# ESTAR EXATAMENTE ONDE PAROU -- sem await, para a producao do primeiro quadro nao
+	# entrar na comparacao
+	if Cenas.atual() != "partida":
+		_falhar("§48: CONTINUAR nao abriu a partida")
+		return false
+	if not Jogo.total_caracteres.igual_a(total_ao_sair):
+		_falhar("§48: voltou com %s no lugar de %s" % [
+			Jogo.total_caracteres.para_texto(), total_ao_sair.para_texto(),
+		])
+		return false
+	if Jogo.nome != NOME_DO_MANUSCRITO:
+		_falhar("§48: o nome do Manuscrito nao voltou: \"%s\"" % Jogo.nome)
+		return false
+	if absf(Config.volume() - volume_escolhido) > 1e-6:
+		_falhar("§48: a configuracao nao sobreviveu ao caminho")
+		return false
+
+	await get_tree().process_frame
+	print("  §48: abrir, abertura, configurar, criar, jogar, autosave, menu, cartao, "
+		+ "reabrir, CONTINUAR -- tudo no lugar")
+	return true
+
+
+## Aperta uma tecla de LETRA, e nao uma acao. O easter egg do menu le o `unicode` do
+## evento, que acao nenhuma carrega.
+func _teclar(letra: String) -> void:
+	var evento := InputEventKey.new()
+	evento.pressed = true
+	evento.unicode = letra.unicode_at(0)
+	evento.keycode = letra.to_upper().unicode_at(0)
+	Input.parse_input_event(evento)
 
 
 func _apertar(acao: StringName) -> void:
