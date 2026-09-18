@@ -30,3 +30,7 @@ mcp_tmp/
 
 # Capturas avulsas de tools/capturar.tscn ficam em user://, nao aqui.
 # A galeria de docs/capturas/ E versionada de proposito.
+
+# O CI junta as capturas dele aqui antes de subir como artefato (issue #50). Elas sao
+# resultado de uma corrida, e nao conteudo do projeto.
+/capturas/

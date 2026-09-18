@@ -538,6 +538,31 @@ difere do português, então ele reprova em vez de deixar passar.
 **[solo]** Os testes fazem o papel que o revisor fazia no time: são a única coisa que
 discorda de você antes de o bug chegar no jogo.
 
+### O CI roda os dois sozinho (issue #50)
+
+`.github/workflows/portoes.yml` roda em **push no `main`** e em **todo pull request**. Até
+ele existir, as 3.967 afirmações dependiam de alguém lembrar de rodá-las — e portão que
+depende de memória é portão que um dia não roda, justamente no dia em que teria pegado
+alguma coisa.
+
+Por isso o PR deixou de ser opcional para diff grande: **abra um PR quando quiser que o CI
+rode antes**, que é o que a regra de git desta página já previa.
+
+⚠️ **`exit 0` não significa que o portão rodou.** O Godot sai 0 quando a cena principal não
+carrega, quando um autoload não sobe, quando o caminho do argumento está errado. Um CI que
+confiasse no código de saída ficaria verde para sempre a partir do dia em que alguém
+renomeasse `runner.tscn`. Por isso cada passo passa por `tools/ci/exigir_passou.sh`, que
+**exige a palavra `PASSOU` na saída** e reprova se aparecer `FALHOU` — as duas metades.
+
+⚠️ **A versão do Godot é fixada no workflow**, e não "a mais recente": engine nova é uma
+mudança que ninguém pediu entrando por um caminho que ninguém olha, e ela chegaria como uma
+falha de teste sem commit correspondente.
+
+⚠️ **Captura precisa de janela**, e no CI isso é `xvfb-run`. Se ele não estiver disponível o
+passo **falha alto** em vez de pular: captura pulada em silêncio é a galeria envelhecendo
+sem ninguém saber. E cada captura é conferida uma a uma — "faltou uma foto" é exatamente o
+tipo de coisa que ninguém nota num artefato.
+
 ### O que cada ferramenta prova — e o que ela NÃO prova
 
 Medido na engine em 2026-08-26, com Godot 4.7.2. Não é teoria.
