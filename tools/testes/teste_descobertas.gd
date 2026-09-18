@@ -203,25 +203,27 @@ func _sortear_com(semente: int, creditos: int) -> Array:
 func _bonus_permanente() -> void:
 	var guardado := Jogo.descobertas.duplicate()
 	Jogo.descobertas = [] as Array[String]
-	perto(Economia.multiplicador_de_descobertas(), 1.0, 1e-12, "sem descoberta, bonus neutro")
+	# ⚠️ O NEUTRO DA SOMA E ZERO, e nao um (issue #60). Quem trocar isto de volta para 1
+	# faz todo macaco produzir um caractere a mais de graca, para sempre.
+	perto(Economia.soma_de_descobertas(), 0.0, 1e-12, "sem descoberta, a parcela e ZERO")
 
 	var primeira := Descobertas.todas()[0]
 	Jogo.descobertas = [primeira.id] as Array[String]
 	perto(
-		Economia.multiplicador_de_descobertas(), primeira.bonus, 1e-12,
+		Economia.soma_de_descobertas(), primeira.bonus - 1.0, 1e-12,
 		"uma descoberta vale o bonus dela",
 	)
 
 	var segunda := Descobertas.todas()[1]
 	Jogo.descobertas = [primeira.id, segunda.id] as Array[String]
 	perto(
-		Economia.multiplicador_de_descobertas(), primeira.bonus * segunda.bonus, 1e-12,
+		Economia.soma_de_descobertas(), (primeira.bonus - 1.0) + (segunda.bonus - 1.0), 1e-12,
 		"duas descobertas multiplicam, nunca somam",
 	)
 
 	Jogo.descobertas = ["id_que_nao_existe"] as Array[String]
 	perto(
-		Economia.multiplicador_de_descobertas(), 1.0, 1e-12,
+		Economia.soma_de_descobertas(), 0.0, 1e-12,
 		"id de save antigo que nao existe mais e ignorado, e nao quebra a producao",
 	)
 

@@ -24,12 +24,60 @@ extends Resource
 ## saber digitar sozinho (GDD §3) e um upgrade acende a producao automatica. Fica aqui, e
 ## nao numa flag no Jogo, porque assim o gameplay continua perguntando pelo TIPO de efeito
 ## e nunca por um id -- trocar qual upgrade acende a producao nao mexe em codigo nenhum.
+## ⚠️ VALOR NOVO ENTRA NO FIM. O enum e serializado como INTEIRO nos .tres: inserir uma
+## entrada no meio reescreve o significado de todo arquivo ja salvo -- "Duas Maos" viraria
+## outra coisa -- sem uma linha no console.
+##
+## ⚠️ E NEM TODO BONUS PRECISA SER MULTIPLICADOR. Ate a issue #60 os 44 upgrades eram 38
+## multiplicadores que COMPOEM, e a conta era esta:
+##
+##   VELOCIDADE_DO_MACACO  17 upgrades  ->  x5.627
+##   PRODUCAO_GLOBAL       21 upgrades  ->  x15.650.000
+##   CAPACIDADE             5 upgrades  ->  x112
+##
+## Juntos, mais de 10^13 -- e nenhuma tabela manual de precos sobrevive a isso. Foi essa
+## composicao que fez a campanha inteira caber em quatro minutos (decisao 0007).
+##
+## Os tipos abaixo estao ordenados pelo quanto compoem, do menos para o mais:
+##
+##   VELOCIDADE_SOMADA   soma na base de cada macaco. NAO compoe: dez deles sao dez, e
+##                       nao 2^10. E o tipo da MAIORIA depois desta issue.
+##   CUSTO_DE_MACACO     desconto no proximo macaco. Compoe, mas para baixo e com PISO.
+##   VELOCIDADE_DO_MACACO  multiplica a velocidade. Compoe -- use pouco.
+##   PRODUCAO_GLOBAL     multiplica TUDO. ⚠️ Compoe com tudo: tem que ser um MOMENTO, e
+##                       nao mais um upgrade da lista. Um x2 em tudo merece nome proprio.
 enum Efeito {
 	VELOCIDADE_DO_MACACO,
 	PRODUCAO_GLOBAL,
 	LIGA_PRODUCAO_AUTOMATICA,
 	CAPACIDADE,
+	VELOCIDADE_SOMADA,
+	CUSTO_DE_MACACO,
 }
+
+## Os tipos em que `valor` e um multiplicador (> 1). Fora daqui, `valor` quer dizer outra
+## coisa -- e a suite cobra cada um pela regra DELE.
+##
+## ⚠️ Lista derivada do enum e nao escrita a mao seria melhor, mas nao ha como derivar
+## "isto multiplica" de um inteiro. Entao ela e uma SEGUNDA FONTE, e existe portao cruzando
+## as duas: tipo que nao esta em nenhuma das tres listas abaixo reprova.
+const MULTIPLICADORES: Array[Efeito] = [
+	Efeito.VELOCIDADE_DO_MACACO,
+	Efeito.PRODUCAO_GLOBAL,
+	Efeito.CAPACIDADE,
+]
+
+## Os tipos em que `valor` e uma PARCELA, somada e nunca multiplicada.
+const SOMADORES: Array[Efeito] = [Efeito.VELOCIDADE_SOMADA]
+
+## Os tipos em que `valor` e um DESCONTO: entre 0 e 1, e quanto menor, melhor.
+const DESCONTOS: Array[Efeito] = [Efeito.CUSTO_DE_MACACO]
+
+## ⚠️ O PISO DO DESCONTO. Multiplicar descontos sem piso leva o custo a zero, e custo zero
+## e macaco infinito -- a familia de bug que a CONVENCOES chama de "zero num divisor". Ele
+## e constante no codigo de proposito: nao e botao de tuning, e o limite que impede o
+## sistema de se anular.
+const DESCONTO_MINIMO: float = 0.1
 
 ## A que familia tematica o upgrade pertence (issue #53). Dezenas de "+25%" sao
 ## NECESSARIOS economicamente e ruins como conteudo: a familia e o que transforma vinte

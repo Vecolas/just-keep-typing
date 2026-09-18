@@ -235,6 +235,30 @@ func bonus_de(tipo: DadosUpgrade.Efeito) -> float:
 	return total
 
 
+## A SOMA dos valores de um tipo ADITIVO (issue #60). Dez upgrades de +2 dao +20, e nao
+## 2^10 -- e e essa a diferenca inteira entre uma curva que se ajusta e uma que explode.
+##
+## ⚠️ Zero e o neutro aqui, e nao um. Quem chamar isto esperando um multiplicador faz a
+## producao virar zero -- por isso o nome e `soma_de` e nao `bonus_de`.
+func soma_de(tipo: DadosUpgrade.Efeito) -> float:
+	var total := 0.0
+	for id in Jogo.upgrades_comprados:
+		var dados: DadosUpgrade = _upgrades.get(id)
+		if dados != null and dados.tipo_de_efeito == tipo:
+			total += dados.valor
+	return total
+
+
+## O fator de DESCONTO de um tipo, com piso (issue #60).
+##
+## ⚠️ O PISO NAO E ZELO. Descontos multiplicam, e multiplicar descontos sem piso leva o
+## custo a zero -- e custo zero e macaco infinito, comprado num laco que nao termina. E a
+## familia "zero num divisor" da CONVENCOES, e ela nao da erro: o jogo simplesmente para de
+## cobrar.
+func desconto_de(tipo: DadosUpgrade.Efeito) -> float:
+	return maxf(DadosUpgrade.DESCONTO_MINIMO, bonus_de(tipo))
+
+
 ## Se existe algum upgrade comprado com esse efeito. Para os efeitos de interruptor, que
 ## nao multiplicam nada.
 func tem_efeito(tipo: DadosUpgrade.Efeito) -> bool:
@@ -285,10 +309,22 @@ func custo_de_macacos(quantos: int) -> Grande:
 	if macaco == null:
 		return Grande.zero()
 	return custo_de(
-		Grande.de_float(macaco.custo_base),
+		_base_do_macaco(macaco),
 		macaco.crescimento_custo,
 		Jogo.macacos.para_float(),
 		quantos,
+	)
+
+
+## O custo base do macaco JA COM O DESCONTO dos upgrades de eficiencia (issue #60).
+##
+## ⚠️ EXISTE PARA SER UM LUGAR SO. Duas funcoes leem esta base -- custo_de_macacos() e
+## macacos_que_cabem() -- e aplicar o desconto em uma delas faria "Comprar Maximo" oferecer
+## uma quantidade que a compra recusaria depois do clique. Que e exatamente o
+## "silenciosamente inutil" que a issue #15 proibe, chegando por outra porta.
+func _base_do_macaco(macaco: DadosMacaco) -> Grande:
+	return Grande.de_float(
+		macaco.custo_base * desconto_de(DadosUpgrade.Efeito.CUSTO_DE_MACACO)
 	)
 
 
@@ -302,7 +338,7 @@ func macacos_que_cabem() -> int:
 	if macaco == null:
 		return 0
 	var pelo_saldo := quantos_cabem(
-		Grande.de_float(macaco.custo_base),
+		_base_do_macaco(macaco),
 		macaco.crescimento_custo,
 		Jogo.macacos.para_float(),
 		Jogo.dinheiro,
@@ -345,7 +381,6 @@ func multiplicador_total() -> float:
 	return (
 		Eventos.multiplicador_de_producao()
 		* bonus_de(DadosUpgrade.Efeito.PRODUCAO_GLOBAL)
-		* multiplicador_de_descobertas()
 		* multiplicador_de_maquina()
 		* multiplicador_de_sala()
 		* multiplicador_de_prestigio()
@@ -374,15 +409,29 @@ func multiplicador_de_sala() -> float:
 	return cabem.dividido(Jogo.macacos).para_float()
 
 
-## O produto do bonus de todas as descobertas ja encontradas (GDD §9 e §11): a primeira
-## palavra da +10%, o Hamlet da x10. Calculado na hora e nunca guardado multiplicado, para
-## que uma descoberta nova valha no mesmo quadro em que sai.
-func multiplicador_de_descobertas() -> float:
-	var total := 1.0
+## A PARCELA de todas as descobertas ja encontradas (GDD §9 e §11), somada e nunca
+## multiplicada. Calculada na hora, para que uma descoberta nova valha no mesmo quadro.
+##
+## ⚠️ ATE A ISSUE #60 ISTO ERA UM PRODUTO, E ERA A MAIOR EXPLOSAO DO JOGO. Medido: as 62
+## descobertas compunham para x1,13 x 10^41 -- vinte e oito ordens de grandeza acima dos
+## upgrades, que eram o suspeito obvio. A issue #52 acrescentou 46 delas, e o portao que eu
+## mesmo escrevi EXIGIA bonus > 1 de toda descoberta de papel BONUS: a regra que protegia
+## contra dado esquecido era a mesma que garantia a composicao.
+##
+## Como parcela, as mesmas 53 descobertas somam +1.665. O `bonus` do .tres continua sendo o
+## numero que o autor escreveu; o que mudou e que ele entra como (bonus - 1) numa SOMA.
+##
+## ⚠️ E ISSO E O QUE A DECISAO 0008 JA DIZIA: "Descoberta -- nao aumenta CPS diretamente".
+## Ela nao deixou de valer nada: ela deixou de MULTIPLICAR.
+func soma_de_descobertas() -> float:
+	var total := 0.0
 	for id in Jogo.descobertas:
 		var dados := Descobertas.de(id)
 		if dados != null:
-			total *= dados.bonus
+			# (bonus - 1): o .tres continua guardando o numero que o autor escreveu como
+			# multiplicador, e a conversao para parcela mora AQUI, num lugar so. Reescrever
+			# os 62 arquivos daria duas leituras possiveis do mesmo campo.
+			total += maxf(0.0, dados.bonus - 1.0)
 	return total
 
 
@@ -402,8 +451,16 @@ func producao_por_macaco() -> float:
 	# Memoria Genetica multiplica a velocidade do MACACO e nao a producao global, porque
 	# e isso que o GDD §19 diz que ela faz -- e a diferenca aparece assim que existir um
 	# multiplicador que so vale para um tier de macaco
+	# ⚠️ SOMA ANTES, MULTIPLICA DEPOIS (issue #60). A parcela entra na BASE do macaco, e
+	# so entao os multiplicadores agem sobre ela -- que e o que mantem um upgrade aditivo
+	# relevante no fim do jogo sem ele proprio compor. Somar depois dos multiplicadores
+	# faria a parcela virar irrelevante no primeiro prestigio.
 	return (
-		macaco.producao_base
+		(
+			macaco.producao_base
+			+ soma_de(DadosUpgrade.Efeito.VELOCIDADE_SOMADA)
+			+ soma_de_descobertas()
+		)
 		* bonus_de(DadosUpgrade.Efeito.VELOCIDADE_DO_MACACO)
 		* Teoremas.bonus_de(DadosTeorema.Efeito.MEMORIA_GENETICA)
 	)
