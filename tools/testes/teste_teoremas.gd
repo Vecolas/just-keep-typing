@@ -79,6 +79,21 @@ func _arvore() -> void:
 	)
 
 
+## O limite do prestigio, lido do .tres que o jogo le. Um segundo numero digitado na suite
+## seria uma segunda fonte para a mesma verdade, e a que envelhece e sempre a copia.
+## Um total confortavelmente acima do limite: seis ordens de grandeza, que rendem seis
+## pontos. Todo cenario de prestigio da suite parte daqui, e nao de um numero digitado.
+func _acima_do_limite() -> Grande:
+	return Grande.de_float(_limite_do_prestigio()).vezes(Grande.new(1.0, 6))
+
+
+func _limite_do_prestigio() -> float:
+	var dados := ResourceLoader.load("res://data/prestigio.tres")
+	if dados == null:
+		return 0.0
+	return dados.limite_inicial
+
+
 func _calculo_dos_pontos() -> void:
 	var guardado := _guardar()
 	_zerar()
@@ -88,7 +103,12 @@ func _calculo_dos_pontos() -> void:
 	ok(not Teoremas.pode_provar(), "e nao da para provar o Teorema")
 
 	# pontos = log10(total / limite): cinco ordens de grandeza acima do limite dao cinco
-	var limite := Grande.de_float(1e6)
+	#
+	# ⚠️ O LIMITE SAI DO .TRES, e nao de um 1e6 digitado aqui. Ele e botao de tuning -- a
+	# issue #62 o moveu de 1e6 para 5e17 -- e portao que crava o numero reprova o dado
+	# certo no primeiro ajuste. O que esta afirmacao cobra e a REGRA: N ordens de grandeza
+	# acima do limite dao N pontos, qualquer que seja o limite.
+	var limite := Grande.de_float(_limite_do_prestigio())
 	Jogo.total_caracteres = limite.vezes(Grande.new(1.0, 5))
 	_vale(Teoremas.pontos_ao_provar(), 5.0, "cinco ordens de grandeza dao cinco pontos")
 	ok(Teoremas.pode_provar(), "e ai da para provar")
@@ -113,8 +133,13 @@ func _o_reset() -> void:
 	var guardado := _guardar()
 	_zerar()
 
-	Jogo.total_caracteres = Grande.new(1.0, 12)
-	Jogo.caracteres_da_run = Grande.new(1.0, 12)
+	# ⚠️ DERIVADO DO LIMITE, e nao um 1e12 digitado. O total tem que ficar ACIMA do limite
+	# do prestigio para provar funcionar -- com o numero cravado, mover o limite (issue
+	# #62) fazia `provar()` recusar e SEIS afirmacoes reprovarem apontando para o reset,
+	# que nao tinha nada de errado. Seis dedos apontando para o lugar errado.
+	var acima := _acima_do_limite()
+	Jogo.total_caracteres = acima
+	Jogo.caracteres_da_run = acima
 	Jogo.dinheiro = Grande.new(1.0, 10)
 	Jogo.macacos = Grande.de_float(500.0)
 	Jogo.maquina_atual = "maquina_eletrica"
@@ -139,7 +164,7 @@ func _o_reset() -> void:
 	perto(Jogo.tempo_da_run, 0.0, 0.0, "e o relogio da run zera")
 
 	# o que fica -- e e isto que a issue chama de "nada que a arvore promete manter"
-	_vale(Jogo.total_caracteres, 1e12, "o total do Panorama nao desce")
+	ok(Jogo.total_caracteres.igual_a(acima), "o total do Panorama nao desce")
 	igual(Jogo.marcos_alcancados.size(), 1, "os marcos alcancados ficam")
 	perto(Jogo.tempo_jogado, 99999.0, 1e-6, "o tempo total de jogo nao zera")
 	igual(Jogo.prestigios, 1, "e o contador de prestigios sobe")
@@ -152,13 +177,13 @@ func _o_reset() -> void:
 	# com ela, ficam
 	Jogo.descobertas = ["um_poema"] as Array[String]
 	Jogo.teoremas = {"biblioteca_persistente": 1}
-	Jogo.total_caracteres = Grande.new(1.0, 12)
+	Jogo.total_caracteres = _acima_do_limite()
 	Teoremas.provar()
 	ok(Jogo.descobertas.has("um_poema"), "com a Biblioteca Persistente elas sobrevivem")
 
 	# Conhecimento Acumulado devolve os upgrades mais baratos (GDD §19)
 	Jogo.teoremas = {"conhecimento_acumulado": 2}
-	Jogo.total_caracteres = Grande.new(1.0, 12)
+	Jogo.total_caracteres = _acima_do_limite()
 	Teoremas.provar()
 	igual(Jogo.upgrades_comprados.size(), 2, "o Conhecimento Acumulado devolve dois upgrades")
 
@@ -180,7 +205,11 @@ func _a_run_seguinte_nunca_rende_menos() -> void:
 
 	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
 	Jogo.macacos = Grande.de_float(10.0)
-	Jogo.total_caracteres = Grande.new(1.0, 14)
+	# ⚠️ ACIMA DO LIMITE, e derivado dele. Com 1e14 cravado aqui, mover o limite do
+	# prestigio fazia provar() recusar -- e a afirmacao "o prestigio precisa valer a pena"
+	# reprovava dizendo que o prestigio nao rende, quando na verdade ele nem tinha
+	# acontecido. Portao que aponta para o lugar errado custa a tarde inteira.
+	Jogo.total_caracteres = _acima_do_limite()
 	var antes := Economia.producao_por_segundo()
 
 	Teoremas.provar()
