@@ -586,6 +586,46 @@ nenhuma vez.
 
 ---
 
+## Toda ferramenta que produz caractere fixa a semente do sorteio
+
+`Descobertas.gerador` chama `randomize()` no `_ready`, e **descoberta dá bônus de
+produção**. Uma ferramenta que produz caractere sem fixar a semente não é determinística — e
+a divergência **cresce com o tempo simulado**, porque o bônus entra na composição.
+
+Medido na `medir_ritmo`: **35 segundos** de diferença no primeiro Teorema entre duas
+corridas do mesmo commit. O cabeçalho dela afirmava, desde sempre, que era estável.
+
+⚠️ **Sobreviveu porque ninguém roda uma régua duas vezes para comparar consigo mesma.** A
+suíte e a captura já semeavam; as réguas, não. Uma verdade por assunto — e este assunto
+tinha duas.
+
+**Quem semeia é o PONTO DE ENTRADA**, e não cada arquivo:
+
+| entrada | onde |
+|---|---|
+| `runner.gd` | cobre **todas** as suítes de uma vez |
+| `teste_fumaca.gd` | a fumaça |
+| `medir_ritmo.gd`, `medir_economia.gd` | as réguas |
+| `capturar.gd` | por cenário |
+
+A primeira versão do portão varria todo `.gd` e reprovou três **suítes** — que rodam sob o
+runner. Exigir a linha em cada uma seriam N lugares para esquecer, com a suíte nova nascendo
+sem ela.
+
+⚠️ **E o número é o MESMO em todas.** Semente diferente por ferramenta daria medições que
+não se comparam entre si, que é metade do problema de volta.
+
+O portão deriva os pontos de entrada da pasta — todo `.gd` com um `.tscn` irmão — e a
+dívida (`SEM_SORTEIO_AINDA`) morde dos dois lados: quem está nela tem de **continuar** sem
+produzir caractere.
+
+### E uma fumaça que dependia de sorte passava assim mesmo
+
+As afirmações da fumaça são estruturais, então ela passava com totais diferentes a cada
+corrida. É justamente por isso que o defeito nunca apareceu: **teste que depende de sorte só
+cobra a dívida no dia em que dá azar** — e no CI isso vira *"falhou uma vez, roda de novo"*,
+que é como um portão morre.
+
 ## O Arquivo de Descobertas é coleção, e coleção tem faixa
 
 Com sessenta e duas descobertas (issue #52) a lista plana deixou de funcionar. A tela

@@ -61,6 +61,7 @@ func executar() -> void:
 	_as_faixas_cobrem_toda_raridade()
 	_a_contagem_por_faixa_fecha()
 	_o_carimbo_do_arquivo()
+	_quem_produz_caractere_semeia_o_sorteio()
 
 
 func _catalogo() -> void:
@@ -384,6 +385,81 @@ func _os_degraus_estao_cheios() -> void:
 		Descobertas.todas().size() >= 60,
 		"o catalogo chegou a sessenta (%d)" % Descobertas.todas().size(),
 	)
+
+
+## ⚠️ FERRAMENTA QUE PRODUZ CARACTERE E NAO FIXA A SEMENTE NAO E DETERMINISTICA.
+##
+## Descobertas.gerador chama randomize() no _ready, e descoberta DA BONUS DE PRODUCAO:
+## duas corridas do mesmo commit divergem, e a divergencia cresce com o tempo simulado.
+## Medido em medir_ritmo: 35 segundos de diferenca no primeiro Teorema entre duas corridas
+## identicas -- com o cabecalho da regua afirmando, desde sempre, que ela era estavel.
+##
+## O defeito sobreviveu porque ninguem roda uma regua duas vezes para comparar consigo
+## mesma. Este portao roda.
+##
+## ⚠️ VARRE A PASTA, e nao uma lista: ferramenta nova entra na conta sozinha. E a divida e
+## NOMEADA e morde dos dois lados -- nome fora dela tem que semear, nome dentro tem que
+## continuar sem produzir caractere nenhum.
+## ⚠️ QUEM PRECISA SEMEAR E O PONTO DE ENTRADA, e nao todo arquivo que produz caractere.
+##
+## A primeira versao deste portao varria todo .gd e reprovou teste_cenas, teste_combo e
+## teste_economia -- que sao SUITES, e rodam sob o runner. Exigir a linha em cada uma seria
+## N lugares para esquecer, com a suite nova nascendo sem ela. O runner semeia uma vez, e o
+## portao confere quem de fato inicia uma execucao.
+##
+## Ponto de entrada e DERIVADO da pasta: todo .gd com um .tscn irmao. Ferramenta nova entra
+## na conta sozinha, sem ninguem lembrar de acrescentar uma linha aqui.
+const SEM_SORTEIO_AINDA: PackedStringArray = [
+	# nao produzem caractere: um mede quadro com o multiplicador cravado na mao, o outro so
+	# monta a galeria a partir de imagens que ja existem
+	"medir_quadro.gd",
+	"gerar_galeria.gd",
+]
+
+
+func _quem_produz_caractere_semeia_o_sorteio() -> void:
+	var conferidas := 0
+	for pasta in ["res://tools", "res://tools/testes"]:
+		var dir := DirAccess.open(pasta)
+		if dir == null:
+			continue
+		dir.list_dir_begin()
+		var item := dir.get_next()
+		while item != "":
+			if not dir.current_is_dir() and item.ends_with(".tscn"):
+				var script := item.replace(".tscn", ".gd")
+				conferidas += _conferir_semente(pasta + "/" + script, script)
+			item = dir.get_next()
+		dir.list_dir_end()
+
+	# ⚠️ portao com zero verificacoes tem que REPROVAR: pasta vazia nao e aprovacao
+	ok(conferidas > 0, "conferiu a semente de %d ponto(s) de entrada" % conferidas)
+
+
+## Devolve 1 quando o ponto de entrada foi conferido, 0 quando ele esta na divida.
+func _conferir_semente(caminho: String, nome_do_arquivo: String) -> int:
+	var arquivo := FileAccess.open(caminho, FileAccess.READ)
+	if arquivo == null:
+		return 0
+	var texto := arquivo.get_as_text()
+	arquivo.close()
+
+	var produz := texto.contains("Economia.digitar") or texto.contains("Economia.acumular")
+
+	if nome_do_arquivo in SEM_SORTEIO_AINDA:
+		# a outra metade da divida: se este arquivo passar a produzir caractere, ele sai da
+		# lista -- senao a linha fica cobrindo em silencio o dia em que ele mudar
+		ok(
+			not produz,
+			"%s esta em SEM_SORTEIO_AINDA e continua sem produzir caractere" % nome_do_arquivo,
+		)
+		return 0
+
+	ok(
+		texto.contains("Descobertas.gerador.seed"),
+		"o ponto de entrada %s fixa Descobertas.gerador.seed" % nome_do_arquivo,
+	)
+	return 1
 
 
 ## ⚠️ RARIDADE FORA DE FAIXA SOME DO ARQUIVO, e sumir e pior que reprovar. Varre o ENUM,

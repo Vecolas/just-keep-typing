@@ -38,7 +38,18 @@ const _TELA_DE_PROJETO := Vector2i(1920, 1080)
 ## Quadros ate um container terminar de ordenar os filhos dele.
 const QUADROS_ATE_O_LAYOUT_ASSENTAR := 8
 
+## ⚠️ A SEMENTE DO SORTEIO DE DESCOBERTAS (issue #56). Descobertas.gerador chama
+## randomize() no _ready, e descoberta DA BONUS DE PRODUCAO: sem fixar a semente, esta
+## fumaca produzia totais diferentes a cada corrida. Ela passava assim mesmo -- as
+## afirmacoes daqui sao estruturais --, e e justamente por isso que o defeito nunca
+## apareceu: teste que depende de sorte so cobra a divida no dia em que der azar, e no CI
+## isso vira "falhou uma vez, roda de novo", que e como um portao morre.
+##
+## O numero e o mesmo das reguas de proposito.
+const SEMENTE_DO_SORTEIO: int = 1
+
 func _ready() -> void:
+	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
 	# fixa a lingua como o runner faz, e pelo mesmo motivo: as opcoes moram em
 	# user://opcoes.json, que e da INSTALACAO. Sem isto a fumaca roda no idioma em que o
 	# jogo foi deixado, e uma volta na tela de opcoes quebraria a run sem nada ter mudado

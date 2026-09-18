@@ -304,6 +304,107 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### ⚠️ A RÉGUA NÃO ERA DETERMINÍSTICA, e o cabeçalho dela afirmava que era
+
+`Descobertas.gerador` chama `randomize()` no `_ready`, e **descoberta dá bônus de
+produção**. A `medir_ritmo` nunca semeava esse gerador: duas corridas **do mesmo commit**
+sorteavam em instantes diferentes, a produção divergia, e a curva inteira andava junto.
+
+Medido: **35 segundos** de diferença no primeiro Teorema entre duas corridas idênticas.
+
+E o cabeçalho da régua dizia, desde sempre:
+
+> *"a régua precisa ser ESTÁVEL, para que a diferença entre duas medições seja a mudança no
+> `.tres` e não o humor de quem jogou."*
+
+A suíte e a ferramenta de captura **já semeavam**. As réguas, não. Uma verdade por assunto,
+e este assunto tinha duas — o tipo de defeito que só aparece quando alguém roda a mesma
+coisa duas vezes e compara, que é exatamente o que ninguém faz com uma régua.
+
+Corrigido: `SEMENTE_DO_SORTEIO = 1` em `medir_ritmo` e em `medir_economia`, com o mesmo
+número nas duas — semente diferente por ferramenta daria tabelas que não se comparam entre
+si, que é metade do problema de volta. Conferido: **duas corridas seguidas, byte a byte
+idênticas.**
+
+#### O que isso invalida das medições anteriores
+
+| afirmação | sobrevive? |
+|---|---|
+| issue #53: os 73 primeiros marcos caem em ~4 min contra ~11 min antes | **sim** — 2,7× está muito acima do ruído de ~35 s |
+| issue #54: com e sem combo terminam no mesmo lugar (0,1% em 24 h) | **sim** — é uma medida de escala grande |
+| issue #54: *"o combo custa +37 s por o jogador parar de digitar antes"* | **NÃO** — 37 s é da ordem do ruído, e a conclusão foi construída em cima dele |
+
+⚠️ **A terceira linha é uma retratação, e ela vale a pena ler.** Aquela análise era
+plausível, tinha mecanismo, explicava o sinal — e o número que a sustentava era ruído. O
+modelo do jogador simulado **estava mesmo errado** e o conserto dele continua certo pelos
+próprios méritos; o que não se sustentava era a medição que eu usei como prova. Número
+plausível com mecanismo plausível é exatamente a forma que um erro toma quando ninguém
+conferiu o instrumento.
+
+Com a semente fixa, a comparação limpa é: **o combo adianta o primeiro prestígio em 27
+segundos** (00:03:42 contra 00:04:08). Aceleração, sem inversão nenhuma.
+
+### A tabela da primeira hora (issue #56)
+
+`medir_ritmo` passou a reportar **marco, upgrade, descoberta e primeiro Teorema na mesma
+corrida**. Até aqui ela media só marco — e a versão se chama *"A primeira hora"*: metade do
+que acontece nela era invisível para quem ajusta os números.
+
+```
+ate              marcos   upgrades  descobertas
+00:10:00             76         44            5
+00:20:00              0          0            0
+00:30:00              0          0            0
+00:40:00              1          0            0
+00:50:00              0          0            0
+01:00:00              0          0            0
+```
+
+**A primeira hora é quatro minutos seguidos de cinquenta e seis minutos de silêncio.**
+
+E dentro dos quatro minutos, **35 dos 44 upgrades caem nos últimos vinte e dois segundos**,
+entre 00:03:21 e 00:03:43. A família *O Conhecimento* inteira — nove upgrades — cabe em
+dezoito.
+
+Com a semente fixa (ver a correção acima):
+
+| | com combo | sem combo |
+|---|---|---|
+| primeiro Teorema disponível | 00:03:38 | 00:04:05 |
+| primeiro Teorema vale a pena | **00:03:42** | **00:04:08** |
+| 1ª Impossível | 01:48:46 | 01:48:46 |
+| 1ª Paradoxal | 03:33:46 | 03:33:46 |
+
+**O combo adianta o primeiro prestígio em 27 segundos, e não muda mais nada depois** — as
+duas corridas chegam à primeira Impossível e à primeira Paradoxal no mesmo segundo. É
+exatamente a exigência da issue #54: acelera, e não é via nenhuma.
+
+⚠️ **A leitura disso é uma decisão, e ela está escrita**: `docs/decisoes/0007-a-primeira-hora-mede-quatro-minutos.md`.
+Resumo: não está bom, não é defeito das issues #52 e #53 (antes delas os mesmos marcos
+caíam em onze minutos — a mesma doença com prazo mais longo), e não se conserta com tuning
+pontual. A produção cresce por multiplicadores que **compõem**; os custos crescem por
+escadas escolhidas à mão. Duas curvas de naturezas diferentes se cruzam **uma vez**, e
+depois do cruzamento a produção atravessa todo limite restante em segundos.
+
+### ⚠️ O INSTRUMENTO MUDOU NA ISSUE #56 (2) — o jogador simulado passou a digitar
+
+Até a issue #56, o jogador simulado **parava de digitar no instante em que a produção
+automática acendia**. Nos primeiros minutos, clicar a 4/s rende muito mais que a automação
+recém-ligada — então o modelo desistia de graça, e media a própria ingenuidade.
+
+Foi o que produziu o resultado invertido da issue #54: o combo, por fazer a primeira compra
+chegar **um segundo antes**, aparecia como **37 segundos de atraso** na campanha inteira.
+
+A regra nova não tem número mágico e não precisa de nenhum:
+
+> **ele digita enquanto digitar render mais do que esperar.**
+
+É o mesmo critério da "compra ótima ingênua" aplicado à mão, e ele se desliga sozinho
+quando o jogador vira administrador — que é exatamente o arco que o plano da v0.6 descreve.
+
+**Tabela medida antes desta mudança não se compara com as novas**, pela mesma razão da
+mudança de instrumento da issue #42: o que mudou não foi o jogo, foi a régua.
+
 ### O combo com e sem (issue #54), e o que ele revelou sobre a própria régua
 
 `godot --headless --path . tools/medir_ritmo.tscn -- sem_combo=1` zera o combo depois de

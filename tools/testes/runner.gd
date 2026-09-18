@@ -38,7 +38,25 @@ const SUITES: Array = [
 	preload("res://tools/testes/teste_redacao.gd"),
 ]
 
+## ⚠️ A SEMENTE DO SORTEIO DE DESCOBERTAS, FIXADA AQUI E NAO EM CADA SUITE (issue #56).
+##
+## Descobertas.gerador chama randomize() no _ready, e descoberta DA BONUS DE PRODUCAO.
+## Toda suite que chama Economia.digitar ou Economia.acumular pode disparar uma descoberta
+## sem querer -- e ela muda Jogo.descobertas, que a suite SEGUINTE le. Contaminacao entre
+## suites que depende de sorteio e o pior tipo de teste instavel: ele passa, passa, passa, e
+## falha um dia sem ninguem ter mexido em nada.
+##
+## Fica no runner porque ele e o PONTO DE ENTRADA. Uma linha em cada suite seriam N lugares
+## para esquecer, e a suite nova nasceria sem ela. Quem quer outra semente a troca e a
+## devolve, como teste_descobertas ja faz.
+##
+## O numero e o mesmo da fumaca e das reguas: semente diferente por ferramenta daria
+## medicoes que nao se comparam entre si.
+const SEMENTE_DO_SORTEIO: int = 1
+
+
 func _ready() -> void:
+	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
 	var locale_original := TranslationServer.get_locale()
 	TranslationServer.set_locale("pt_BR")
 
