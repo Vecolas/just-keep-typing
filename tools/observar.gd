@@ -152,6 +152,24 @@ func _observar() -> void:
 	var minutos_sem_acontecimento := 0
 	var minutos_sem_oferta := 0
 
+	# ⚠️ "QUANDO O JOGADOR PAROU DE LER OS TEXTOS" TEM UMA METADE MEDIVEL, e e esta.
+	#
+	# A HUD tem UM slot de aviso (hud.gd::_avisar): cada marco, cada descoberta e cada
+	# autosave escreve por cima do anterior e reinicia o relogio de AVISO_VISIVEL. Dois
+	# avisos dentro dessa janela querem dizer que o primeiro SUMIU antes de dar tempo de
+	# ler -- e isso nao e opiniao, e aritmetica.
+	#
+	# A outra metade -- se o jogador QUIS ler -- continua sendo dele.
+	var instantes: Array[float] = []
+	var anotar := func(_ignorado: Variant = null) -> void:
+		instantes.append(Jogo.tempo_jogado)
+	var anotar_marco := func(_m: DadosMarco) -> void: anotar.call()
+	var anotar_descoberta := func(_d: DadosDescoberta) -> void: anotar.call()
+	var anotar_gravacao := func() -> void: anotar.call()
+	EventBus.marco_alcancado.connect(anotar_marco)
+	EventBus.descoberta_encontrada.connect(anotar_descoberta)
+	EventBus.jogo_gravado.connect(anotar_gravacao)
+
 	var compras := [0]
 	var ouvinte_upgrade := func(_id: String) -> void: compras[0] += 1
 	var ouvinte_macaco := func(_quantos: int) -> void: compras[0] += 1
@@ -215,9 +233,40 @@ func _observar() -> void:
 	print("⚠️ minutos SEM MARCO NEM DESCOBERTA:         %d de %d" % [
 		minutos_sem_acontecimento, _minutos,
 	])
+	EventBus.marco_alcancado.disconnect(anotar_marco)
+	EventBus.descoberta_encontrada.disconnect(anotar_descoberta)
+	EventBus.jogo_gravado.disconnect(anotar_gravacao)
+	_contar_o_que_nao_deu_para_ler(instantes)
+
 	print("")
 	print("um minuto sem compra possivel E sem acontecimento e um minuto em que a tela nao")
 	print("muda e o jogador nao tem o que decidir. A regua nao ve isso.")
+
+
+## Quantos avisos foram apagados antes de completarem AVISO_VISIVEL na tela.
+##
+## ⚠️ O NUMERO SAI DA CONSTANTE DA HUD, e nao de um 1,6 digitado aqui. Ela e um limite de
+## design e pode mudar; copia-la criaria a segunda fonte, e a copia e sempre a que
+## envelhece.
+func _contar_o_que_nao_deu_para_ler(instantes: Array[float]) -> void:
+	var janela: float = preload("res://src/ui/hud.gd").AVISO_VISIVEL
+	instantes.sort()
+	var apagados := 0
+	for i in range(instantes.size() - 1):
+		if instantes[i + 1] - instantes[i] < janela:
+			apagados += 1
+
+	print("")
+	print("⚠️ avisos que a HUD mostrou:                 %d" % instantes.size())
+	print("⚠️ apagados antes dos %.1f s de leitura:      %d  (%.0f%%)" % [
+		janela, apagados,
+		0.0 if instantes.is_empty() else 100.0 * float(apagados) / float(instantes.size()),
+	])
+	if not instantes.is_empty() and apagados > 0:
+		print("")
+		print("   a HUD tem UM slot de aviso: marco, descoberta e autosave escrevem por cima")
+		print("   do anterior. Cada linha acima e um texto que o jogo escreveu e ninguem")
+		print("   teve como ler.")
 
 
 ## Guarda a tela do minuto. ⚠️ ESPERA DOIS QUADROS ANTES: a HUD repinta no _process, e
