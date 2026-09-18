@@ -586,6 +586,40 @@ nenhuma vez.
 
 ---
 
+## O save é texto, e texto não guarda todo float
+
+⚠️ **Número que o formato não carrega é número que muda sozinho.** O `JSON.stringify` do
+Godot guarda **15 dígitos significativos**. Um horário unix já gasta dez antes da vírgula,
+então sobram cinco casas — e o que passa disso é descartado na ida ao disco, sem erro,
+sem aviso e sem uma linha no console.
+
+Medido no 4.7.2:
+
+| escrito | no arquivo | lido de volta | erro |
+|---|---|---|---|
+| `1789699053,5935123` | `1789699053.59351` | `1789699053,5935099` | 2,4 µs |
+| `1789699701,936` | `1789699701.936` | `1789699701,936` | zero |
+
+A perda acontece **uma vez** e não acumula: a segunda ida e volta devolve idêntico.
+
+**A regra:** campo que vai para o save nasce com a precisão que o formato guarda. Data de
+criação é carimbada com `floorf()`, em segundos inteiros, porque quem a consome mostra
+DATA — e precisão que ninguém consegue ver só serve para mentir.
+
+⚠️ **E o que pega isso é uma afirmação NA ORIGEM.** Comparar "antes" com "depois da ida e
+volta" também acusa, mas aponta para a leitura quando o defeito está no carimbo — e
+apontar para o lugar errado custa a tarde inteira.
+
+### Por que isto atravessou a v0.5 inteira
+
+A suíte comparava a data com tolerância `0,0` desde sempre. **Ela passava no Windows e
+reprovava no Linux**: o relógio do Windows entrega ~1 ms de resolução, e `…701,936` cabe
+inteiro nos quinze dígitos; o do Linux entrega microssegundos, e não cabe.
+
+Foi a primeira coisa que o CI da issue #50 encontrou, no primeiro job que ele conseguiu
+rodar — e é a justificativa inteira daquela issue numa linha: **portão que só roda numa
+máquina só prova aquela máquina.**
+
 ## Antes de mergear
 
 ```bash

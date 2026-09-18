@@ -104,8 +104,25 @@ func gravar() -> bool:
 	var agora := Time.get_unix_time_from_system()
 	# a data de nascimento do Manuscrito e carimbada na PRIMEIRA gravacao e nao muda mais.
 	# Partida nova comeca com zero porque ate gravar ela ainda nao aconteceu em disco.
+	#
+	# ⚠️ EM SEGUNDOS INTEIROS, E O floori() NAO E COSMETICO. O JSON do Godot guarda 15
+	# digitos significativos, e um horario unix ja gasta 10 antes da virgula: sobram cinco
+	# casas, e o resto e descartado na serializacao. Guardar aqui uma precisao que o
+	# formato nao carrega cria um campo que MUDA SOZINHO ao ir e voltar do disco.
+	#
+	# Medido no 4.7.2: 1789699053,5935123 volta como 1789699053,5935099 -- 2,4 microssegundos.
+	# A perda acontece UMA vez e nao acumula (a segunda ida e volta devolve identico).
+	#
+	# Isso passou despercebido por um motivo que vale escrever: o relogio do Windows
+	# entrega ~1 ms de resolucao, e 1789699701,936 cabe inteiro nos 15 digitos. A suite
+	# ficou verde na maquina de quem escreveu e reprovou no CI em Linux, onde o mesmo
+	# relogio entrega microssegundos. Foi a primeira coisa que o CI da issue #50 pegou.
+	#
+	# Segundo inteiro basta porque os dois unicos consumidores -- a tela de Arquivos e o
+	# cartao do menu -- passam este numero por Relogio.quando(), que mostra DATA. Precisao
+	# que ninguem consegue ver e precisao que so serve para mentir.
 	if Jogo.criado_em <= 0.0:
-		Jogo.criado_em = agora
+		Jogo.criado_em = floorf(agora)
 
 	var dados := {
 		"versao": VERSAO,
