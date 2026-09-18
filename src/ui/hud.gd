@@ -337,11 +337,20 @@ func _montar_upgrades() -> void:
 ## ⚠️ O cabecalho NAO pode entrar no laco que pinta os botoes: _pintar() percorre os
 ## filhos de %ListaUpgrades chamando Economia.upgrade_de(get_meta("id")). Um Label sem a
 ## meta "id" derrubaria aquele laco, entao o filtro la embaixo pergunta por `has_meta`.
+## ⚠️ ELE E SUBTITULO, E NAO TITULO. Na primeira captura o cabecalho saiu com a mesma cor
+## e o mesmo corpo de "UPGRADES", logo abaixo dele -- e "UPGRADES / O MACACO" empilhados,
+## iguais, leem como dois titulos e nao como secao e subsecao. O dourado fica com a secao;
+## a familia usa o marrom apagado que ja e o papel de legenda nesta tela (%NomeMaquina,
+## %NomeSala), em vez de inventar um terceiro nivel.
+##
+## Nenhum portao pega isto: a hierarquia visual nao tem regua, e a suite estava verde. Foi
+## a captura do CI que mostrou -- que e o que ela existe para fazer.
 func _cabecalho_de_familia(familia: int) -> Label:
 	var titulo := Label.new()
 	titulo.text = tr(DadosUpgrade.NOMES_DE_FAMILIA[familia]).to_upper()
 	titulo.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
-	titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
+	titulo.add_theme_color_override(
+		"font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.3)))
 	titulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return titulo
 
