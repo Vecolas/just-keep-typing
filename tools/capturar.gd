@@ -159,7 +159,26 @@ func _ready() -> void:
 	# os outros sao fotos de dentro da partida, e sem entrar nela sairiam com o menu na
 	# frente -- inclusive os catorze da galeria.
 	var cenario := _cenario()
-	if cenario.begins_with("menu") or cenario.begins_with("arquivos"):
+	if cenario.begins_with("abertura"):
+		# ⚠️ A ABERTURA E TEMPO, e a foto precisa dizer QUANDO. "instante=" em segundos
+		# escolhe o quadro: 0,6 pega as primeiras letras saindo, 2,4 pega a mesa entrando.
+		# Sem isso a unica foto possivel e a do quadro em que a ferramenta acordou.
+		#
+		# O relogio e ADIANTADO, e nao esperado: a captura empurra o _process da cena com
+		# um delta escolhido, como a fumaca faz com as quatro horas de offline.
+		Config._opcoes["ja_viu_abertura"] = false
+		Cenas.ir_para_abertura()
+		await get_tree().process_frame
+		var cena := get_tree().root.find_child("Abertura", true, false)
+		if cena == null:
+			printerr("FALHA  a abertura nao foi montada")
+			get_tree().quit(1)
+			return
+		cena.set_process(false)
+		cena.call("adiantar", _argumento("instante", 0.6))
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+	elif cenario.begins_with("menu") or cenario.begins_with("arquivos"):
 		# ⚠️ O MENU SO TEM O QUE MOSTRAR COM UM MANUSCRITO NO DISCO. Sem save, o CONTINUAR
 		# sai apagado e o resumo embaixo dele nao existe -- e o resumo e justamente o que a
 		# issue #39 pede para olhar. Entao o cenario "cheio" JOGA um pouco e volta, em vez
@@ -339,6 +358,8 @@ func _ready() -> void:
 		sufixo += "_aba%d" % int(_argumento("aba", 0.0))
 	if _argumento("escala", 0.0) > 0.0:
 		sufixo += "_escala%d" % int(_argumento("escala", 0.0) * 100.0)
+	if cenario.begins_with("abertura"):
+		sufixo += "_%dms" % int(_argumento("instante", 0.6) * 1000.0)
 	if not idioma.is_empty():
 		sufixo += "_" + idioma
 	var destino := PASTA.path_join(cenario + sufixo + ".png")

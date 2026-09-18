@@ -65,9 +65,13 @@ godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=letras producao=5e17
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama idioma=en
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=opcoes idioma=en aba=2
+godot --path . tools/capturar.tscn -- cenario=abertura instante=0.8
 godot --path . tools/capturar.tscn -- cenario=principal largura=1280 altura=720 escala=1.25
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=descobertas contraste=1
 ```
+
+`instante=` escolhe o segundo da abertura a fotografar — o relógio dela é **adiantado**, e
+não esperado, para duas capturas do mesmo commit darem a mesma imagem.
 
 `escala`, `escala_do_texto` e `contraste` entram pelo `Config`, que é a porta do jogador.
 Escala acima de 100% na menor resolução é o caso que estoura tudo — e caractere não é pixel,

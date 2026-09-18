@@ -28,6 +28,7 @@ extends Node
 ## onde ele fica.
 const GRUPO_RAIZ := &"raiz_de_cena"
 
+const ABERTURA := "res://src/ui/abertura.tscn"
 const MENU := "res://src/ui/menu_tela.tscn"
 const ARQUIVOS := "res://src/ui/arquivos_tela.tscn"
 const PARTIDA := "res://src/cena/partida.tscn"
@@ -80,6 +81,18 @@ func _process(delta: float) -> void:
 
 
 # --------------------------------------------------------------------------- o caminho
+
+## O primeiro passo do caminho (issue #47), e o unico que as vezes nao acontece.
+##
+## ⚠️ QUEM JA VIU PULA AQUI, e nao dentro da cena. A abertura nem chega a ser montada: sem
+## isso, quem abre o jogo todo dia pagaria o custo de montar uma cena inteira para ela se
+## desmontar sozinha no quadro seguinte -- e um quadro de tela preta e uma piscada que a
+## pessoa ve.
+func ir_para_abertura() -> bool:
+	if Config.ligado("ja_viu_abertura"):
+		return ir_para_menu()
+	return _trocar("abertura", ABERTURA)
+
 
 func ir_para_menu() -> bool:
 	return _trocar("menu", MENU)

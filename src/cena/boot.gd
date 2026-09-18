@@ -13,4 +13,6 @@ extends Node
 
 
 func _ready() -> void:
-	Cenas.ir_para_menu()
+	# ⚠️ A ABERTURA, e nao o menu (issue #47). Quem ja abriu o jogo antes cai no menu
+	# direto: quem decide isso e o Cenas, e nao esta linha.
+	Cenas.ir_para_abertura()

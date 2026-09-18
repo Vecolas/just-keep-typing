@@ -223,8 +223,9 @@ const FPS_EM_SEGUNDO_PLANO: int = 10
 ## cuidado do save: campo novo ganha padrao, nunca zero em cima do que a pessoa ja tinha
 ## escolhido.
 ##
-## ⚠️ "slot" CONTINUA AQUI e nao esta em CAMPOS: e estado da instalacao (qual Manuscrito
-## foi o ultimo), e nao uma opcao que a tela ofereca.
+## ⚠️ "slot" e "ja_viu_abertura" CONTINUAM AQUI e NAO estao em CAMPOS: os dois sao estado
+## da instalacao -- qual Manuscrito foi o ultimo, se a abertura ja rodou --, e nao opcoes
+## que a tela ofereca.
 const PADRAO := {
 	"idioma": "pt_BR",
 	"autosave": true,
@@ -247,6 +248,7 @@ const PADRAO := {
 	"reduzir_movimento": false,
 	"reduzir_flashes": false,
 	"alto_contraste": false,
+	"ja_viu_abertura": false,
 	"slot": 1,
 }
 
@@ -661,6 +663,21 @@ func escala_do_texto() -> float:
 ## O formato de numero escolhido. Lido na hora pelo Formatador.
 func formato_numerico() -> String:
 	return str(_opcoes.get("formato_numerico", "abreviado"))
+
+
+## Marca que a abertura datilografada ja rodou nesta instalacao (issue #47).
+##
+## ⚠️ NAO E OPCAO, E ESTADO. Ele nao aparece na tela de configuracoes: "ver a abertura de
+## novo" e um botao que ninguem aperta duas vezes na vida, e um campo a mais numa aba e um
+## campo a mais para ler.
+##
+## E ele mora AQUI e nao no save, pelo mesmo motivo que a resolucao mora: trocar de
+## Manuscrito nao pode fazer a abertura voltar.
+func marcar_abertura_vista() -> void:
+	if ligado("ja_viu_abertura"):
+		return
+	_opcoes["ja_viu_abertura"] = true
+	gravar()
 
 
 ## O timbre de digitacao escolhido. Lido na hora de usar, e nunca guardado.

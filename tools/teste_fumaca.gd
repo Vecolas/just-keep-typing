@@ -55,6 +55,12 @@ func _ready() -> void:
 	var caminho_de_save := Save.caminho
 	Config.caminho = "user://fumaca_opcoes.json"
 	Config.modelo_de_slot = "user://fumaca_slot_%d.json"
+	# ⚠️ E O ARQUIVO DE OPCOES COMECA DO ZERO. Sem apaga-lo, a run herda o
+	# `ja_viu_abertura` da run ANTERIOR: a abertura seria pulada, o passo 0 dela nunca
+	# rodaria, e a fumaca passaria dizendo que provou o que nao provou (issue #47).
+	if FileAccess.file_exists(Config.caminho):
+		DirAccess.remove_absolute(Config.caminho)
+	Config.carregar()
 	for numero in range(1, Config.SLOTS + 1):
 		Save.caminho = Config.caminho_do_slot(numero)
 		Save.apagar()
@@ -78,7 +84,65 @@ func _ready() -> void:
 	add_child(raiz)
 	await get_tree().process_frame
 
-	# 0. o caminho da issue #38: o Boot chega no menu, e do menu se chega a uma partida.
+	# 0. A ABERTURA (issue #47): instalacao nova ve; quem ja viu pula NA HORA.
+	#
+	#    ⚠️ Os dois lados sao afirmados. So provar que ela aparece deixaria passar uma
+	#    abertura que aparece SEMPRE -- que e o pedagio que a issue existe para impedir.
+	if Cenas.atual() != "abertura":
+		_falhar("instalacao nova nao viu a abertura, e sim %s" % Cenas.atual())
+		return
+	var abertura := raiz.find_child("Abertura", true, false)
+	if abertura == null:
+		_falhar("o Cenas disse abertura mas nao montou a cena")
+		return
+	if abertura.call("duracao") < 2.0 or abertura.call("duracao") > 4.0:
+		_falhar("a abertura dura %.1f s, e o plano pede de dois a quatro" % abertura.call("duracao"))
+		return
+	var escrito_no_comeco: String = (
+		abertura.find_child("TituloDatilografado", true, false) as Label
+	).text
+
+	# pular e QUALQUER tecla, e nao so o ESC
+	_apertar(&"ui_down")
+	await get_tree().process_frame
+	if Cenas.atual() != "menu":
+		_falhar("apertar uma tecla nao pulou a abertura, e sim ficou em %s" % Cenas.atual())
+		return
+	if escrito_no_comeco.strip_edges().length() > 2:
+		_falhar("a abertura ja comecou escrita: \"%s\"" % escrito_no_comeco)
+		return
+
+	# ⚠️ E A SEGUNDA ABERTURA PULA SEM ESPERAR -- sem montar cena nenhuma.
+	Cenas.ir_para_abertura()
+	await get_tree().process_frame
+	if Cenas.atual() != "menu":
+		_falhar("a segunda abertura nao pulou: o jogo foi para %s" % Cenas.atual())
+		return
+	if raiz.find_child("Abertura", true, false) != null:
+		_falhar("a segunda abertura montou a cena so para desmonta-la")
+		return
+
+	# 0.1. e com reduzir movimento ligado ela continua levando ao menu (issue #43)
+	var movimento_antes := Config.indice_de("reduzir_movimento")
+	Config.escolher("reduzir_movimento", 1)
+	Config._opcoes["ja_viu_abertura"] = false
+	Cenas.ir_para_abertura()
+	await get_tree().process_frame
+	var sem_movimento := raiz.find_child("Abertura", true, false)
+	if sem_movimento == null:
+		_falhar("com reduzir movimento a abertura nem apareceu")
+		return
+	if sem_movimento.call("revelando"):
+		_falhar("reduzir movimento nao desligou a revelacao de camera")
+		return
+	_apertar(&"ui_down")
+	await get_tree().process_frame
+	if Cenas.atual() != "menu":
+		_falhar("com reduzir movimento a abertura nao levou ao menu")
+		return
+	Config.escolher("reduzir_movimento", movimento_antes)
+
+	# 1. o caminho da issue #38: o Boot chega no menu, e do menu se chega a uma partida.
 	#
 	#    Os botoes sao APERTADOS, e nao contornados chamando o Cenas por baixo: o que esta
 	#    sob prova aqui e a ligacao entre a tela e o caminho, e chamar o autoload direto
