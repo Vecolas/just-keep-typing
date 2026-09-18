@@ -51,7 +51,10 @@ const ROTULOS: Dictionary = {
 	"confirmacoes": "Confirmações",
 	"aviso_de_marco": "Avisar ao alcançar um marco",
 	"aviso_de_descoberta": "Avisar ao encontrar uma descoberta",
-	"volume": "Volume",
+	"volume": "Volume geral",
+	"volume_efeitos": "Efeitos",
+	"volume_interface": "Interface",
+	"som_de_digitacao": "Som de digitação",
 	"resolucao": "Resolução",
 	"tela_cheia": "Modo de janela",
 	"vsync": "Sincronização vertical",
@@ -65,6 +68,7 @@ const DICAS: Dictionary = {
 	"autosave": "Desligado, o jogo ainda grava ao sair e ao prestigiar.",
 	"confirmacoes": "Excluir Manuscrito confirma sempre — essa não tem volta.",
 	"modo_economico": "Com o jogo em segundo plano, desenha menos quadros.",
+	"som_de_digitacao": "O ritmo acompanha a produção, e para de subir num teto.",
 }
 
 

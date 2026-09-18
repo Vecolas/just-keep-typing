@@ -330,6 +330,31 @@ afirmar em memória não pega, porque em memória o valor ainda é `int`.
 
 ---
 
+## Áudio
+
+Cinco barramentos — Geral (`Master`), Música, Efeitos, Interface e Ambiente —, criados em
+código pelo autoload `Audio`, e não num `default_bus_layout.tres`: o `.tres` seria um
+arquivo reescrito pela ferramenta, hostil a merge e sem espaço para comentário, e a decisão
+de **por que** Interface é separada de Efeitos moraria fora dele de qualquer jeito.
+
+- ⚠️ **Nunca um som por caractere produzido.** No fim do jogo são 10^50 por segundo: o áudio
+  é uma **representação** da atividade, não um contador — a mesma regra do GDD §10 que
+  proíbe gerar os caracteres de verdade, aplicada ao ouvido. A taxa de CLACK sobe com a
+  **ordem de grandeza** da produção e satura num teto **constante**
+- ⚠️ **Volume zero muta o barramento**, e não só abaixa: em −80 dB ele continua sendo
+  processado todo quadro
+- ⚠️ **Nada aloca por som tocado.** Formas de onda construídas uma vez, tocadores numa
+  piscina fixa em rodízio. Som que aloca por evento aparece na `medir_quadro`
+- ⚠️ **Barramento sem fonte não ganha barra de volume.** Controle de um barramento onde nada
+  toca é controle que a pessoa mexe e conclui que o jogo ignorou. A dívida é declarada em
+  `Audio.SEM_FONTE_AINDA`, e o portão morde dos **dois** lados: nome fora da lista tem que
+  ter campo, nome dentro dela tem que continuar sem
+- As ondas são sintetizadas em código com **semente fixa**, sem versionar binário — como as
+  fontes do `Tema`. Semente do relógio daria CLACKs diferentes a cada abertura, e nenhuma
+  medição futura seria comparável consigo mesma
+
+---
+
 ## Foco, teclado e controle
 
 Teclado, mouse e controle funcionam **juntos**, e não um de cada vez. Quem decide isso é

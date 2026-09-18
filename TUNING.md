@@ -90,7 +90,60 @@ mentiu por herdar o estado da linha anterior: a era 14 reportou 23 ms que eram d
 da linha saturada morrendo dentro da amostra, e as linhas depois dela mediram a era 14
 achando que mediam a própria. **Ordem de medição é parte da medição.**
 
-Medição depois da caça de custos da issue #30, orçamento de 16,67 ms:
+### ⚠️ O instrumento mudou na issue #42, e as tabelas antigas não se comparam com as novas
+
+Duas coisas erradas, e as duas faziam a régua medir a si mesma:
+
+**A régua rodava com o teto de quadros e o vsync do jogador.** Com o limite em 60 a engine
+**dorme** o resto de cada quadro: a tabela media relógio de parede, não custo de desenho —
+e um sistema que dobrasse de preço não mudaria uma linha enquanto coubesse no orçamento.
+Agora ela desliga vsync, teto e modo econômico antes de medir.
+
+**E o instrumento era `Performance.TIME_PROCESS`, que não muda a cada quadro.** Solta a
+engine, 240 amostras seguidas saíam **idênticas** — média, p95 e p99 imprimiam o mesmo
+número. Pior: com o quadro medido em 1,7 ms ele reportava 57 ms na mesma linha. Hoje o
+instrumento é o relógio (`Time.get_ticks_usec()` entre dois quadros), que é o que o jogador
+sente e o que o orçamento de 16,67 ms quer dizer. O monitor não voltou nem como coluna de
+apoio: número que não pode ser verdade ao lado de um que pode é pior que número nenhum,
+porque alguém vai ler os dois.
+
+**Portanto:** os números abaixo não são uma melhora de seis vezes sobre a tabela histórica.
+São outra medição. As tabelas antigas ficam registradas como o que eram.
+
+Medição com o instrumento novo (issue #42), orçamento de 16,67 ms:
+
+```text
+producao/s       rotulos  maquinas quadro    p95       p99       perdidos
+5                5        1        1,617 ms  1,884 ms  1,943 ms  0 de 240
+500 mil          6        4        1,980 ms  2,230 ms  2,397 ms  0 de 240
+5e17             7        100      1,937 ms  2,230 ms  2,402 ms  0 de 240
+SATURADO         64       100      1,960 ms  2,483 ms  2,803 ms  0 de 240
+ERA 14           5        16       1,564 ms  1,858 ms  2,462 ms  0 de 240
+```
+
+⚠️ **A contagem de rótulos caiu junto, e não é um sistema mais magro.** Com a engine solta
+o quadro dura menos de dois milissegundos, e a piscina de letras nasce por **tempo**: em
+240 quadros passa menos tempo do que passava a 60 fps. A linha `SATURADO` existe justamente
+para o teto continuar sendo medido em vez de suposto.
+
+### Áudio antes e depois, na mesma era (issue #42)
+
+O som de digitação é uma piscina fixa de tocadores em rodízio e as formas de onda são
+construídas uma vez — **nada aloca por som tocado**. A régua mede as duas ordens, porque a
+primeira medição depois de uma troca carrega o que a linha anterior deixou:
+
+```text
+SOM DESLIGADO 1  6        100      1,776 ms  2,021 ms  2,161 ms  0 de 240
+SOM NORMAL 1     5        100      1,705 ms  2,001 ms  2,071 ms  0 de 240
+SOM DESLIGADO 2  6        100      1,689 ms  1,986 ms  2,257 ms  0 de 240
+SOM NORMAL 2     5        100      1,690 ms  1,892 ms  2,006 ms  0 de 240
+```
+
+A diferença entre ligado e desligado (**0,07 ms**) é menor que a diferença entre duas
+medições do **mesmo** estado (0,09 ms). O achado é esse: o custo do áudio não é distinguível
+do ruído da medição. Se um dia um som passar a alocar por evento, é aqui que aparece.
+
+Medição histórica, com o instrumento antigo (issue #30) — **não comparável com a de cima**:
 
 ```text
 producao/s       rotulos  maquinas media     p95       perdidos
@@ -120,6 +173,10 @@ monoespaçada tem, a era caiu para 13–16 ms.
 
 ⚠️ **A era 14 continua sendo a linha mais cara** e o p95 dela fica acima do orçamento. A
 média cabe; os picos não. Fica registrado como o próximo lugar a olhar.
+
+*(Isso valia com o instrumento antigo. Com o relógio, nenhuma linha passa do orçamento —
+inclusive a era 14. O que não quer dizer que o custo sumiu: quer dizer que ele nunca foi
+medido direito.)*
 
 Primeira medição, antes de tudo isso:
 

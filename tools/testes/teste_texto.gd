@@ -31,9 +31,15 @@ const CAMPOS_DE_TEXTO: PackedStringArray = ["nome", "descricao", "titulo", "text
 ## Marca de formato nao e texto: nao passa por traducao e nao precisa de linha no CSV.
 ## A lista e explicita de proposito -- "esqueci de traduzir" e "isto nao se traduz" se
 ## parecem demais para ficarem implicitos.
+## As tabelas de texto que vivem em constantes de OUTROS arquivos, lidas da FONTE. Copiar
+## qualquer uma para ca criaria uma terceira versao da mesma lista, e a terceira e sempre a
+## que mente.
+const _ROTULOS_DA_TELA: Dictionary = preload("res://src/ui/opcoes_tela.gd").ROTULOS
+const _DICAS_DA_TELA: Dictionary = preload("res://src/ui/opcoes_tela.gd").DICAS
+
 const SEM_TRADUCAO: PackedStringArray = [
 	"×", "10^", "e", "? ? ?", "+%s", "%s — %s", "%s  x%s", "%s  %s", "x%s",
-	"%02d:%02d:%02d", "0", "1", "",
+	"%02d:%02d", "%d:%02d:%02d", "",
 ]
 
 var _chaves: Dictionary = {}
@@ -112,6 +118,18 @@ func _moldes_em_constante() -> void:
 	for escala in Formatador.ESCALAS:
 		_exigir(str(escala["singular"]), "Formatador.ESCALAS")
 		_exigir(str(escala["plural"]), "Formatador.ESCALAS")
+	# os rotulos e as dicas da tela de opcoes, e os rotulos de cada valor de campo: tres
+	# tabelas que chegam ao jogador por variavel, e nenhuma varredura de literal alcanca
+	for chave in _ROTULOS_DA_TELA:
+		_exigir(str(_ROTULOS_DA_TELA[chave]), "OpcoesTela.ROTULOS")
+	for chave in _DICAS_DA_TELA:
+		_exigir(str(_DICAS_DA_TELA[chave]), "OpcoesTela.DICAS")
+	for linha in Config.CAMPOS:
+		for rotulo in linha.get("rotulos", []):
+			_exigir(str(rotulo), "Config.CAMPOS[%s].rotulos" % linha["nome"])
+	for aba in Config.ABAS:
+		_exigir(str(aba), "Config.ABAS")
+
 	ok(
 		not NomesDeManuscrito.SUGESTOES.is_empty(),
 		"ha nome tematico sugerido para Manuscrito novo",
@@ -192,6 +210,11 @@ func _a_traducao_traduz() -> void:
 func _exigir(texto: String, caminho: String) -> void:
 	var limpo := texto.strip_edges()
 	if limpo.is_empty() or limpo in SEM_TRADUCAO:
+		return
+	# numero cru e marca de formato, e nao texto: "60" nao muda de idioma. A regra e geral
+	# de proposito -- listar 30, 60, 120 e 144 na mao em SEM_TRADUCAO seria uma lista que
+	# envelhece junto com o campo de limite de quadros.
+	if limpo.is_valid_int():
 		return
 	# marca de formato pura -- so %s, numero e pontuacao -- nao e frase
 	if limpo.replace("%s", "").replace("%d", "").strip_edges().length() <= 1:

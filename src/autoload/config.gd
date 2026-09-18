@@ -85,10 +85,35 @@ const CAMPOS: Array[Dictionary] = [
 		"nome": "aviso_de_descoberta", "aba": "GERAL", "tipo": Tipo.LISTA,
 		"valores": [false, true], "rotulos": ["Desligado", "Ligado"], "aplicar": "",
 	},
+	# ⚠️ UM CAMPO POR BARRAMENTO QUE TEM FONTE. Musica e Ambiente existem no mixer e NAO
+	# tem barra: controle de um barramento onde nada toca e controle que a pessoa mexe e
+	# conclui que o jogo ignorou. A divida esta declarada em Audio.SEM_FONTE_AINDA, e o
+	# teste_audio cruza as duas listas nos dois sentidos.
+	#
+	# "volume" e o Master, e continua com este nome: renomear para "volume_geral" apagaria,
+	# em silencio, o volume que quem ja joga escolheu.
 	{
 		"nome": "volume", "aba": "ÁUDIO", "tipo": Tipo.FAIXA,
 		"faixa": {"minimo": 0.0, "maximo": 1.0, "passo": 0.05},
 		"aplicar": "_aplicar_audio",
+	},
+	{
+		"nome": "volume_efeitos", "aba": "ÁUDIO", "tipo": Tipo.FAIXA,
+		"faixa": {"minimo": 0.0, "maximo": 1.0, "passo": 0.05},
+		"aplicar": "_aplicar_audio",
+	},
+	{
+		"nome": "volume_interface", "aba": "ÁUDIO", "tipo": Tipo.FAIXA,
+		"faixa": {"minimo": 0.0, "maximo": 1.0, "passo": 0.05},
+		"aplicar": "_aplicar_audio",
+	},
+	{
+		"nome": "som_de_digitacao", "aba": "ÁUDIO", "tipo": Tipo.LISTA,
+		# TEXTO e nao numero: o valor zero de um enum e o que todo dado esquecido recebe, e
+		# um timbre novo inserido no meio reescreveria o significado do que ja foi gravado
+		"valores": ["normal", "suave", "mecanico", "desligado"],
+		"rotulos": ["Normal", "Suave", "Mecânico", "Desligado"],
+		"aplicar": "",
 	},
 	{"nome": "resolucao", "aba": "VÍDEO", "tipo": Tipo.LISTA, "aplicar": "_aplicar_video"},
 	{
@@ -142,6 +167,9 @@ const PADRAO := {
 	"aviso_de_marco": true,
 	"aviso_de_descoberta": true,
 	"volume": 0.8,
+	"volume_efeitos": 0.8,
+	"volume_interface": 0.6,
+	"som_de_digitacao": "normal",
 	"resolucao": "1280x720",
 	"tela_cheia": false,
 	"vsync": DisplayServer.VSYNC_ENABLED,
@@ -513,6 +541,11 @@ func volume() -> float:
 	return valor_de("volume")
 
 
+## O timbre de digitacao escolhido. Lido na hora de usar, e nunca guardado.
+func som_de_digitacao() -> String:
+	return str(_opcoes.get("som_de_digitacao", "normal"))
+
+
 ## Se uma opcao de liga/desliga esta ligada. Quem se importa LE NA HORA DE USAR, e nunca
 ## guarda o resultado (CONVENCOES.md, regra 2): a pessoa muda a opcao no meio da partida, e
 ## uma copia guardada continuaria valendo a escolha antiga sem dar erro nenhum.
@@ -618,12 +651,11 @@ func _aplicar_ritmo_do_quadro() -> void:
 	Engine.max_fps = fps_efetivo()
 
 
+## ⚠️ QUEM SABE DOS BARRAMENTOS E O Audio, e nao este arquivo. Ele sobe ANTES do Config
+## justamente para os barramentos existirem quando esta linha rodar na abertura; refazer a
+## conta de volume aqui seria uma segunda definicao de "volume zero muta" (issue #42).
 func _aplicar_audio() -> void:
-	var barramento := AudioServer.get_bus_index("Master")
-	if barramento < 0:
-		return
-	AudioServer.set_bus_volume_db(barramento, linear_to_db(maxf(volume(), 0.0001)))
-	AudioServer.set_bus_mute(barramento, volume() <= 0.0)
+	Audio.aplicar_volumes()
 
 
 ## Aponta o jogo para um slot SEM gravar o que estava aberto, e guarda a escolha.

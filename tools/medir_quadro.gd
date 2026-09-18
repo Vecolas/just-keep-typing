@@ -5,9 +5,14 @@
 ## SEM --headless de proposito: headless nao renderiza, e medir tempo de quadro sem
 ## desenhar mede o nada. Ver CONVENCOES.md, "Headless nao renderiza".
 ##
-## Regua nao aprova nem reprova -- ela MEDE. O que ela imprime e media, p95, p99 e quadros
-## perdidos, contra o orcamento de 16,67 ms de 60 quadros por segundo. A decisao sobre o
-## teto de rotulos e de quem le a tabela.
+## Regua nao aprova nem reprova -- ela MEDE. O que ela imprime e o tempo ENTRE QUADROS:
+## media, p95, p99 e quantos passaram do orcamento de 16,67 ms. A decisao sobre o teto de
+## rotulos e de quem le a tabela.
+##
+## ⚠️ ELA TIRA O TETO DE QUADROS E O VSYNC ANTES DE MEDIR. Com o limite em 60 a engine
+## dorme o resto de cada quadro, e a tabela passaria a medir o relogio de parede em vez do
+## custo do desenho: um sistema que dobrasse de preco nao mudaria uma linha enquanto
+## coubesse no orcamento.
 ##
 ## E a regua que a issue #22 pede porque o efeito de letras e o primeiro sistema com muita
 ## coisa em tela. p95 e p99 e nao so media: quadro perdido nao aparece na media, e e
@@ -36,10 +41,27 @@ func _ready() -> void:
 		return
 
 	var empacotada := load(ProjectSettings.get_setting("application/run/main_scene", "")) as PackedScene
-	Save.caminho = "user://medir_quadro_save.json"
+
+	# ⚠️ ARQUIVOS PROPRIOS, E ENTRAR NA PARTIDA. Desde a issue #38 o main.tscn abre no MENU:
+	# esta regua procurava Letras e Eras na cena principal e nao achava nenhum dos dois --
+	# ela parou de rodar naquele merge e ninguem percebeu, porque regua que nao roda nao
+	# reprova nada. Regua que ninguem roda apodrece.
+	Config.caminho = "user://medir_quadro_opcoes.json"
+	Config.modelo_de_slot = "user://medir_quadro_slot_%d.json"
+	Save.caminho = Config.caminho_do_slot(1)
 	Save.apagar()
+
+	# ⚠️ SEM TETO DE QUADRO E SEM VSYNC, e isto e parte da medicao (issue #42). Com o
+	# limite em 60 a engine DORME o resto de cada quadro: a regua passaria a medir o
+	# relogio de parede em vez do custo do desenho, e um sistema que dobrasse de preco nao
+	# mudaria uma linha da tabela enquanto coubesse no orcamento. Regua mede o custo; quem
+	# escolhe o teto e o jogador, na tela de opcoes.
+	_sem_teto_de_quadro()
+
 	var raiz := empacotada.instantiate()
 	add_child(raiz)
+	await get_tree().process_frame
+	Cenas.comecar_partida(1)
 	await get_tree().process_frame
 
 	var letras := raiz.find_child("Letras", true, false)
@@ -55,7 +77,7 @@ func _ready() -> void:
 	])
 	print("")
 	print("%-16s %-8s %-8s %-9s %-9s %-9s %s" % [
-		"producao/s", "rotulos", "maquinas", "media", "p95", "p99", "perdidos",
+		"producao/s", "rotulos", "maquinas", "quadro", "p95", "p99", "perdidos",
 	])
 	print("%-16s %-8s %-8s %-9s %-9s %-9s %s" % [
 		"-".repeat(16), "-".repeat(8), "-".repeat(8), "-".repeat(9), "-".repeat(9),
@@ -67,11 +89,51 @@ func _ready() -> void:
 	await _medir(letras, ESCALAS[ESCALAS.size() - 1], true)
 	# a era 14 nao e alcancada acumulando: 10^1000 nao cai em 240 quadros (issue #30).
 	await _medir(letras, ESCALAS[ESCALAS.size() - 1], false, "1e1000")
+
+	# ⚠️ E O AUDIO, ANTES E DEPOIS, NA MESMA ERA (issue #42). Som que aloca por evento
+	# aparece aqui; som que reaproveita uma piscina fixa nao. As duas linhas abaixo medem a
+	# MESMA producao com o CLACK desligado e ligado -- comparar contra a linha de outra
+	# escala compararia duas coisas diferentes e nao mediria o audio.
+	print("")
+	print("audio na mesma era (%s por segundo):" % Formatador.formatar(
+		Grande.de_float(ESCALAS[ESCALAS.size() - 1])
+	))
+	# ⚠️ DUAS VOLTAS, ALTERNANDO. A primeira medicao depois de uma troca carrega o que a
+	# linha anterior deixou -- foi assim que a primeira versao desta comparacao imprimiu o
+	# som DESLIGADO custando mais caro que o LIGADO. Medir nas duas ordens deixa o ruido
+	# visivel na propria tabela, em vez de escondido numa linha so.
+	for volta in 2:
+		await _medir_som(letras, "desligado", volta + 1)
+		await _medir_som(letras, "normal", volta + 1)
 	get_tree().quit(0)
 
 
+## Tira o teto de quadros e o vsync desta medicao, pelos dois caminhos que os controlam.
+func _sem_teto_de_quadro() -> void:
+	var fps: Array = Config.campo("limite_de_fps")["valores"]
+	Config.escolher("limite_de_fps", maxi(fps.find(0), 0))
+	var vsync: Array = Config.campo("vsync")["valores"]
+	Config.escolher("vsync", maxi(vsync.find(DisplayServer.VSYNC_DISABLED), 0))
+	# e o modo economico tambem: a janela da regua pode perder o foco durante a corrida, e
+	# ai metade da tabela sairia medida a dez quadros por segundo
+	var economico: Array = Config.campo("modo_economico")["valores"]
+	Config.escolher("modo_economico", maxi(economico.find(false), 0))
+
+
+## Uma medicao com o som de digitacao num timbre dado. O timbre entra pelo Config, que e o
+## caminho de verdade: cravar o campo por baixo mediria um jogo que nao existe.
+func _medir_som(letras: Node, timbre: String, volta: int) -> void:
+	var valores: Array = Config.campo("som_de_digitacao")["valores"]
+	Config.escolher("som_de_digitacao", maxi(valores.find(timbre), 0))
+	await _medir(
+		letras, ESCALAS[ESCALAS.size() - 1], false, "",
+		"SOM %s %d" % [timbre.to_upper(), volta],
+	)
+
+
 func _medir(
-	letras: Node, producao: float, saturar: bool = false, era_forcada: String = ""
+	letras: Node, producao: float, saturar: bool = false, era_forcada: String = "",
+	rotulo: String = ""
 ) -> void:
 	# monta a producao pelo caminho de verdade, e nao escrevendo o cps na mao: a Partida
 	# recalcula caracteres_por_segundo todo quadro, e um valor cravado seria apagado antes
@@ -101,7 +163,17 @@ func _medir(
 			Jogo.total_caracteres = Grande.de_texto(era_forcada)
 		await get_tree().process_frame
 
+	# ⚠️ O RELOGIO E O INSTRUMENTO, e nao o monitor de desempenho. Performance.TIME_PROCESS
+	# nao muda a cada quadro: com a engine solta, 240 amostras seguidas saiam IDENTICAS, e
+	# media, p95 e p99 imprimiam o mesmo numero -- a regua estava medindo o periodo de
+	# atualizacao do proprio monitor. O tempo entre dois quadros e o que o jogador sente, e
+	# e o que o orcamento de 16,67 ms quer dizer.
+	#
+	# ⚠️ E O MONITOR NAO VOLTA NEM COMO COLUNA DE APOIO. Medido: com o quadro em 1,7 ms ele
+	# imprimia 57 ms na mesma linha. Numero que nao pode ser verdade ao lado de um que
+	# pode e pior que numero nenhum -- alguem vai ler os dois.
 	var amostras: PackedFloat64Array = PackedFloat64Array()
+	var anterior := Time.get_ticks_usec()
 	for i in QUADROS:
 		await get_tree().process_frame
 		if not era_forcada.is_empty():
@@ -111,7 +183,9 @@ func _medir(
 			# de suposto, ja que o regime permanente do jogo nem chega perto dele
 			for j in 8:
 				letras.call("nascer", Jogo.caracteres_por_segundo)
-		amostras.append(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+		var agora := Time.get_ticks_usec()
+		amostras.append(float(agora - anterior) / 1000.0)
+		anterior = agora
 
 	var ordenadas := amostras.duplicate()
 	ordenadas.sort()
@@ -121,10 +195,10 @@ func _medir(
 		soma += valor
 		if valor > ORCAMENTO_MS:
 			perdidos += 1
-
 	print("%-16s %-8d %-8d %-9s %-9s %-9s %d de %d" % [
-		("SATURADO" if saturar else ("ERA 14" if not era_forcada.is_empty()
-			else Formatador.formatar(Grande.de_float(producao)))),
+		(rotulo if not rotulo.is_empty()
+			else ("SATURADO" if saturar else ("ERA 14" if not era_forcada.is_empty()
+			else Formatador.formatar(Grande.de_float(producao))))),
 		letras.call("vivos"),
 		_eras.call("visiveis"),
 		"%.3f ms" % (soma / float(amostras.size())),
