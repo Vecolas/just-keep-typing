@@ -43,7 +43,25 @@ const LIMITE_DA_BIFURCACAO: float = 6.0 * 3600.0
 const EMPATE: float = 0.20
 
 
+## ⚠️ A SEMENTE DO SORTEIO DE DESCOBERTAS. SEM ELA A REGUA NAO E REGUA.
+##
+## Descobertas.gerador chama randomize() no _ready, e descoberta DA BONUS DE PRODUCAO:
+## duas corridas do mesmo commit sorteavam em instantes diferentes, a producao divergia, e
+## a curva inteira andava junto. Medido: 35 segundos de diferenca no primeiro Teorema entre
+## duas corridas identicas.
+##
+## Isso valia desde que a regua existe, e o cabecalho dela AFIRMAVA O CONTRARIO -- "a regua
+## precisa ser ESTAVEL, para que a diferenca entre duas medicoes seja a mudanca no .tres e
+## nao o humor de quem jogou". A suite e a ferramenta de captura ja semeavam; as reguas,
+## nao. Uma verdade por assunto, e este assunto tinha duas.
+##
+## ⚠️ E O NUMERO E UM SO, COMPARTILHADO. Semente diferente por ferramenta daria tabelas que
+## nao se comparam entre si, que e metade do problema de volta.
+const SEMENTE_DO_SORTEIO: int = 1
+
+
 func _ready() -> void:
+	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
 	_zerar()
 	print("medir_economia -- passo %.1fs, amostra a cada %.0f min, limite de %.0f h" % [
 		PASSO, INTERVALO_DE_AMOSTRA / 60.0, LIMITE_PRINCIPAL / 3600.0,

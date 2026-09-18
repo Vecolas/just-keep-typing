@@ -159,6 +159,22 @@ func multiplicador() -> float:
 	return por_pontos * _condensada()
 
 
+## Qual seria o multiplicador se o jogador provasse o Teorema AGORA.
+##
+## ⚠️ DERIVADO, e nao uma segunda formula. Ele reusa exatamente a conta de multiplicador()
+## com os pontos ja somados -- escrever a formula de novo aqui daria duas versoes da mesma
+## regra, e a que envelhece e sempre a copia.
+##
+## Existe para responder "quanto vale prestigiar?" sem que quem pergunta precise conhecer o
+## ganho_por_ponto do .tres. O primeiro consumidor e medir_ritmo (issue #56); a tela de
+## Teoremas mostra os PONTOS, e esta e a mesma pergunta em producao.
+func multiplicador_se_provar() -> float:
+	if _prestigio == null:
+		return 1.0
+	var depois := Jogo.pontos_totais.mais(pontos_ao_provar())
+	return (1.0 + depois.para_float() * _prestigio.ganho_por_ponto) * _condensada()
+
+
 ## Probabilidade Condensada (GDD §19): cada ordem de grandeza ja atingida vira um pequeno
 ## multiplicador. Le o RECORDE e nao o total atual -- senao o bonus sumiria no reset, que
 ## e exatamente quando ele deveria estar segurando a run nova.
