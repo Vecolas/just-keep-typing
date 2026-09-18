@@ -89,6 +89,38 @@ var marcos_alcancados: Array[String] = []
 ## na hora de usar, nunca guardado ja multiplicado (CONVENCOES.md, regra 2).
 var descobertas: Array[String] = []
 
+## id -> instante unix em que a descoberta saiu pela primeira vez (issue #55).
+##
+## ⚠️ DICIONARIO SEPARADO, e nao uma lista de objetos no lugar de `descobertas`. Aquela
+## lista esta no save desde a versao 4 e e lida por tudo; troca-la de forma obrigaria a
+## migrar o campo que MAIS importa -- o que o jogador achou -- por causa de um enfeite de
+## tela. Campo novo ao lado migra sozinho: quem nao tem, nao tem.
+##
+## ⚠️ E A AUSENCIA DE UMA CHAVE E A SENTINELA. Descoberta achada antes da issue #55 nao
+## aparece aqui, e o Arquivo mostra o que TEM. Zero nao serve: ordem de grandeza zero e
+## um valor legitimo (de 1 a 9 caracteres).
+var descobertas_quando: Dictionary = {}
+
+## id -> expoente de `total_caracteres` no instante em que a descoberta saiu. Anda junto
+## do de cima: as duas chaves entram no mesmo carimbo e saem na mesma migracao.
+var descobertas_grandeza: Dictionary = {}
+
+
+## Apaga a colecao inteira -- os ids E o que se sabia sobre eles.
+##
+## ⚠️ EXISTE PARA OS TRES CAMPOS NAO SE SEPARAREM. Dois lugares zeram as descobertas no
+## prestigio (Teoremas, com a Biblioteca Persistente desligada, e Fragmentos ao reescrever
+## o universo), e ate a issue #55 cada um zerava a lista na mao. Com tres campos, "zerar na
+## mao" vira tres linhas repetidas em dois arquivos -- e o quarto lugar que aparecer vai
+## esquecer uma delas.
+##
+## O sintoma seria mudo: a lista volta vazia, os carimbos ficam, e o Arquivo passa a dizer
+## "encontrada em 3 de setembro" sobre uma descoberta que o jogador nao tem mais.
+func esquecer_descobertas() -> void:
+	descobertas = [] as Array[String]
+	descobertas_quando = {}
+	descobertas_grandeza = {}
+
 ## Maior producao por segundo ja atingida. Recorde nao desce nem no prestigio: e a marca
 ## da melhor partida, e nao o estado da partida atual.
 var recorde_por_segundo: Grande = Grande.zero()

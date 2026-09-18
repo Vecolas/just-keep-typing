@@ -352,6 +352,31 @@ func _ready() -> void:
 		EventBus.descobertas_pedidas.emit()
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
+	elif cenario == "descobertas_fim":
+		# ⚠️ A FOTO DO `0/?` (issue #55). Com sessenta e duas descobertas, a primeira tela
+		# so mostra a primeira faixa -- e o que esta issue precisa provar mora no FIM:
+		# faixas vazias e a paradoxal escondendo o proprio total. Foto que nao chega la nao
+		# prova a marca registrada da tela.
+		Descobertas.gerador.seed = 1
+		Economia.digitar(20000)
+		EventBus.descobertas_pedidas.emit()
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+		var tela := get_tree().root.find_child("DescobertasTela", true, false)
+		if tela == null:
+			printerr("FALHA  a tela de Descobertas nao foi montada")
+			get_tree().quit(1)
+			return
+		var rolagem := tela.find_child("Rolagem", true, false) as ScrollContainer
+		if rolagem == null:
+			printerr("FALHA  a rolagem das Descobertas nao foi encontrada")
+			get_tree().quit(1)
+			return
+		# o fim de verdade, e nao um numero grande chutado: o maximo da barra muda com a
+		# escala do texto e com o idioma
+		rolagem.scroll_vertical = int(rolagem.get_v_scroll_bar().max_value)
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
 	elif cenario == "panorama":
 		# caracteres suficientes para cruzar os dois primeiros marcos e deixar o terceiro
 		# em silhueta -- e a leitura inteira da tela numa foto so

@@ -104,10 +104,55 @@ func sortear(produzido: Grande) -> void:
 		if gerador.randf() >= chance_de(descoberta, produzido):
 			continue
 		Jogo.descobertas.append(descoberta.id)
+		_carimbar(descoberta.id)
 		if _e_rara(descoberta):
 			Jogo.tempo_da_ultima_rara = Jogo.tempo_jogado
 		EventBus.descoberta_encontrada.emit(descoberta)
 		return
+
+
+## O momento em que uma descoberta saiu (issue #55): QUANDO e com que ORDEM DE GRANDEZA de
+## produção total. O Arquivo mostra os dois na entrada aberta, e eles so existem se forem
+## carimbados aqui -- reconstruir depois e impossivel.
+##
+## ⚠️ A DATA VEM EM SEGUNDOS INTEIROS. O JSON do Godot guarda 15 digitos significativos e
+## um horario unix ja gasta dez antes da virgula: gravar microssegundos cria um campo que
+## muda sozinho ao ir e voltar do disco. Ver CONVENCOES.md, "O save e texto".
+##
+## ⚠️ E A AUSENCIA E A SENTINELA, e nao um numero. Ordem de grandeza ZERO e valida (de 1 a
+## 9 caracteres), entao zero nao pode significar "nao sei" -- descoberta achada antes desta
+## versao simplesmente NAO TEM entrada aqui, e a tela mostra o que tem em vez de um zero
+## que mente.
+func _carimbar(id: String) -> void:
+	Jogo.descobertas_quando[id] = floorf(Time.get_unix_time_from_system())
+	Jogo.descobertas_grandeza[id] = Jogo.total_caracteres.expoente
+
+
+## O que se sabe sobre o momento em que uma descoberta saiu. Vazio quando ela e anterior a
+## issue #55 -- que e um resultado legitimo, e nao um erro.
+func detalhe_de(id: String) -> Dictionary:
+	if not Jogo.descobertas_quando.has(id):
+		return {}
+	return {
+		"quando": float(Jogo.descobertas_quando[id]),
+		"grandeza": int(Jogo.descobertas_grandeza.get(id, 0)),
+	}
+
+
+## Quantas de uma faixa ja sairam, e quantas existem nela.
+##
+## ⚠️ VARRE O CATALOGO, e nao uma contagem guardada: faixa nova ou descoberta nova entra
+## na conta sozinha, sem ninguem lembrar de somar mais um em algum lugar.
+func contagem_da_faixa(faixa: int) -> Array:
+	var achadas := 0
+	var total := 0
+	for descoberta in _descobertas:
+		if DadosDescoberta.faixa_de(descoberta.categoria) != faixa:
+			continue
+		total += 1
+		if encontrada(descoberta.id):
+			achadas += 1
+	return [achadas, total]
 
 
 ## Se esta descoberta ainda esta esperando o espaco da anterior da mesma faixa.

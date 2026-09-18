@@ -26,20 +26,17 @@ func _init() -> void:
 ## ⚠️ ISTO E O ESQUELETO DO CONTEUDO, e nao uma taxonomia decorativa. Um degrau vazio e um
 ## buraco na escada que o jogador sobe -- ele passa de PALAVRA para PARAGRAFO sem encontrar
 ## uma FRASE, e a progressao que o sistema promete deixa de acontecer.
-const DEGRAUS: Array[Dictionary] = [
-	{"nome": "LETRA/SILABA/PALAVRA", "de": DadosDescoberta.Categoria.COMUM,
-	 "ate": DadosDescoberta.Categoria.COMUM, "minimo": 8},
-	{"nome": "EXPRESSAO/FRASE/PARAGRAFO", "de": DadosDescoberta.Categoria.INCOMUM,
-	 "ate": DadosDescoberta.Categoria.INCOMUM, "minimo": 8},
-	{"nome": "POEMA/CONTO/TEXTO COERENTE", "de": DadosDescoberta.Categoria.RARO,
-	 "ate": DadosDescoberta.Categoria.RARO, "minimo": 8},
-	{"nome": "OBRA", "de": DadosDescoberta.Categoria.EPICO,
-	 "ate": DadosDescoberta.Categoria.LENDARIO, "minimo": 12},
-	{"nome": "TEXTO IMPROVAVEL/IMPOSSIVEL", "de": DadosDescoberta.Categoria.IMPOSSIVEL,
-	 "ate": DadosDescoberta.Categoria.IMPOSSIVEL, "minimo": 5},
-	{"nome": "PARADOXO", "de": DadosDescoberta.Categoria.PARADOXAL,
-	 "ate": DadosDescoberta.Categoria.PARADOXAL, "minimo": 5},
-]
+## ⚠️ OS DEGRAUS SAO AS FAIXAS DO ARQUIVO, e desde a issue #55 eles NAO moram mais aqui.
+##
+## Esta tabela era a definicao das faixas quando so a suite precisava delas. No instante em
+## que o Arquivo (issue #55) passou a agrupar por faixa, manter a copia daria duas tabelas
+## para a mesma verdade -- e elas divergiriam na primeira faixa nova, com a suite
+## continuando verde sobre a divisao ANTIGA enquanto a tela mostra a nova.
+##
+## O que sobra aqui e so o que e de teste: QUANTAS cada faixa precisa ter. O minimo e
+## indexado pela faixa, e a suite reprova se as duas listas tiverem tamanhos diferentes --
+## faixa nova sem minimo passaria despercebida.
+const MINIMO_POR_FAIXA: Array[int] = [8, 8, 8, 12, 5, 5]
 
 ## As sete autorais do plano v0.6 §4. Elas sao O PRODUTO desta versao -- o resto e o
 ## caminho ate elas --, e por isso sao cobradas por id.
@@ -61,6 +58,9 @@ func executar() -> void:
 	_o_papel_interface_tem_o_que_entregar()
 	_bonus_permanente()
 	_as_lendarias_e_o_espaco_entre_elas()
+	_as_faixas_cobrem_toda_raridade()
+	_a_contagem_por_faixa_fecha()
+	_o_carimbo_do_arquivo()
 
 
 func _catalogo() -> void:
@@ -360,14 +360,23 @@ func _os_degraus_estao_cheios() -> void:
 	for descoberta in Descobertas.todas():
 		por_categoria[descoberta.categoria] = int(por_categoria.get(descoberta.categoria, 0)) + 1
 
-	for degrau in DEGRAUS:
+	igual(
+		MINIMO_POR_FAIXA.size(),
+		DadosDescoberta.FAIXAS.size(),
+		"ha um minimo para cada faixa -- faixa nova sem minimo passaria despercebida",
+	)
+
+	for i in DadosDescoberta.FAIXAS.size():
+		if i >= MINIMO_POR_FAIXA.size():
+			break
+		var faixa: Dictionary = DadosDescoberta.FAIXAS[i]
 		var quantas := 0
-		for categoria in range(int(degrau["de"]), int(degrau["ate"]) + 1):
+		for categoria in range(int(faixa["de"]), int(faixa["ate"]) + 1):
 			quantas += int(por_categoria.get(categoria, 0))
 		ok(
-			quantas >= int(degrau["minimo"]),
-			"o degrau %s tem %d descobertas (minimo %d)" % [
-				degrau["nome"], quantas, degrau["minimo"],
+			quantas >= MINIMO_POR_FAIXA[i],
+			"a faixa %s tem %d descobertas (minimo %d)" % [
+				faixa["nome"], quantas, MINIMO_POR_FAIXA[i],
 			],
 		)
 
@@ -375,6 +384,102 @@ func _os_degraus_estao_cheios() -> void:
 		Descobertas.todas().size() >= 60,
 		"o catalogo chegou a sessenta (%d)" % Descobertas.todas().size(),
 	)
+
+
+## ⚠️ RARIDADE FORA DE FAIXA SOME DO ARQUIVO, e sumir e pior que reprovar. Varre o ENUM,
+## que e a fonte, e nao a lista de faixas: uma raridade nova entraria no enum e cairia fora
+## de toda faixa em silencio -- as descobertas dela simplesmente nao apareceriam na tela, e
+## nada no console diria por que.
+func _as_faixas_cobrem_toda_raridade() -> void:
+	var quantas_faixas := {}
+	for categoria in DadosDescoberta.Categoria.values():
+		var faixa := DadosDescoberta.faixa_de(categoria)
+		ok(faixa >= 0, "a raridade %d cai em alguma faixa" % categoria)
+		# e em UMA so: faixas que se sobrepoem fariam a mesma descoberta aparecer duas
+		# vezes, com as duas contagens certas e o total errado
+		var cobrem := 0
+		for i in DadosDescoberta.FAIXAS.size():
+			var f: Dictionary = DadosDescoberta.FAIXAS[i]
+			if categoria >= int(f["de"]) and categoria <= int(f["ate"]):
+				cobrem += 1
+		igual(cobrem, 1, "a raridade %d cai em exatamente uma faixa" % categoria)
+		quantas_faixas[faixa] = true
+
+	# ⚠️ E SO A PARADOXAL ESCONDE O TOTAL. `0/?` e a promessa da ultima faixa; uma segunda
+	# faixa oculta transformaria a marca registrada em ruido.
+	var ocultas := 0
+	for faixa_dados in DadosDescoberta.FAIXAS:
+		if bool(faixa_dados["oculta"]):
+			ocultas += 1
+	igual(ocultas, 1, "exatamente uma faixa esconde o total")
+	ok(
+		bool(DadosDescoberta.FAIXAS[DadosDescoberta.FAIXAS.size() - 1]["oculta"]),
+		"e a que esconde e a ultima, a paradoxal",
+	)
+
+
+## A soma das contagens por faixa tem que dar o catalogo inteiro: descoberta que caisse
+## fora de toda faixa nao apareceria na tela, e o total de cima continuaria certo.
+func _a_contagem_por_faixa_fecha() -> void:
+	var total := 0
+	var achadas := 0
+	for i in DadosDescoberta.FAIXAS.size():
+		var contagem: Array = Descobertas.contagem_da_faixa(i)
+		achadas += int(contagem[0])
+		total += int(contagem[1])
+	igual(
+		total,
+		Descobertas.todas().size(),
+		"a soma das faixas cobre o catalogo inteiro",
+	)
+	igual(achadas, Descobertas.quantas_encontradas(), "e as achadas tambem fecham")
+
+
+## O carimbo da issue #55: quando a descoberta saiu e com que ordem de grandeza.
+func _o_carimbo_do_arquivo() -> void:
+	var guardado := Jogo.descobertas.duplicate()
+	var quando_guardado := Jogo.descobertas_quando.duplicate()
+	var grandeza_guardada := Jogo.descobertas_grandeza.duplicate()
+	var total_guardado := Jogo.total_caracteres
+
+	Jogo.esquecer_descobertas()
+	ok(Jogo.descobertas_quando.is_empty(), "esquecer_descobertas limpa o carimbo do quando")
+	ok(Jogo.descobertas_grandeza.is_empty(), "e o da ordem de grandeza tambem")
+
+	var alguma: DadosDescoberta = Descobertas.todas()[0]
+	ok(
+		Descobertas.detalhe_de(alguma.id).is_empty(),
+		"descoberta sem carimbo devolve VAZIO -- e nao um zero que mente",
+	)
+
+	# ⚠️ ORDEM DE GRANDEZA ZERO E LEGITIMA (de 1 a 9 caracteres). Este caso existe para
+	# provar que a sentinela e a AUSENCIA, e nao o valor: com zero como sentinela, a
+	# primeira descoberta de uma partida nova perderia a linha na tela.
+	Jogo.total_caracteres = Grande.de_float(5.0)
+	Jogo.descobertas.append(alguma.id)
+	Descobertas._carimbar(alguma.id)
+	var detalhe := Descobertas.detalhe_de(alguma.id)
+	ok(not detalhe.is_empty(), "com carimbo, o detalhe existe")
+	igual(int(detalhe["grandeza"]), 0, "5 caracteres sao ordem de grandeza ZERO, e ela conta")
+
+	# a data vai em segundos inteiros, pelo mesmo motivo de Save.gravar: o JSON guarda 15
+	# digitos significativos e um horario unix ja gasta dez antes da virgula
+	var data := float(detalhe["quando"])
+	ok(data > 0.0, "a data foi carimbada")
+	perto(data - floorf(data), 0.0, 0.0, "e vem em segundos inteiros, que o JSON devolve igual")
+
+	Jogo.total_caracteres = Grande.de_float(1.0e12)
+	Descobertas._carimbar(alguma.id)
+	igual(
+		int(Descobertas.detalhe_de(alguma.id)["grandeza"]),
+		12,
+		"um trilhao de caracteres e ordem de grandeza 12",
+	)
+
+	Jogo.descobertas = guardado
+	Jogo.descobertas_quando = quando_guardado
+	Jogo.descobertas_grandeza = grandeza_guardada
+	Jogo.total_caracteres = total_guardado
 
 
 ## ⚠️ AS SETE AUTORAIS SAO O PRODUTO DESTA VERSAO. Cobradas por id: renomear uma delas sem

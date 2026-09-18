@@ -51,7 +51,12 @@ extends Node
 ## 10: entram o nome do Manuscrito, a data de criacao e a producao por segundo do instante
 ## da gravacao (issue #35). Os tres existem para o .meta poder ser DERIVADO do save: numero
 ## que so morasse no metadado divergiria do save e ninguem notaria.
-const VERSAO: int = 10
+## 11: entram `descobertas_quando` e `descobertas_grandeza`, o instante e a ordem de
+## grandeza da producao em que cada descoberta saiu (issue #55). ⚠️ SAVE ANTIGO NAO GANHA
+## VALOR NENHUM: os dois entram VAZIOS, e o Arquivo mostra o que tem. Preencher com zero
+## faria toda descoberta antiga dizer "encontrada em 1 de janeiro de 1970, com 1 caractere
+## produzido" -- dado inventado que parece dado.
+const VERSAO: int = 11
 
 const CAMINHO_PADRAO := "user://save.json"
 
@@ -154,6 +159,8 @@ func gravar() -> bool:
 		"upgrades_comprados": Jogo.upgrades_comprados,
 		"marcos_alcancados": Jogo.marcos_alcancados,
 		"descobertas": Jogo.descobertas,
+		"descobertas_quando": Jogo.descobertas_quando,
+		"descobertas_grandeza": Jogo.descobertas_grandeza,
 	}
 
 	var temporario := caminho + ".tmp"
@@ -237,6 +244,16 @@ func carregar() -> float:
 	var versao := int(dados.get("versao", 0))
 	if versao < VERSAO:
 		dados = _migrar(dados, versao)
+	else:
+		# ⚠️ O PADRAO VALE PARA TODO SAVE, e nao so para o que veio de uma versao antiga.
+		# Ate a issue #55 o preenchimento so rodava dentro de _migrar, entao um arquivo NA
+		# VERSAO ATUAL sem algum campo caia direto em _aplicar -- que indexa `dados["nome"]`
+		# sem .get e morre ali, com a partida pela metade.
+		#
+		# Nao e hipotetico: foi exatamente assim que o primeiro caso de teste da colecao
+		# reprovou, e o reflexo teria sido "consertar o teste". O arquivo de teste era
+		# JSON valido, na versao certa, e mesmo assim nao carregava.
+		dados = _completar(dados.duplicate(true))
 
 	_aplicar(dados)
 	EventBus.jogo_carregado.emit()
@@ -320,11 +337,26 @@ static func _copiar_com_seguranca(de: String, para: String) -> bool:
 ##
 ## Enquanto so existe a versao 1, migrar e preencher o que falta. Quando a issue #16
 ## acrescentar descobertas, e aqui que o ramo dela entra.
-func _migrar(dados: Dictionary, de_versao: int) -> Dictionary:
-	var migrado := dados.duplicate(true)
+## Deixa passar so o que tem id na lista de descobertas encontradas.
+func _so_dos_encontrados(lido: Variant) -> Dictionary:
+	var limpo := {}
+	if lido is Dictionary:
+		for id in (lido as Dictionary):
+			if Jogo.descobertas.has(str(id)):
+				limpo[str(id)] = (lido as Dictionary)[id]
+	return limpo
+
+
+## Campo ausente ganha o padrao de partida nova -- nunca zero em cima do que ja estava la.
+func _completar(dados: Dictionary) -> Dictionary:
 	for campo in _PADROES:
-		if not migrado.has(campo):
-			migrado[campo] = _PADROES[campo]
+		if not dados.has(campo):
+			dados[campo] = _PADROES[campo]
+	return dados
+
+
+func _migrar(dados: Dictionary, de_versao: int) -> Dictionary:
+	var migrado := _completar(dados.duplicate(true))
 	migrado["versao"] = VERSAO
 	print("Save: migrado da versao %d para a %d" % [de_versao, VERSAO])
 	return migrado
@@ -359,6 +391,9 @@ const _PADROES := {
 	"upgrades_comprados": [],
 	"marcos_alcancados": [],
 	"descobertas": [],
+	# ⚠️ vazios, e nao zerados: ver o comentario da versao 11 em VERSAO
+	"descobertas_quando": {},
+	"descobertas_grandeza": {},
 }
 
 
@@ -392,6 +427,12 @@ func _aplicar(dados: Dictionary) -> void:
 	Jogo.upgrades_comprados = _lista_de_texto(dados["upgrades_comprados"])
 	Jogo.marcos_alcancados = _lista_de_texto(dados["marcos_alcancados"])
 	Jogo.descobertas = _lista_de_texto(dados["descobertas"])
+	# ⚠️ CHAVE SOLTA E CHAVE PERDIDA. Um carimbo cujo id nao esta mais na lista de
+	# encontradas e lixo que o Arquivo leria como verdade -- e ele entra por caminhos que
+	# nao passam por aqui (save editado a mao, migracao de versao futura). Filtrar na
+	# leitura custa um laco e fecha a familia inteira.
+	Jogo.descobertas_quando = _so_dos_encontrados(dados.get("descobertas_quando", {}))
+	Jogo.descobertas_grandeza = _so_dos_encontrados(dados.get("descobertas_grandeza", {}))
 
 
 ## A chave existir significa comprada; o valor diz se esta ligada.
