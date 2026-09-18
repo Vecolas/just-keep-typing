@@ -49,8 +49,15 @@ perfeito. Detalhes e como não cair na armadilha ao diagnosticar: `../CONVENCOES
 ## 1.1. O caminho das cenas
 
 ```text
-main.tscn (Boot)  ──>  Menu  ──>  Arquivos  ──>  Partida  ──>  Menu
+main.tscn (Boot)  ──>  Abertura  ──>  Menu  ──>  Arquivos  ──>  Partida  ──>  Menu
+                          │
+                          └── pulada inteira quando `ja_viu_abertura` (issue #47)
 ```
+
+⚠️ **Quem já viu a abertura pula ANTES de ela ser montada**, e não dentro dela. Sem isso,
+quem abre o jogo todo dia pagaria o custo de montar uma cena inteira para ela se desmontar
+sozinha no quadro seguinte — e um quadro de tela preta é uma piscada que a pessoa vê. Quem
+decide é `Cenas.ir_para_abertura()`; o Boot só pede.
 
 `main.tscn` **não é mais a partida** (issue #38). Ele é o Boot: não desenha nada, segura o
 nó do grupo `raiz_de_cena` e pede o menu ao `Cenas`. Quem monta e desmonta cena é o
@@ -89,7 +96,7 @@ que é quem sabe se há partida aberta.
 | `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`, `Relogio`. Testável headless. |
 | `src/producao/` | Macacos, máquinas, salas — quem gera caractere |
 | `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) e `NomesDeManuscrito` (o que o nome pode ser) |
-| `src/ui/` | Telas: Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — mais `TelaSobreposta` (base das que abrem por cima) e `BotaoDeSegurar` |
+| `src/ui/` | Telas: Abertura, Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — mais `TelaSobreposta` (base das que abrem por cima), `BotaoDeSegurar`, `CenarioDoMenu` e `AssetsDoMenu` |
 | `src/cena/` | O Boot, a Partida, a cena das eras e a câmera que se afasta |
 | `assets/menu/` | A pixel art do menu (issue #45). O briefing é `docs/ASSETS.md`; a tabela que vale é `src/ui/assets_do_menu.gd` |
 | `data/` | `.tres` de balanceamento — nenhum código |
