@@ -33,6 +33,19 @@ const SEMENTE_DO_SORTEIO: int = 1
 
 const MINUTOS_PADRAO: int = 30
 
+## Em que minutos ela guarda uma FOTO da tela.
+##
+## ⚠️ A TABELA DIZ QUANTOS BOTOES; A FOTO DIZ SE ELES SE LEEM. Um minuto com "4 na loja" e
+## "3 compras" pode ser uma tela confusa, um texto cortado, um numero que nao cabe -- e
+## nada disso aparece num contador. Os tres defeitos de leitura da v0.6 foram achados
+## olhando captura, com a suite verde.
+##
+## Nao e todo minuto: trinta imagens de 1080p sao caras e a maior parte delas seria igual a
+## anterior. Estes nove sao os instantes em que a campanha muda de fase.
+const MINUTOS_FOTOGRAFADOS: PackedInt32Array = [1, 2, 3, 5, 10, 15, 20, 25, 30]
+
+const PASTA_DAS_FOTOS := "user://playtest"
+
 var _perfil: Dictionary = {}
 var _nome_do_perfil: String = "normal"
 var _minutos: int = MINUTOS_PADRAO
@@ -75,6 +88,8 @@ func _ready() -> void:
 	# 13,9 milhoes no minuto 1. Uma sessao observada que comeca no meio da campanha mede
 	# outro jogo, e a leitura dela vale zero.
 	_limpar_a_pasta("user://observar")
+	DirAccess.make_dir_recursive_absolute(PASTA_DAS_FOTOS)
+	_limpar_a_pasta(PASTA_DAS_FOTOS)
 
 	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
 	Eventos.gerador.seed = SEMENTE_DO_SORTEIO
@@ -179,6 +194,9 @@ func _observar() -> void:
 				Formatador.formatar(Jogo.total_caracteres),
 				na_loja, compraveis, acontecimentos,
 			])
+			var minuto := int(proximo_minuto / 60.0)
+			if minuto in MINUTOS_FOTOGRAFADOS:
+				await _fotografar(minuto)
 			marcos_antes = Jogo.marcos_alcancados.size()
 			descobertas_antes = Jogo.descobertas.size()
 			proximo_minuto += 60.0
@@ -200,6 +218,20 @@ func _observar() -> void:
 	print("")
 	print("um minuto sem compra possivel E sem acontecimento e um minuto em que a tela nao")
 	print("muda e o jogador nao tem o que decidir. A regua nao ve isso.")
+
+
+## Guarda a tela do minuto. ⚠️ ESPERA DOIS QUADROS ANTES: a HUD repinta no _process, e
+## fotografar no mesmo quadro em que o laco creditou pega a tela com os numeros do minuto
+## ANTERIOR -- uma foto que parece certa e esta um minuto atrasada.
+func _fotografar(minuto: int) -> void:
+	for i in 2:
+		await get_tree().process_frame
+	var imagem := get_viewport().get_texture().get_image()
+	var caminho := "%s/min_%02d.png" % [PASTA_DAS_FOTOS, minuto]
+	if imagem.save_png(caminho) != OK:
+		printerr("FALHA  nao consegui guardar %s" % caminho)
+		return
+	print("        [foto do minuto %d]" % minuto)
 
 
 ## Apaga tudo que sobrou de uma execucao anterior. Partida nova quer dizer partida nova.
