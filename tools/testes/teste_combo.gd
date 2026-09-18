@@ -43,7 +43,7 @@ func _o_tres_e_valido() -> void:
 	# ("o combo e um bonus, e nao um imposto") com um limite frouxo de proposito: ela nao
 	# esta escolhendo o numero por quem for ajustar, so impedindo que o ajuste atravesse a
 	# fronteira onde o combo vira obrigacao. O valor de hoje esta ao lado, como nota.
-	ok(dados.teto <= 2.0, "o teto %s continua pequeno (valor de hoje: 1,5)" % dados.teto)
+	ok(dados.teto <= 2.0, "o teto %s continua pequeno (valor de hoje: 1,28)" % dados.teto)
 
 	ok(dados.ganho_por_tecla > 0.0, "o ganho por tecla faz o combo subir")
 	ok(
