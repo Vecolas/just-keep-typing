@@ -347,19 +347,55 @@ func _ready() -> void:
 		_falhar("producao_automatica() e verdadeira sem nenhum upgrade comprado")
 		return
 
-	# 2. cada clique vale +1 caractere, e a tecla vale tanto quanto o mouse -- metade por
-	# cada caminho, porque sao dois ramos diferentes do _unhandled_input e um deles pode
+	# 2. cada clique produz, e a tecla vale tanto quanto o mouse -- metade por cada
+	# caminho, porque sao dois ramos diferentes do _unhandled_input e um deles pode
 	# quebrar sozinho
+	#
+	# ⚠️ ATE A ISSUE #54 ESTE NUMERO ERA EXATO: 12 cliques, 12 caracteres. Com o combo de
+	# digitacao, cliques EM SEQUENCIA rendem mais que cliques isolados -- entao a
+	# afirmacao passa a ser sobre a REGRA ("digitar acelera") e nao sobre o numero, que
+	# agora depende da cadencia. Cravar o numero aqui faria esta fumaca reprovar o codigo
+	# certo no primeiro tuning do teto.
 	for i in CLIQUES:
 		if i % 2 == 0:
 			_apertar(&"ui_accept")
 		else:
 			_clicar()
 		await get_tree().process_frame
-	if not Jogo.total_caracteres.igual_a(Grande.de_float(float(CLIQUES))):
-		_falhar("%d cliques deveriam dar %d caracteres, deram %s" % [
-			CLIQUES, CLIQUES, Jogo.total_caracteres.para_texto(),
+
+	var so_dos_cliques := Jogo.total_caracteres
+	if not so_dos_cliques.maior_que(Grande.de_float(float(CLIQUES - 1))):
+		_falhar("%d cliques deveriam dar pelo menos %d caracteres, deram %s" % [
+			CLIQUES, CLIQUES, so_dos_cliques.para_texto(),
 		])
+		return
+	if not so_dos_cliques.maior_que(Grande.de_float(float(CLIQUES))):
+		_falhar("%d cliques seguidos nao acumularam combo nenhum: %s" % [
+			CLIQUES, so_dos_cliques.para_texto(),
+		])
+		return
+	if Combo.multiplicador() <= 1.0:
+		_falhar("o combo nao subiu depois de %d cliques seguidos" % CLIQUES)
+		return
+
+	# ⚠️ E A OUTRA METADE DA REGRA, que e a que importa: PARAR NAO PUNE. Depois da pausa o
+	# combo volta a 1,0 e o clique continua valendo exatamente um caractere -- e nao menos
+	# do que valia antes de existir combo.
+	#
+	# A pausa e simulada por Economia.acumular(), que e o mesmo tique do jogo. Sem
+	# producao automatica ligada ele nao credita nada; so faz o tempo andar, que e o que
+	# esta fumaca precisa. Esperar em tempo real custaria cinco segundos de suite.
+	Economia.acumular(30.0)
+	if not is_equal_approx(Combo.multiplicador(), 1.0):
+		_falhar("parado 30 s, o combo ficou em x%.3f em vez de voltar a 1,0" % Combo.multiplicador())
+		return
+
+	var antes_do_clique_frio := Jogo.total_caracteres
+	_clicar()
+	await get_tree().process_frame
+	var ganho := Jogo.total_caracteres.menos(antes_do_clique_frio)
+	if not ganho.igual_a(Grande.um()):
+		_falhar("o clique depois da pausa deu %s caracteres em vez de 1" % ganho.para_texto())
 		return
 
 	# 3. a compra que vira o jogo do avesso
@@ -367,13 +403,21 @@ func _ready() -> void:
 	if custo == null:
 		_falhar("o upgrade %s nao esta em data/upgrades/" % UPGRADE_INICIAL)
 		return
+
+	# ⚠️ MESMO MOTIVO DO NUMERO DE CIMA (issue #54): o saldo antes da compra deixou de ser
+	# igual ao numero de cliques, porque o combo acelera. O troco passa a ser conferido
+	# contra o SALDO MEDIDO um instante antes -- que e a regra de verdade ("comprar debita
+	# exatamente o custo") e nao uma aritmetica que so valia enquanto clique valia um.
+	var saldo_antes := Jogo.dinheiro
 	if not Economia.comprar_upgrade(UPGRADE_INICIAL):
 		_falhar("nao deu para comprar %s com %s de saldo" % [
-			UPGRADE_INICIAL, Jogo.dinheiro.para_texto(),
+			UPGRADE_INICIAL, saldo_antes.para_texto(),
 		])
 		return
-	if not Jogo.dinheiro.igual_a(Grande.de_float(float(CLIQUES) - custo.custo)):
-		_falhar("o troco saiu errado: %s" % Jogo.dinheiro.para_texto())
+	if not Jogo.dinheiro.igual_a(saldo_antes.menos(Grande.de_float(custo.custo))):
+		_falhar("o troco saiu errado: %s de %s menos %s" % [
+			Jogo.dinheiro.para_texto(), saldo_antes.para_texto(), custo.custo,
+		])
 		return
 
 	# 4. a partir daqui o jogo produz sozinho -- e o que a issue #6 pede para provar

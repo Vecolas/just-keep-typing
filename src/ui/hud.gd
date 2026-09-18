@@ -75,6 +75,7 @@ func _pintar() -> void:
 		Grande.de_float(float(Descobertas.quantas_encontradas()))
 	)
 	%ValorMacacos.text = Formatador.formatar(Jogo.macacos)
+	_pintar_combo()
 	# a unidade vem da ERA, e nao esta escrita aqui: na era 14 a contagem de macacos
 	# deixa de fazer sentido e o jogador passa a manipular possibilidades (GDD §6).
 	# Trocar so o fundo contaria metade da historia.
@@ -115,6 +116,26 @@ func _pintar() -> void:
 		var dados := Automacao.de(id)
 		if dados != null:
 			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+
+
+## O combo de digitacao (issue #54). ⚠️ ELE PRECISA SER VISIVEL: multiplicador que age
+## sem aparecer e regra escondida, e o jogador atribuiria a variacao a outra coisa.
+##
+## ⚠️ SOME QUANDO ESTA EM 1,0, em vez de mostrar "COMBO x1,0" o tempo todo. Rotulo parado
+## anunciando "nada esta acontecendo" e ruido permanente -- e o combo passa a maior parte
+## da partida em 1,0, porque ele envelhece de proposito.
+##
+## ⚠️ E O QUE COMUNICA E O NUMERO, e nao a cor (issue #43). "x1,3" se le em qualquer
+## monitor e em qualquer daltonismo; a cor so acompanha.
+func _pintar_combo() -> void:
+	var multiplicador := Combo.multiplicador()
+	# 1,005 e meio por cento: abaixo disso o rotulo mostraria "x1,0" e piscaria a cada
+	# arredondamento, que e pior que nao mostrar nada
+	%Combo.visible = multiplicador > 1.005
+	if not %Combo.visible:
+		return
+	# "%s ×%.2f" e marca de formato: o tr() vem ANTES da substituicao
+	%Combo.text = "%s ×%.2f" % [tr("COMBO"), multiplicador]
 
 
 ## A sala em uso, a ocupacao e a proxima da escada do GDD §15.
@@ -501,6 +522,8 @@ func _estilizar() -> void:
 	# disputa atencao com o contador.
 	%Aviso.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.25)))
 	%Aviso.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
+	%Combo.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
+	%Combo.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
 	# sala cheia e o unico aviso da loja: cor de alerta, e nao mais um creme apagado
 	%VagasMacaco.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 	%VagasMacaco.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))

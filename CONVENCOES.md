@@ -586,6 +586,69 @@ nenhuma vez.
 
 ---
 
+## O combo de digitação: acelera, nunca obriga
+
+```
+atividade → ACELERA          ✅
+atividade → OBRIGATÓRIA      ❌
+```
+
+⚠️ **Ele multiplica só o que o jogador digita** — nunca a produção automática. Essa é a
+decisão inteira da issue #54, e ela resolve sozinha três exigências que de outro jeito
+precisariam de três mecanismos:
+
+| exigência | como o desenho a paga |
+|---|---|
+| **envelhecer sozinho** | preso ao clique, ele se apaga quando o macaco produz um bilhão por segundo — ninguém desliga nada |
+| **não virar imposto** | a progressão inteira roda na produção automática, que ele não toca |
+| **acessibilidade** | quem não pode digitar rápido não fica preso atrás dele |
+
+Um multiplicador **global** de ×1,5 continuaria valendo ×1,5 na era 14 — ele nunca
+envelheceria, e aí "não obrigatório" viraria uma promessa em comentário em vez de uma
+propriedade do desenho.
+
+⚠️ **O decaimento é a metade que impede a obrigação.** Sem ele, "deixar o dedo no teclado"
+vira a jogada dominante. `decaimento_por_segundo = 0` é o único defeito desta lista que o
+jogador não percebe como defeito: o combo simplesmente fica ligado para sempre. Por isso
+zero **reprova** na suíte, e a sentinela de "não configurado" não pode ser zero-desliga.
+
+⚠️ **E ele decai até ZERO**, não até um piso. Um combo estacionado em ×1,1 seria um imposto
+permanente sobre quem não digita, só que pequeno demais para alguém notar lendo o código.
+
+### A armadilha do inteiro, que quase levou
+
+Um clique vale 1 caractere. `1 × 1,2` truncado para inteiro **volta a ser 1** — o combo
+existiria no código, apareceria na tela e **não faria nada** até o teto passar de 2,0. É o
+percentual sobre inteiro da disciplina, e ele não dá erro nenhum.
+
+`Economia.digitar()` credita em float. Caractere fracionário já era o normal: o tique
+credita `cps × delta` desde a v0.1.
+
+### A ordem é contrato
+
+`digitar()` **credita com o multiplicador de agora e marca depois**. Marcando primeiro, a
+própria tecla ganharia o aumento que ela mesma acabou de causar, e o primeiro caractere de
+uma partida nova sairia valendo mais que um.
+
+### Ele não escuta tecla nenhuma
+
+O combo é **avisado** por `Economia.digitar()`, que é o único caminho pelo qual um
+caractere nasce da mão do jogador. Um segundo `_unhandled_input` ouvindo `ui_accept` seria
+um segundo caminho para a mesma coisa, e os dois divergiriam no primeiro ajuste.
+
+⚠️ **E nada disso encosta no easter egg do menu** (issue #49): mesma entrada, propósitos
+opostos — aquele é visual e não toca no save, este mexe em produção e só existe dentro da
+partida.
+
+### Duas afirmações de fumaça deixaram de ser sobre números
+
+Até a #54, a fumaça cravava `12 cliques = 12 caracteres` e `troco = 12 − 10`. Com o combo,
+cliques **em sequência** rendem mais que cliques isolados, e os dois números passaram a
+depender da cadência. As afirmações viraram regras: *"digitar acelera"*, *"parar devolve o
+clique a exatamente 1"* e *"comprar debita exatamente o custo"* — conferido contra o saldo
+medido um instante antes, e não contra uma aritmética que só valia enquanto clique valia
+um.
+
 ## Upgrade tem família, e a família é só para ler
 
 Quatro famílias temáticas (issue #53): **O Macaco**, **A Máquina**, **A Organização**, **O

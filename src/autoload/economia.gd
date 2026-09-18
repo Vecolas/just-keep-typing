@@ -458,10 +458,24 @@ func creditar_offline(segundos_ausente: float) -> Grande:
 ## Passa pelo MESMO _creditar da producao automatica de proposito. Dois caminhos ate o
 ## acumulador seriam dois lugares para esquecer de somar no dia em que um recurso novo
 ## entrar -- e o que ficasse de fora sumiria em silencio, sem erro nenhum.
+## ⚠️ O COMBO (issue #54) MULTIPLICA AQUI E SO AQUI. Ele nao entra em
+## multiplicador_total(), e essa e a decisao inteira da issue: preso ao clique, ele
+## envelhece sozinho conforme a automacao cresce, em vez de valer x1,5 para sempre. Ver
+## src/autoload/combo.gd.
+##
+## ⚠️ E A ORDEM E CONTRATO: credita com o multiplicador de AGORA, marca depois. Marcando
+## primeiro, a propria tecla ganharia o aumento que ela mesma acabou de causar, e o
+## primeiro caractere de uma partida nova sairia valendo mais que um.
+##
+## ⚠️ A conta fica em float e NAO e arredondada para int. Um clique vale 1, e 1 x 1,2
+## truncado volta a ser 1 -- o combo existiria, apareceria na tela e nao faria NADA ate o
+## teto passar de 2,0. E a armadilha do percentual sobre inteiro, e ela nao da erro.
+## Caractere fracionario ja e o normal aqui: o tique credita cps x delta desde a v0.1.
 func digitar(quantos: int = 1) -> void:
 	if quantos <= 0:
 		return
-	_creditar(Grande.de_float(float(quantos)))
+	_creditar(Grande.de_float(float(quantos) * Combo.multiplicador()))
+	Combo.marcar(quantos)
 
 
 ## Avanca a partida em delta segundos. E o tique do jogo inteiro: quem tem quadro chama
@@ -483,6 +497,10 @@ func acumular(delta: float) -> void:
 		return
 	Jogo.tempo_jogado += delta
 	Jogo.tempo_da_run += delta
+	# o combo cai no mesmo tique em que o tempo anda. Um _process proprio no Combo seria
+	# um segundo relogio para a mesma partida, e os dois divergiriam assim que alguem
+	# pausasse um deles
+	Combo.decair(delta)
 
 	if Jogo.caracteres_por_segundo.e_zero():
 		return
