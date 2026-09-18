@@ -24,10 +24,16 @@ os que vieram antes dele.
 | 8 | `Eventos` | `src/autoload/eventos.gd` | Os eventos aleatórios. |
 | 9 | `Automacao` | `src/autoload/automacao.gd` | Gerente, técnico, administrador e diretor. |
 | 10 | `Fragmentos` | `src/autoload/fragmentos.gd` | O segundo prestígio. |
-| 11 | `Config` | `src/autoload/config.gd` | As opções da **instalação**, e onde cada slot mora. |
-| 12 | `Autosave` | `src/autoload/autosave.gd` | **Quando** gravar. Quem grava é o `Save`. |
-| 13 | `Cenas` | `src/autoload/cenas.gd` | O caminho Boot → Menu → Arquivos → Partida → Menu. |
-| 14 | `MCPGameBridge` | `addons/godot_mcp/game_bridge/…` | Ponte do editor ao vivo. Ferramenta, não jogo. |
+| 11 | `Audio` | `src/autoload/audio.gd` | Os cinco barramentos e os sons. Cria o mixer; não lê opção. |
+| 12 | `Config` | `src/autoload/config.gd` | As opções da **instalação**, e onde cada slot mora. |
+| 13 | `Autosave` | `src/autoload/autosave.gd` | **Quando** gravar. Quem grava é o `Save`. |
+| 14 | `Cenas` | `src/autoload/cenas.gd` | O caminho Boot → Menu → Arquivos → Partida → Menu. |
+| 15 | `MCPGameBridge` | `addons/godot_mcp/game_bridge/…` | Ponte do editor ao vivo. Ferramenta, não jogo. |
+
+⚠️ **`Audio` vem ANTES do `Config`, e isso é a ordem inteira.** `Config._aplicar_audio()`
+ajusta o volume de cada barramento na abertura, e barramento que ainda não existe não tem
+volume para ajustar. Por isso o `Audio` não lê opção nenhuma no `_ready` dele: quem vem
+depois **puxa** o que precisa, e a leitura acontece quando o `Config` pede.
 
 `Autosave` e `Cenas` são os dois últimos do jogo porque são os únicos que **mandam** nos
 outros: um chama `Save.gravar()`, o outro chama `Config`, `Save` e `Economia` em ordem.

@@ -22,6 +22,9 @@ func _process(delta: float) -> void:
 	Automacao.tique(delta)
 	Economia.acumular(delta)
 	Marcos.verificar()
+	# o som da digitacao e ritmo, e ritmo precisa de quadro. Quem tem quadro e a cena
+	# (issue #42) -- como e de Eventos e de Automacao.
+	Audio.tique(delta)
 	# QUANDO gravar saiu daqui na issue #37: os gatilhos que importam sao sinais do
 	# EventBus (prestigio, reescrita, troca de era) e nao cabiam num contador de quadro.
 	Autosave.tique(delta)
