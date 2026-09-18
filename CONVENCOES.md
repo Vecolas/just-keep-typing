@@ -619,6 +619,21 @@ O portão deriva os pontos de entrada da pasta — todo `.gd` com um `.tscn` irm
 dívida (`SEM_SORTEIO_AINDA`) morde dos dois lados: quem está nela tem de **continuar** sem
 produzir caractere.
 
+### Uma régua por assunto — nunca uma v1 e uma v2 lado a lado
+
+Quando um instrumento precisa mudar, a tentação é guardar o antigo "como histórico". **Não
+guarde.**
+
+- **duas fontes para a mesma verdade divergem**, e a que vale costuma ser a errada
+- **código morto que afirma uma regra errada é pior que código morto**: a versão velha volta
+  a rodar no dia em que alguém a chamar, medindo um jogo que já não existe
+- e ninguém rodaria a versão velha — **o que ninguém roda apodrece sem avisar**
+
+**O que se faz é declarar alto que as tabelas antigas não se comparam**, e guardar os números
+históricos no `TUNING.md`. Foi assim na issue #42 (`medir_quadro` trocou de instrumento) e na
+#56 (o jogador simulado passou a digitar). **O histórico mora no documento, que é onde ele
+não pode ser executado por engano.**
+
 ### E uma fumaça que dependia de sorte passava assim mesmo
 
 As afirmações da fumaça são estruturais, então ela passava com totais diferentes a cada

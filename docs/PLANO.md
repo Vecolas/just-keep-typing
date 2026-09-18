@@ -172,7 +172,7 @@ autor, registrada em `docs/decisoes/`.
 
 ---
 
-## v0.6 — A primeira hora
+## v0.6 — A primeira hora  ✅ **entregue**
 
 **A regra desta versão, e ela vale mais que qualquer item da lista: não se aumenta o número
 de sistemas. Aumenta-se, violentamente, a densidade de acontecimentos nos sistemas que já
@@ -253,6 +253,57 @@ economicamente e péssimo como conteúdo. A descrição é o produto.
 - **não persegue milissegundo.** Nenhum cenário medido chega perto do orçamento
 - **não cria a música.** O barramento `Musica` continua em `Audio.SEM_FONTE_AINDA` até
   existir trilha — a regra de não expor configuração sem consumidor continua valendo
+
+---
+
+## v0.7 — A campanha da primeira hora
+
+**A regra desta versão:** a v0.6 mediu a primeira hora pela primeira vez, e o resultado foi
+**quatro minutos de acontecimento seguidos de cinquenta e seis de silêncio**. A v0.7 não
+acrescenta conteúdo — ela **redistribui o que já existe**.
+
+> **A v0.6 não revelou que o jogo precisa de mais conteúdo; revelou que ele precisa aprender
+> a distribuir o conteúdo que já tem.**
+
+Decisão em `docs/decisoes/0008-a-campanha-da-primeira-hora.md`. Diagnóstico em
+`docs/decisoes/0007`.
+
+### ⚠️ Congelamento de conteúdo
+
+Até a curva estar resolvida, **não** entram: upgrade novo, marco novo, moeda nova, era nova,
+multiplicador permanente novo, nem mexida em Fragmentos.
+
+91 marcos, 62 descobertas e 44 upgrades já são material suficiente. **O problema não é falta
+de conteúdo. É distribuição.**
+
+| # | Issue | Prova |
+|---|---|---|
+| 58 | guarda-chuva: reconstruir a distribuição | o conjunto dos critérios abaixo |
+| 59 | **58A** a régua de campanha: instrumento antes de número | duas execuções, mesma seed, mesmo byte |
+| 60 | **58B** a curva econômica: separar aditivo, local e global | o global vira minoria declarada |
+| 61 | **58C** redistribuição: reposicionar o que já existe | nenhum bloco de 10 min vazio |
+| 62 | **58D** o primeiro Teorema como clímax | 35–50 min no perfil normal |
+| 63 | **58E** três perfis: ativo, normal, passivo | os três chegam ao Teorema |
+| 64 | **58F** playtest humano, antes e depois | ⚠️ **só o autor faz** |
+| 65 | **58G** tuning final | não sobra trecho vazio |
+
+**Ordem:** #59 e o playtest de baseline (#64) vêm **antes** de qualquer número mudar.
+Instrumento e registro humano do problema primeiro.
+
+### A métrica desta versão
+
+A pergunta deixa de ser *"quanto tempo até prestigiar?"* e passa a ser:
+
+> **"existe alguma coisa interessante acontecendo durante todo o caminho até prestigiar?"**
+
+### O que esta versão deliberadamente NÃO faz
+
+- **não cria conteúdo novo** — é a regra da versão, e está no congelamento acima
+- **não começa a música.** `Musica` continua em `Audio.SEM_FONTE_AINDA`
+- **não começa o midgame, o conteúdo cósmico nem os Fragmentos.** Uma variável por vez: não
+  se mistura trilha nova, economia nova e campanha nova no mesmo ciclo
+- **não mantém duas réguas.** O instrumento muda, e o histórico fica no `TUNING.md` com o
+  aviso de que as tabelas não se comparam — como já se fez na issue #42
 
 ---
 
