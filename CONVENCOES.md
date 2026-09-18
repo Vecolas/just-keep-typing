@@ -619,6 +619,78 @@ O portão deriva os pontos de entrada da pasta — todo `.gd` com um `.tscn` irm
 dívida (`SEM_SORTEIO_AINDA`) morde dos dois lados: quem está nela tem de **continuar** sem
 produzir caractere.
 
+## O jogador tem de conseguir consumir o que a economia produz
+
+Quatro regras da v0.7.1, e todas nasceram de **olhar a tela** com a suíte verde.
+
+### ⚠️ Aviso tem FILA e PRIORIDADE — e um slot só não basta
+
+Medido antes: **16 de 82 avisos (20%) apagados antes do tempo mínimo de leitura.** Um em
+cada cinco textos que o jogo escreve era fisicamente ilegível.
+
+> **Uma mensagem de prioridade menor nunca apaga uma maior.**
+
+⚠️ **E nem uma CRÍTICA interrompe o que já está na tela.** Trocar no meio da leitura é o
+defeito que a fila conserta — a prioridade fura a **fila**, e não a tela.
+
+⚠️ **Mensagem de sistema não disputa com conteúdo.** `"Salvando..."` acendia o mesmo rótulo
+que uma descoberta Lendária, com a mesma prioridade — e é a única das três que o jogador não
+estava esperando. Virou ícone. **Isso resolve o conflito em vez de balancear duração.**
+
+⚠️ **A prioridade sai do DADO**, e nunca de uma lista de ids: a raridade já existe em
+`DadosDescoberta.Categoria`, o tipo em `DadosMarco.Tipo`. Uma Lendária que chega igual a uma
+Comum é a promessa do sistema de raridade sendo desmentida pela interface.
+
+E existe **registro recente**, porque aviso perdido era perdido para sempre — e era isso que
+obrigava o aviso a ser grande e demorado: ele era a única chance.
+
+### ⚠️ "Desabilitado" não é um estado, são três
+
+| | |
+|---|---|
+| **botão caro** | é uma **meta** |
+| **ausência** | é **vazio** |
+| **botão que nunca acende** | é **promessa falsa** |
+
+São economicamente diferentes e o jogador via o mesmo cinza nos três. A loja tem
+`ALCANCAVEL`, `PERTO` (com a porcentagem do custo) e `LONGE`.
+
+⚠️ **A porcentagem é TEXTO, e não cor** (issue #43): "72%" se lê em qualquer monitor e em
+qualquer daltonismo.
+
+⚠️ **E medir "quantos na loja" não mede nada** se os três estiverem inalcançáveis. A régua
+separa vitrine de oferta, e o limiar sai da HUD — não de um número digitado nela.
+
+### ⚠️ A interface envelhece junto com o papel do jogador
+
+Aos trinta minutos, o maior e mais brilhante elemento da tela dava **+1 contra 37,7 milhões
+por segundo**. O combo já envelhecia de propósito desde a issue #54; **o botão não
+acompanhou.**
+
+A fase é **derivada** da razão entre o que o clique dá e o que a produção automática dá —
+nunca uma lista de minutos, nunca um estado guardado. E a **legenda envelhece junto**:
+*"+1 caractere por clique"* é verdade e é irrelevante.
+
+⚠️ **Mas nunca some.** Quem não pode usar o mouse depende da tecla. A suíte cobra piso de
+32 px: alvo menor que isso é alvo que a mão erra, e errar o clique num botão que produz
+recurso é progresso perdido em silêncio.
+
+### ⚠️ Grandeza que se conta não sai com vírgula
+
+`48,99 macacos` e `50,79 bananas` apareceram em capturas. **O diagnóstico é diferente nos
+dois**, e a issue exigia diagnosticar antes de consertar:
+
+| | valor | o que fazer |
+|---|---|---|
+| bananas | **certo** — é macacos × tempo, legitimamente contínuo | formatação discreta |
+| macacos | **deveria ser inteiro** | portão do **valor**; formatar por cima esconderia a causa |
+
+⚠️ **`discreto` mora no DADO**, e não na tela: quem sabe se banana se divide é quem escreveu
+a estatística, não quem a desenha. Campo ausente cai no contínuo.
+
+E ele **trunca**: quem consumiu 48,99 bananas comeu 48 inteiras e está no meio da
+quadragésima nona.
+
 ### ⚠️ Medir por FONTE, e nunca só pelo resultado
 
 A v0.7 gastou uma investigação inteira procurando o multiplicador no lugar errado. Os

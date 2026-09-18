@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_combo")
-teto = 1.5
+teto = 1.28
 ganho_por_tecla = 0.05
 decaimento_por_segundo = 0.4
 segundos_de_graca = 1.0

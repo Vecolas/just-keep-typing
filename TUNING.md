@@ -304,6 +304,25 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### O combo de volta para a faixa (issue #73)
+
+Um parâmetro, antes e depois. `data/combo.tres` → `teto`: **1,5 → 1,28**.
+
+| perfil | antes | depois |
+|---|---|---|
+| ativo | 00:27:36 | 00:28:37 |
+| **normal** | 00:37:39 | 00:32:41 |
+| passivo | 00:41:57 | 00:40:52 |
+| **vantagem do ativo** | **27%** ❌ | **12,4%** ✅ |
+
+A decisão `0008` fixou 10–20%, e a #73 apertou para 12–18%. **Dentro.**
+
+⚠️ **E só este número mudou.** Decaimento, carência e ganho por tecla ficaram como estavam:
+mexer em dois daria uma medição que não separa os efeitos.
+
+O jogador ativo deve sentir *"minha interação ajuda"*, e não *"se eu parar de clicar, estou
+jogando errado"*.
+
 ### ⚠️ A SESSÃO OBSERVADA VIU O QUE A RÉGUA NÃO VÊ (issue #64)
 
 `tools/observar.tscn` monta a partida de verdade e conta os botões da loja a cada minuto.
