@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 1
 id = "treinamento_questionavel"
 nome = "Treinamento Questionável"
 descricao = "Uma técnica surpreendentemente eficiente. Ninguém sabe quem ensinou."

@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_dados_upgrade")
 familia = 3
-id = "turno_da_noite"
-nome = "Turno da Noite"
-descricao = "Os macacos revezam. Nenhum deles dorme direito desde então."
-custo = 2.63183e+08
+id = "departamento_de_digitacao"
+nome = "Departamento de Digitação"
+descricao = "Agora existe um organograma. Metade das caixas está em branco e mesmo assim funciona."
+custo = 80000000000000.0
 tipo_de_efeito = 1
-valor = 2.0
-requisito = 2000000.0
+valor = 2.8
+requisito = 24000000000000.0

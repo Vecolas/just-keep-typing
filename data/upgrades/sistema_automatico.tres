@@ -4,11 +4,11 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
-familia = 4
-id = "teoria_da_informacao"
-nome = "Teoria da Informação"
-descricao = "Cada tecla carrega mais do que uma letra. Ninguém explicou isso ao macaco."
-custo = 1.99526e+14
+familia = 2
+id = "sistema_automatico"
+nome = "Sistema Automático"
+descricao = "A máquina troca a folha, alinha a margem e recomeça. Ninguém precisa estar na sala para isso."
+custo = 200000000000000.0
 tipo_de_efeito = 1
 valor = 3.0
-requisito = 80000000000.0
+requisito = 60000000000000.0

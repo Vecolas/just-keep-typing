@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_dados_upgrade")
 familia = 3
-id = "segunda_mesa"
-nome = "Segunda Mesa"
-descricao = "Dá para contratar outro macaco. A sala cabe o dobro agora."
-custo = 390246
-tipo_de_efeito = 3
-valor = 2.0
-requisito = 15000.0
+id = "supervisor"
+nome = "Supervisor"
+descricao = "Ele não datilografa. Ele anda entre as mesas, e as mesas por onde ele passa produzem mais."
+custo = 20000000000.0
+tipo_de_efeito = 1
+valor = 2.2
+requisito = 6000000000.0

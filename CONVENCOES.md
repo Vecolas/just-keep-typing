@@ -586,6 +586,51 @@ nenhuma vez.
 
 ---
 
+## Upgrade tem família, e a família é só para ler
+
+Quatro famílias temáticas (issue #53): **O Macaco**, **A Máquina**, **A Organização**, **O
+Conhecimento**. Dezenas de `+25%` são *necessários economicamente e ruins como conteúdo* —
+a família é o que transforma multiplicadores soltos em quatro escadas que contam uma
+história cada.
+
+⚠️ **A família é uma COLUNA do `.tres`** — não uma pasta, não um prefixo de id. Prefixo de
+id seria uma segunda fonte para a mesma verdade, e as duas divergem no primeiro rename.
+
+⚠️ **E ela não decide nada.** O gameplay pergunta pelo TIPO de efeito (`Economia.bonus_de`)
+e nunca pela família. É o que sustenta *"upgrade novo é um `.tres`, e mais nada"*. Um
+`if familia ==` dentro da economia não quebra nada — ele só torna o próximo upgrade mais
+caro de escrever, e ninguém liga os dois fatos. Por isso existe portão varrendo
+`economia.gd` e `jogo.gd` atrás da palavra.
+
+⚠️ **Id publicado não muda.** `Jogo.upgrades_comprados` é uma lista de ids que vai para o
+save: renomear apaga a compra de quem já jogou — o jogo carrega, o upgrade some, e o
+jogador só percebe pela produção que caiu. `IDS_DA_v0_5` é escrita **à mão** justamente
+para não concordar com um rename.
+
+⚠️ **A descrição é o produto.** `+25% de velocidade` não é descrição: o jogador já vê o
+número no botão. A descrição diz **por que a produção aumentou** — *"os dedos repetem
+sozinhos o que já repetiram antes; o macaco não aprendeu nada, as mãos aprenderam"*.
+
+### Dentro de uma escada, custo e efeito sobem juntos
+
+A escada é o par **(família, tipo de efeito)** — nunca a família sozinha. `CAPACIDADE` dá
+vaga, não multiplica produção: comparar *"x5 de vaga"* com *"x2 de produção global"* não
+quer dizer nada, e uma régua que comparasse os dois **reprovaria dado certo**, que é o
+jeito mais rápido de ensinar todo mundo a ignorar a régua. O interruptor
+(`LIGA_PRODUCAO_AUTOMATICA`) fica de fora: valor `1.0` é contrato dele.
+
+**O que essa régua achou na primeira execução**, escondido desde a issue #18:
+
+| | custo | efeito |
+|---|---|---|
+| `dedos_mais_ageis` | 100 | x1,5 |
+| `cafe_para_o_macaco` | 1,6 mi | **x1,4** ← 16 mil vezes mais caro, multiplica menos |
+| `metodo_de_datilografia` | 10 bi | x2,0 |
+| `ergonomia_simiesca` | 500 bi | **x1,8** ← idem, 50 vezes mais caro |
+
+Isso não aparecia em lugar nenhum: o jogo não quebra, nenhuma outra suíte reprova, e o
+jogador paga, não vê diferença e nunca sabe por quê.
+
 ## O save é texto, e texto não guarda todo float
 
 ⚠️ **Número que o formato não carrega é número que muda sozinho.** O `JSON.stringify` do

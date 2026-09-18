@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_dados_upgrade")
 familia = 4
-id = "teoria_da_informacao"
-nome = "Teoria da Informação"
-descricao = "Cada tecla carrega mais do que uma letra. Ninguém explicou isso ao macaco."
-custo = 1.99526e+14
+id = "tabela_de_frequencia"
+nome = "Tabela de Frequência"
+descricao = "Alguém contou quantas vezes cada letra aparece. Só de estar pregada na parede, ajuda."
+custo = 1100000.0
 tipo_de_efeito = 1
-valor = 3.0
-requisito = 80000000000.0
+valor = 1.8
+requisito = 350000.0

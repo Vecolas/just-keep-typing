@@ -42,6 +42,11 @@ const CORRECOES_MAXIMAS: int = 8
 var _macacos: Array[DadosMacaco] = []
 
 ## id -> DadosUpgrade. Dicionario porque a compra chega por id, vindo do save.
+##
+## ⚠️ A ORDEM DE INSERCAO E A DO CUSTO, e nao a que o DirAccess resolveu listar -- que e
+## alfabetica. Ate a issue #53 a loja mostrava "Arquivo Vertical" (4 trilhoes) acima de
+## "Cafe para o Macaco" (1,6 milhao) so porque A vem antes de C, e a escada inteira
+## aparecia embaralhada. Mesmo motivo de _macacos, _maquinas e _salas ja ordenarem aqui.
 var _upgrades: Dictionary = {}
 
 ## Ordenadas por tier: a escada do GDD §13, e nao a ordem em que o DirAccess listou.
@@ -62,10 +67,15 @@ func _ready() -> void:
 	_macacos.sort_custom(func(a: DadosMacaco, b: DadosMacaco) -> bool:
 		return a.custo_base < b.custo_base)
 
+	var upgrades_lidos: Array[DadosUpgrade] = []
 	for caminho in _listar_tres(PASTA_UPGRADES):
 		var upgrade := ResourceLoader.load(caminho) as DadosUpgrade
 		if upgrade != null:
-			_upgrades[upgrade.id] = upgrade
+			upgrades_lidos.append(upgrade)
+	upgrades_lidos.sort_custom(func(a: DadosUpgrade, b: DadosUpgrade) -> bool:
+		return a.custo < b.custo)
+	for upgrade in upgrades_lidos:
+		_upgrades[upgrade.id] = upgrade
 
 	for caminho in _listar_tres(PASTA_MAQUINAS):
 		var maquina := ResourceLoader.load(caminho) as DadosMaquina
@@ -97,6 +107,8 @@ func upgrade_de(id: String) -> DadosUpgrade:
 	return _upgrades.get(id)
 
 
+## O catalogo, do mais barato para o mais caro. Quem quiser agrupar por familia agrupa na
+## tela: a familia e leitura, e ordenar por ela aqui seria a economia decidindo layout.
 func upgrades() -> Array:
 	return _upgrades.values()
 

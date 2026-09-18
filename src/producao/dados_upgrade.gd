@@ -6,9 +6,9 @@
 ## upgrade especifico. E o que permite as vinte entradas da issue #18 sem tocar em uma
 ## linha de codigo de gameplay -- upgrade novo e um .tres, e mais nada.
 ##
-## OS PADRAO SAO INVALIDOS DE PROPOSITO: custo 0 e valor 1 reprovam na suite, entao
-## upgrade esquecido pela metade falha alto em vez de virar bonus de graca que nao
-## multiplica nada.
+## OS PADRAO SAO INVALIDOS DE PROPOSITO: custo 0, valor 1 e familia SEM_FAMILIA reprovam
+## na suite, entao upgrade esquecido pela metade falha alto em vez de virar bonus de graca
+## que nao multiplica nada.
 class_name DadosUpgrade
 extends Resource
 
@@ -30,6 +30,43 @@ enum Efeito {
 	LIGA_PRODUCAO_AUTOMATICA,
 	CAPACIDADE,
 }
+
+## A que familia tematica o upgrade pertence (issue #53). Dezenas de "+25%" sao
+## NECESSARIOS economicamente e ruins como conteudo: a familia e o que transforma vinte
+## multiplicadores soltos em quatro escadas que contam uma historia cada.
+##
+## ⚠️ A FAMILIA E UMA COLUNA DESTE RECURSO, e nao uma pasta nem um prefixo de id. Prefixo
+## de id seria uma segunda fonte para a mesma verdade, e as duas divergem no primeiro
+## rename -- com o id indo para o save e a pasta nao, quem perde e sempre o jogador.
+##
+## ⚠️ E ELA E PARA LEITURA. O gameplay continua perguntando pelo TIPO de efeito
+## (Economia.bonus_de), nunca pela familia: no dia em que aparecer um
+## `if familia == MACACO` dentro da economia, a generalizacao que sustenta "upgrade novo
+## e um .tres, e mais nada" ja quebrou.
+##
+## SEM_FAMILIA E O ZERO DE PROPOSITO. Zero e o que todo recurso esquecido recebe, entao
+## ele tem que ser o valor que REPROVA -- do contrario um upgrade criado pela metade
+## nasceria dizendo que e da familia Macaco, e ninguem descobriria lendo o arquivo.
+enum Familia {
+	SEM_FAMILIA,
+	MACACO,
+	MAQUINA,
+	ORGANIZACAO,
+	CONHECIMENTO,
+}
+
+## O nome de cada familia, na ordem do enum. Indexado por `Familia`, e nao uma segunda
+## lista escrita a mao: a entrada de SEM_FAMILIA existe para o indice bater, e nenhuma
+## tela chega a mostra-la porque a suite nao deixa upgrade nenhum ficar nela.
+const NOMES_DE_FAMILIA: PackedStringArray = [
+	"Sem família",
+	"O Macaco",
+	"A Máquina",
+	"A Organização",
+	"O Conhecimento",
+]
+
+@export var familia: Familia = Familia.SEM_FAMILIA
 
 ## snake_case sem acento: vai para o save e para chave de dicionario (decisao 0002).
 @export var id: String = ""
