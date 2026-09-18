@@ -57,7 +57,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	var fundo := ColorRect.new()
-	fundo.color = Paleta.INK_BROWN.darkened(0.4)
+	fundo.color = Tema.fundo()
 	fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fundo.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(fundo)
@@ -71,8 +71,8 @@ func _ready() -> void:
 
 	_titulo = Label.new()
 	_titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_titulo.add_theme_font_size_override("font_size", TITULO)
-	_titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+	_titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO))
+	_titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 	centro.add_child(_titulo)
 
 	var espaco := Control.new()
@@ -98,6 +98,7 @@ func _ready() -> void:
 	centro.add_child(_voltar)
 
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 	_pintar()
 
 
@@ -254,16 +255,19 @@ func _conferir_o_nome(numero: int) -> void:
 	var escrito := campo.text
 	if escrito.strip_edges().is_empty():
 		aviso.text = tr("Em branco, o Manuscrito fica com o número do slot.")
-		aviso.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.2))
+		aviso.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.2)))
 		criar.disabled = false
 		return
 	if NomesDeManuscrito.cabe(escrito):
 		aviso.text = tr("Até %d caracteres.") % NomesDeManuscrito.LIMITE
-		aviso.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.2))
+		aviso.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.2)))
 		criar.disabled = false
 		return
-	aviso.text = tr("Este nome não cabe no cartão: até %d caracteres, e sem quebra de linha.") % NomesDeManuscrito.LIMITE
-	aviso.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	aviso.text = (
+		tr("Este nome não cabe no cartão: até %d caracteres, e sem quebra de linha.")
+		% NomesDeManuscrito.LIMITE
+	)
+	aviso.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 	criar.disabled = true
 
 
@@ -341,8 +345,8 @@ func _nomes_em_uso() -> PackedStringArray:
 func _rotulo(texto: String, tamanho: int, cor: Color) -> Label:
 	var rotulo := Label.new()
 	rotulo.text = texto
-	rotulo.add_theme_font_size_override("font_size", tamanho)
-	rotulo.add_theme_color_override("font_color", cor)
+	rotulo.add_theme_font_size_override("font_size", Tema.fonte(tamanho))
+	rotulo.add_theme_color_override("font_color", Tema.cor(cor))
 	return rotulo
 
 
@@ -426,4 +430,13 @@ func _ao_voltar() -> void:
 
 
 func _ao_mudar_idioma(_codigo: String) -> void:
+	_pintar()
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
 	_pintar()

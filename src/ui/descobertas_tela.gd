@@ -15,6 +15,10 @@
 ## a piada chega achatada no meio de uma lista de cards iguais. As descobertas paradoxais
 ## em si sao a issue #32; o tratamento entra antes delas de proposito, para a tela nao
 ## precisar mudar quando elas chegarem.
+##
+## Tem class_name para a suite poder perguntar o SIMBOLO de cada raridade sem subir cena
+## nenhuma -- ver simbolo_de().
+class_name DescobertasTela
 extends Control
 
 const TITULO_ITEM: int = 22
@@ -32,19 +36,20 @@ const NOMES_DE_CATEGORIA: Array[String] = [
 
 func _ready() -> void:
 	theme = Tema.montar()
-	%Cortina.color = Paleta.INK_BROWN.darkened(0.4)
+	%Cortina.color = Tema.fundo()
 	%Cortina.color.a = 0.96
 	%Painel.add_theme_stylebox_override("panel", Tema.painel())
-	%Titulo.add_theme_font_size_override("font_size", TITULO_ITEM)
-	%Titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
-	%Contagem.add_theme_font_size_override("font_size", CATEGORIA_ITEM)
-	%Contagem.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.2))
+	%Titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_ITEM))
+	%Titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
+	%Contagem.add_theme_font_size_override("font_size", Tema.fonte(CATEGORIA_ITEM))
+	%Contagem.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.2)))
 	%BotaoFechar.focus_mode = Control.FOCUS_NONE
 	%BotaoFechar.pressed.connect(fechar)
 
 	EventBus.descobertas_pedidas.connect(abrir)
 	EventBus.descoberta_encontrada.connect(_ao_descobrir)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 
 
 func abrir() -> void:
@@ -114,27 +119,32 @@ func _item(descoberta: DadosDescoberta) -> Control:
 	margem.add_child(coluna)
 
 	# a raridade aparece SEMPRE, achada ou nao: e ela que da forma ao buraco
+	#
+	# ⚠️ COR + SIMBOLO + NOME (issue #43). A cor sozinha nao serve para quem nao distingue
+	# as sete -- e sao sete, com dois roxos e dois azuis entre elas. "%s %s" e marca de
+	# formato: o simbolo na frente do nome se le igual em qualquer lingua.
 	var categoria := Label.new()
-	categoria.text = tr(NOMES_DE_CATEGORIA[descoberta.categoria])
-	categoria.add_theme_font_size_override("font_size", CATEGORIA_ITEM)
-	categoria.add_theme_color_override("font_color", cor)
+	categoria.text = "%s %s" % [
+		simbolo_de(descoberta.categoria), tr(NOMES_DE_CATEGORIA[descoberta.categoria]),
+	]
+	categoria.add_theme_font_size_override("font_size", Tema.fonte(CATEGORIA_ITEM))
+	categoria.add_theme_color_override("font_color", Tema.cor(cor))
 	coluna.add_child(categoria)
 
 	var titulo := Label.new()
 	titulo.text = tr(descoberta.nome) if achada else SILHUETA
-	titulo.add_theme_font_size_override("font_size", TITULO_ITEM)
+	titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_ITEM))
 	titulo.add_theme_color_override(
-		"font_color", cor if achada else Paleta.MONKEY_BROWN.lightened(0.1)
-	)
+		"font_color", Tema.cor(cor if achada else Paleta.MONKEY_BROWN.lightened(0.1)))
 	coluna.add_child(titulo)
 
 	var texto := Label.new()
 	texto.text = tr(descoberta.texto) if achada else tr("Ainda não descoberto.")
 	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	texto.add_theme_font_size_override("font_size", TEXTO_ITEM)
+	texto.add_theme_font_size_override("font_size", Tema.fonte(TEXTO_ITEM))
 	texto.add_theme_color_override(
 		"font_color",
-		Paleta.PAPER_CREAM if achada else Paleta.MONKEY_BROWN.lightened(0.1),
+		Tema.cor(Paleta.PAPER_CREAM if achada else Paleta.MONKEY_BROWN.lightened(0.1)),
 	)
 	coluna.add_child(texto)
 
@@ -142,10 +152,18 @@ func _item(descoberta: DadosDescoberta) -> Control:
 		var bonus := Label.new()
 		# "x%s" e marca de formato, nao texto
 		bonus.text = "x%s" % Formatador.formatar(Grande.de_float(descoberta.bonus))
-		bonus.add_theme_font_size_override("font_size", CATEGORIA_ITEM)
-		bonus.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+		bonus.add_theme_font_size_override("font_size", Tema.fonte(CATEGORIA_ITEM))
+		bonus.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 		coluna.add_child(bonus)
 	return moldura
+
+
+## O simbolo de uma raridade. Publico porque a suite le daqui: afirmar o simbolo copiando
+## a lista para dentro do teste criaria uma segunda tabela, e a segunda e a que mente.
+static func simbolo_de(categoria: int) -> String:
+	if categoria < 0 or categoria >= Paleta.SIMBOLOS_DE_RARIDADE.size():
+		return "?"
+	return Paleta.SIMBOLOS_DE_RARIDADE[categoria]
 
 
 static func _cor(categoria: int) -> Color:
@@ -164,3 +182,13 @@ func _painel(cor: Color, achada: bool, paradoxal: bool) -> StyleBoxFlat:
 		# a unica categoria que ganha peso na propria moldura, achada ou nao
 		estilo.bg_color = Paleta.VIOLETA_PROFUNDO.darkened(0.72)
 	return estilo
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	if visible:
+		_montar()

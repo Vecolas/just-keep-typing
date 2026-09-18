@@ -31,17 +31,18 @@ const SILHUETA := "? ? ?"
 
 func _ready() -> void:
 	theme = Tema.montar()
-	%Cortina.color = Paleta.INK_BROWN.darkened(0.4)
+	%Cortina.color = Tema.fundo()
 	%Cortina.color.a = 0.96
 	%Painel.add_theme_stylebox_override("panel", Tema.painel())
-	%Titulo.add_theme_font_size_override("font_size", TITULO_ITEM)
-	%Titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+	%Titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_ITEM))
+	%Titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 	%BotaoFechar.focus_mode = Control.FOCUS_NONE
 	%BotaoFechar.pressed.connect(fechar)
 
 	EventBus.panorama_pedido.connect(abrir)
 	EventBus.marco_alcancado.connect(_ao_alcancar)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 
 
 func abrir() -> void:
@@ -118,27 +119,37 @@ func _item(marco: DadosMarco, destaque: bool, silhueta: bool) -> Control:
 	# numero grande ao lado da frase rouba a frase, e a frase e a razao da tela existir
 	var requisito := Label.new()
 	requisito.text = Formatador.formatar(marco.requisito_grande())
-	requisito.add_theme_font_size_override("font_size", REQUISITO_ITEM)
-	requisito.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.2))
+	requisito.add_theme_font_size_override("font_size", Tema.fonte(REQUISITO_ITEM))
+	requisito.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.2)))
 	coluna.add_child(requisito)
 
 	var titulo := Label.new()
 	titulo.text = SILHUETA if silhueta else tr(marco.titulo)
-	titulo.add_theme_font_size_override("font_size", TITULO_ITEM)
+	titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_ITEM))
 	titulo.add_theme_color_override(
 		"font_color",
-		Paleta.MONKEY_BROWN.lightened(0.1) if silhueta else Paleta.BANANA_GOLD,
+		Tema.cor(Paleta.MONKEY_BROWN.lightened(0.1) if silhueta else Paleta.BANANA_GOLD),
 	)
 	coluna.add_child(titulo)
 
 	var texto := Label.new()
 	texto.text = tr("O próximo marco ainda é um mistério.") if silhueta else tr(marco.texto)
 	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	texto.add_theme_font_size_override("font_size", TEXTO_ITEM)
+	texto.add_theme_font_size_override("font_size", Tema.fonte(TEXTO_ITEM))
 	texto.add_theme_color_override(
 		"font_color",
-		Paleta.MONKEY_BROWN.lightened(0.1) if silhueta else Paleta.PAPER_CREAM,
+		Tema.cor(Paleta.MONKEY_BROWN.lightened(0.1) if silhueta else Paleta.PAPER_CREAM),
 	)
 	coluna.add_child(texto)
 	return moldura
 
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	if visible:
+		_montar()

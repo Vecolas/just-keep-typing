@@ -24,6 +24,15 @@ signal opcoes_pedidas
 ## A tela de creditos foi pedida (issue #39).
 signal creditos_pedidos
 
+## Alguma opcao de INTERFACE ou ACESSIBILIDADE mudou (issue #43): escala do texto, alto
+## contraste, formato de numero, particulas, reduzir movimento ou reduzir flashes.
+##
+## ⚠️ Toda tela que escuta idioma_mudou tem que escutar este tambem, e o portao de texto
+## exige os dois. Sao dois sinais e nao um porque emitir "a lingua mudou" quando a lingua
+## nao mudou e uma afirmacao falsa dentro do barramento -- e o barramento e o unico lugar
+## do projeto onde todo mundo acredita no que le.
+signal interface_mudou
+
 ## Emitido depois que a compra ja aconteceu -- o dinheiro saiu e o id ja esta em
 ## Jogo.upgrades_comprados. Quem escuta repinta; ninguem precisa perguntar de volta se
 ## deu certo.

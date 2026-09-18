@@ -737,6 +737,39 @@ func _ready() -> void:
 		])
 		return
 
+	# 16.1. E A MESMA CONTA NA MAIOR ESCALA OFERECIDA (issue #43). Escala de interface e
+	#       escala de texto no maximo, as duas ao mesmo tempo: e o caso que estoura, e o
+	#       aviso da issue vira portao aqui em vez de virar captura que alguem olha uma vez.
+	#
+	#       ⚠️ Se um dia a lista oferecer uma escala que nao cabe, esta linha reprova -- e o
+	#       conserto e tirar a escala da lista, como a lista de resolucoes ja faz com o que
+	#       nao cabe no monitor (issue #34).
+	var escala_antes := Config.indice_de("escala_da_interface")
+	var texto_antes := Config.indice_de("escala_do_texto")
+
+	# ⚠️ TODA COMBINACAO OFERECIDA, e nao so a maior de cada uma. A lista de escala de
+	# texto ENCOLHE conforme a escala de interface sobe (Config.escalas_do_texto), entao
+	# medir so o par (maior, maior) mediria um par que o jogo nunca oferece junto.
+	for i_interface in Config.rotulos_de("escala_da_interface").size():
+		Config.escolher("escala_da_interface", i_interface)
+		for i_texto in Config.rotulos_de("escala_do_texto").size():
+			Config.escolher("escala_do_texto", i_texto)
+			for i in QUADROS_ATE_O_LAYOUT_ASSENTAR:
+				await get_tree().process_frame
+			var vazando_na_escala := _controles_fora_da_tela()
+			if not vazando_na_escala.is_empty():
+				_falhar("interface %s + texto %s: %d controles vazaram, a comecar por %s" % [
+					Config.rotulos_de("escala_da_interface")[i_interface],
+					Config.rotulos_de("escala_do_texto")[i_texto],
+					vazando_na_escala.size(), ", ".join(vazando_na_escala.slice(0, 3)),
+				])
+				return
+
+	Config.escolher("escala_da_interface", escala_antes)
+	Config.escolher("escala_do_texto", texto_antes)
+	for i in QUADROS_ATE_O_LAYOUT_ASSENTAR:
+		await get_tree().process_frame
+
 	# a run continua de onde estava: a producao offline logo abaixo precisa do Instinto
 	# Digitador, e a loja cheia foi um cenario montado, nao o estado da partida
 	Jogo.total_caracteres = total_antes_do_layout

@@ -523,3 +523,20 @@ Suave,Suave,Soft
 Mecânico,Mecânico,Mechanical
 "O ritmo acompanha a produção, e para de subir num teto.","O ritmo acompanha a produção, e para de subir num teto.","The rhythm follows production, and stops rising at a ceiling."
 Interface,Interface,Interface
+Escala da interface,Escala da interface,Interface scale
+Formato numérico,Formato numérico,Number format
+Abreviado,Abreviado,Abbreviated
+Científico,Científico,Scientific
+Engenharia,Engenharia,Engineering
+Partículas de letra,Partículas de letra,Letter particles
+Escala do texto,Escala do texto,Text scale
+Reduzir movimento,Reduzir movimento,Reduce motion
+Reduzir flashes,Reduzir flashes,Reduce flashes
+Alto contraste,Alto contraste,High contrast
+"Aumenta tudo: texto, botões e margens.","Aumenta tudo: texto, botões e margens.","Scales everything: text, buttons and margins."
+Nenhum deles arredonda — o número na tela é o que dá para gastar.,Nenhum deles arredonda — o número na tela é o que dá para gastar.,None of them rounds — the number on screen is what you can spend.
+"Aumenta só o texto, sem mexer no tamanho dos botões.","Aumenta só o texto, sem mexer no tamanho dos botões.","Scales the text only, leaving button sizes alone."
+As letras param de subir e a troca de era acontece num quadro.,As letras param de subir e a troca de era acontece num quadro.,Letters stop rising and the era change happens in one frame.
+Tira o clarão entre uma tela e outra.,Tira o clarão entre uma tela e outra.,Removes the flash between screens.
+Clareia o que se lê e escurece o que fica atrás.,Clareia o que se lê e escurece o que fica atrás.,Brightens what you read and darkens what is behind it.
+Aumenta só o texto. Só aparecem as escalas que cabem junto da escala da interface.,Aumenta só o texto. Só aparecem as escalas que cabem junto da escala da interface.,Scales the text only. Only scales that fit alongside the interface scale are listed.

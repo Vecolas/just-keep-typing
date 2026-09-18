@@ -60,7 +60,13 @@ godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=letras producao=5e17
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=panorama idioma=en
 godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=opcoes idioma=en aba=2
+godot --path . tools/capturar.tscn -- cenario=principal largura=1280 altura=720 escala=1.25
+godot --path . tools/capturar.tscn --resolution 1920x1080 -- cenario=descobertas contraste=1
 ```
+
+`escala`, `escala_do_texto` e `contraste` entram pelo `Config`, que é a porta do jogador.
+Escala acima de 100% na menor resolução é o caso que estoura tudo — e caractere não é pixel,
+então só a foto mostra rótulo saindo do botão.
 
 Cenários: `menu`, `menu_cheio`, `arquivos`, `arquivos_cheio`, `principal`, `panorama`,
 `descobertas`, `estatisticas`, `letras`. Os que começam com `menu` e `arquivos` param antes

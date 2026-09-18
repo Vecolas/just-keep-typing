@@ -50,7 +50,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	var fundo := ColorRect.new()
-	fundo.color = Paleta.INK_BROWN.darkened(0.4)
+	fundo.color = Tema.fundo()
 	fundo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	fundo.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(fundo)
@@ -64,8 +64,8 @@ func _ready() -> void:
 
 	_titulo = Label.new()
 	_titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_titulo.add_theme_font_size_override("font_size", TITULO)
-	_titulo.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	_titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO))
+	_titulo.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 	centro.add_child(_titulo)
 
 	var espaco := Control.new()
@@ -84,6 +84,7 @@ func _ready() -> void:
 			_resumo = _montar_resumo(centro)
 
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 	_pintar()
 	_dar_o_foco_inicial()
 
@@ -139,8 +140,8 @@ func _montar_resumo(pai: Node) -> Label:
 	var rotulo := Label.new()
 	rotulo.name = "ResumoDoContinuar"
 	rotulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rotulo.add_theme_font_size_override("font_size", RESUMO)
-	rotulo.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.35))
+	rotulo.add_theme_font_size_override("font_size", Tema.fonte(RESUMO))
+	rotulo.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.35)))
 	rotulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pai.add_child(rotulo)
 	return rotulo
@@ -187,3 +188,12 @@ func _ao_mudar_idioma(_codigo: String) -> void:
 	var focado := get_viewport().gui_get_focus_owner() as Button
 	if focado == null or focado.disabled:
 		_dar_o_foco_inicial()
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	_pintar()

@@ -19,11 +19,11 @@ const ROTULO: int = 17
 
 func _ready() -> void:
 	theme = Tema.montar()
-	%Cortina.color = Paleta.INK_BROWN.darkened(0.4)
+	%Cortina.color = Tema.fundo()
 	%Cortina.color.a = 0.96
 	%Painel.add_theme_stylebox_override("panel", Tema.painel())
-	%Titulo.add_theme_font_size_override("font_size", TITULO_TELA)
-	%Titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+	%Titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_TELA))
+	%Titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 	# o Titulo herda a expansao que era da Contagem, senao o Fechar cola no titulo em vez
 	# de ir para a borda -- esconder um no de container nao redistribui o espaco dele
 	%Contagem.visible = false
@@ -34,6 +34,7 @@ func _ready() -> void:
 
 	EventBus.estatisticas_pedidas.connect(abrir)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 
 
 func abrir() -> void:
@@ -83,15 +84,15 @@ func _linha(rotulo: String, valor: String) -> Control:
 	var esquerda := Label.new()
 	esquerda.text = tr(rotulo)
 	esquerda.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	esquerda.add_theme_font_size_override("font_size", ROTULO)
-	esquerda.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
+	esquerda.add_theme_font_size_override("font_size", Tema.fonte(ROTULO))
+	esquerda.add_theme_color_override("font_color", Tema.cor(Paleta.PAPER_CREAM))
 	caixa.add_child(esquerda)
 
 	var direita := Label.new()
 	direita.text = valor
 	direita.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	direita.add_theme_font_size_override("font_size", ROTULO)
-	direita.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	direita.add_theme_font_size_override("font_size", Tema.fonte(ROTULO))
+	direita.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 	caixa.add_child(direita)
 	return caixa
 
@@ -106,7 +107,17 @@ func _secao(titulo: String) -> Control:
 
 	var rotulo := Label.new()
 	rotulo.text = tr(titulo)
-	rotulo.add_theme_font_size_override("font_size", SECAO)
-	rotulo.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
+	rotulo.add_theme_font_size_override("font_size", Tema.fonte(SECAO))
+	rotulo.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.25)))
 	caixa.add_child(rotulo)
 	return caixa
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	if visible:
+		_montar()

@@ -330,6 +330,46 @@ afirmar em memória não pega, porque em memória o valor ainda é `int`.
 
 ---
 
+## Interface e acessibilidade
+
+Tudo que o jogador lê passa por **duas funções do `Tema`**, e nunca pelo número cru:
+
+```gdscript
+rotulo.add_theme_font_size_override("font_size", Tema.fonte(CORPO))
+rotulo.add_theme_color_override("font_color", Tema.cor(Paleta.PAPER_CREAM))
+fundo.color = Tema.fundo()
+```
+
+- ⚠️ **Um único rótulo com o tamanho cravado fica do tamanho antigo quando todo o resto
+  cresce**, e o defeito não dá erro — ele só deixa uma linha ilegível no meio de uma tela
+  ajustada
+- ⚠️ **Alto contraste mantém a matiz.** A paleta continua sendo a do `ARTE.md`, só mais
+  separada do fundo. Trocar por branco puro apagaria "dourado é produção, ciano é
+  automação" — e a seção 6 proíbe branco puro justamente por isso
+- ⚠️ **`Theme` é um objeto construído: ele não se atualiza sozinho.** Quem escuta
+  `interface_mudou` tem que chamar `Tema.montar()` de novo, e não só repintar
+- ⚠️ **As duas escalas dividem o mesmo orçamento de espaço.** A lista de escala de texto é
+  **filtrada** pela escala de interface escolhida, como a lista de resoluções é filtrada
+  pelo monitor. Medido: interface 1,5 **e** texto 1,5 ao mesmo tempo jogam oito controles
+  da HUD para fora da tela. A fumaça percorre **toda combinação oferecida** — medir só o
+  par (maior, maior) mediria um par que o jogo nunca oferece junto
+- ⚠️ **Opção que não tem o que desligar não entra.** Animações de número e *shake* estão
+  em `Config.SEM_SISTEMA_AINDA` porque os sistemas não existem — elas entram junto do
+  sistema, não antes dele
+
+**Dois sinais, e não um.** `idioma_mudou` é a língua; `interface_mudou` é escala, contraste,
+formato de número, partículas e movimento. Emitir "a língua mudou" quando a língua não mudou
+é uma afirmação falsa dentro do barramento — e o barramento é o único lugar do projeto onde
+todo mundo acredita no que lê. O preço de ter dois é alguém conectar só um, e é por isso que
+o portão de texto exige os **dois** de todo arquivo que monta texto em código.
+
+**Reduzir movimento alcança os dois lugares que se mexem sozinhos**: as letras subindo
+(issue #22) e a câmera das eras (issue #26). Com a opção ligada a era troca **num quadro** —
+o destino é o mesmo, o caminho é que some. E nenhuma dessas opções encosta na produção:
+opção de interface que mexesse em progressão seria dificuldade disfarçada de conforto.
+
+---
+
 ## Áudio
 
 Cinco barramentos — Geral (`Master`), Música, Efeitos, Interface e Ambiente —, criados em

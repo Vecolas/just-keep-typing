@@ -12,11 +12,19 @@
 ## provam o molde e a escolha singular/plural; provar o ingles delas so depois de #23.
 extends TesteBase
 
+## A suite troca o formato de numero DE VERDADE (issue #43), e escolher() grava. Sem um
+## arquivo proprio ela mexeria nas opcoes de quem esta desenvolvendo toda vez que rodasse.
+const CAMINHO_DE_TESTE := "user://teste_formatador_opcoes.json"
+
+
 func _init() -> void:
 	nome = "Formatador"
 
 
 func executar() -> void:
+	var caminho_original := Config.caminho
+	Config.caminho = CAMINHO_DE_TESTE
+
 	_separador_de_milhar()
 	_numero_pequeno()
 	_escala_por_nome()
@@ -25,6 +33,13 @@ func executar() -> void:
 	_negativos()
 	_fronteiras_entre_regimes()
 	_convencao_por_idioma()
+	_os_tres_formatos()
+	_nenhum_formato_arredonda()
+
+	if FileAccess.file_exists(CAMINHO_DE_TESTE):
+		DirAccess.remove_absolute(CAMINHO_DE_TESTE)
+	Config.caminho = caminho_original
+	Config.carregar()
 
 
 func _separador_de_milhar() -> void:
@@ -139,6 +154,81 @@ func _convencao_por_idioma() -> void:
 
 	TranslationServer.set_locale(locale_original)
 	igual(TranslationServer.get_locale(), locale_original, "a suite devolveu o locale")
+
+
+## Os tres formatos da issue #43. Cada um e uma leitura DIFERENTE do mesmo numero -- se
+## dois deles imprimissem a mesma coisa, um dos dois nao existiria.
+func _os_tres_formatos() -> void:
+	var guardado := Config.formato_numerico()
+
+	_com_formato("abreviado")
+	_texto(Grande.de_float(15000.0), "15.000", "abreviado: separador de milhar")
+	_texto(Grande.new(4.83, 28), "4,83e28", "abreviado: cientifico so no fim")
+
+	_com_formato("cientifico")
+	_texto(Grande.de_float(15000.0), "1,5e4", "cientifico: ate o numero pequeno vira e")
+	_texto(Grande.new(4.83, 28), "4,83e28", "cientifico: e o grande continua igual")
+	_texto(Grande.de_float(999.0), "9,99e2", "cientifico: nenhum regime escapa")
+
+	_com_formato("engenharia")
+	# ⚠️ O EXPOENTE E SEMPRE MULTIPLO DE TRES, e a mantissa cresce ate 999 para compensar.
+	# E a diferenca inteira entre este formato e o cientifico.
+	_texto(Grande.de_float(15000.0), "15e3", "engenharia: 15 mil, e nao 1,5 x 10^4")
+	_texto(Grande.new(4.83, 28), "48,3e27", "engenharia: 27 e multiplo de tres, 28 nao e")
+	_texto(Grande.new(1.0, 6), "1e6", "engenharia: expoente ja multiplo de tres nao muda")
+	_texto(Grande.de_float(999.0), "999", "engenharia: expoente zero nao escreve o e")
+	for expoente in [0, 1, 2, 3, 4, 5, 12, 50, 301]:
+		var escrito := Formatador.formatar(Grande.new(1.0, expoente))
+		var partes := escrito.split("e")
+		var saiu := int(partes[1]) if partes.size() > 1 else 0
+		igual(saiu % 3, 0, "engenharia: 10^%d sai com expoente multiplo de tres" % expoente)
+
+	_com_formato(guardado)
+
+
+## ⚠️ O PORTAO QUE VALE A ISSUE. Num incremental o numero na tela e o que o jogador tem
+## para gastar: arredondar 999.999 para "1 milhao" ao lado de uma loja que pede 1 milhao e
+## mostrar dinheiro que nao existe. O formato escolhido pelo jogador nao pode virar uma
+## quarta regra que arredonda (issue #2, e de novo na #43).
+##
+## Todo valor aqui esta LOGO ABAIXO de um degrau. Um formato que arredondasse imprimiria o
+## degrau de cima.
+func _nenhum_formato_arredonda() -> void:
+	var guardado := Config.formato_numerico()
+	var beiradas: Array[Grande] = [
+		Grande.de_float(999999.0),
+		Grande.new(9.999, 12),
+		Grande.new(9.999, 28),
+		Grande.new(1.9999, 7),
+		Grande.new(9.99999, 2),
+	]
+
+	for nome in ["abreviado", "cientifico", "engenharia"]:
+		_com_formato(nome)
+		for valor in beiradas:
+			var escrito := Formatador.formatar(valor)
+			var lido := Grande.de_texto(_em_numero(escrito))
+			ok(
+				not lido.maior_que(valor),
+				"%s: %s sai como \"%s\", que nao e MAIOR que o valor" % [
+					nome, valor.para_texto(), escrito,
+				],
+			)
+	_com_formato(guardado)
+
+
+## O que um texto formatado vale, de volta em numero. Nao e um parser de tudo -- e o
+## bastante para as beiradas acima, que sao os tres formatos com separador, virgula e "e".
+func _em_numero(escrito: String) -> String:
+	var limpo := escrito.replace(".", "").replace(",", ".")
+	limpo = limpo.replace(" mil", "e3").replace(" milhões", "e6").replace(" milhão", "e6")
+	limpo = limpo.replace(" bilhões", "e9").replace(" bilhão", "e9")
+	return limpo
+
+
+func _com_formato(nome: String) -> void:
+	var valores: Array = Config.campo("formato_numerico")["valores"]
+	Config.escolher("formato_numerico", maxi(valores.find(nome), 0))
 
 
 func _texto(valor: Grande, esperado: String, descricao: String) -> void:

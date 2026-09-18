@@ -147,6 +147,12 @@ func _moldes_em_constante() -> void:
 
 ## O segundo portao. Quem escreve num .text usando Formatador ou tr() precisa escutar
 ## idioma_mudou -- senao o rotulo montado em codigo sobrevive a troca de lingua.
+##
+## ⚠️ E interface_mudou JUNTO (issue #43). O formato de numero, a escala do texto e o alto
+## contraste mudam o mesmo rotulo que a lingua muda, e por outro caminho. Sao dois sinais e
+## nao um porque emitir "a lingua mudou" quando a lingua nao mudou e uma afirmacao falsa
+## dentro do barramento; o preco de ter dois e alguem conectar so um, e e exatamente esse
+## preco que esta linha cobra.
 func _telas_escutam_idioma() -> void:
 	for caminho in _listar(RAIZ_CODIGO, ".gd"):
 		var conteudo := _ler(caminho)
@@ -159,6 +165,10 @@ func _telas_escutam_idioma() -> void:
 		ok(
 			conteudo.contains("EventBus.idioma_mudou"),
 			"%s monta texto em codigo e escuta EventBus.idioma_mudou" % caminho,
+		)
+		ok(
+			conteudo.contains("EventBus.interface_mudou"),
+			"%s monta texto em codigo e escuta EventBus.interface_mudou" % caminho,
 		)
 
 
@@ -211,10 +221,10 @@ func _exigir(texto: String, caminho: String) -> void:
 	var limpo := texto.strip_edges()
 	if limpo.is_empty() or limpo in SEM_TRADUCAO:
 		return
-	# numero cru e marca de formato, e nao texto: "60" nao muda de idioma. A regra e geral
-	# de proposito -- listar 30, 60, 120 e 144 na mao em SEM_TRADUCAO seria uma lista que
-	# envelhece junto com o campo de limite de quadros.
-	if limpo.is_valid_int():
+	# numero cru e marca de formato, e nao texto: "60" e "125%" nao mudam de idioma. A
+	# regra e geral de proposito -- listar 30, 60, 120, 144, 75%, 100%... na mao em
+	# SEM_TRADUCAO seria uma lista que envelhece junto com cada campo numerico novo.
+	if limpo.is_valid_int() or limpo.trim_suffix("%").is_valid_int():
 		return
 	# marca de formato pura -- so %s, numero e pontuacao -- nao e frase
 	if limpo.replace("%s", "").replace("%d", "").strip_edges().length() <= 1:
