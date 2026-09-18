@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados"]
+
+[resource]
+script = ExtResource("1_dados")
+id = "alguma_coisa_vai_acontecer"
+nome = "Alguma Coisa Vai Acontecer"
+texto = "A produção passou de qualquer coisa que se possa querer produzir. E continua subindo."
+categoria = 3
+chance_base = 3e-13
+bonus = 1.0
+papel = 2
+curiosidade = "Quando a quantidade deixa de ser o problema, o que sobra é a pergunta que o Teorema faz."

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados"]
+
+[resource]
+script = ExtResource("1_dados")
+id = "um_silencio"
+nome = "Um Silêncio"
+texto = "Por quatro segundos, nenhuma tecla foi pressionada. O macaco depois não soube explicar."
+categoria = 3
+chance_base = 2.5e-12
+bonus = 1.0
+papel = 1
+curiosidade = ""

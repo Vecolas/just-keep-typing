@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados"]
+
+[resource]
+script = ExtResource("1_dados")
+id = "a_notacao_mudou"
+nome = "A Notação Mudou"
+texto = "Os números deixaram de caber por extenso. Ninguém avisou; eles simplesmente encolheram."
+categoria = 3
+chance_base = 5e-12
+bonus = 1.0
+papel = 2
+curiosidade = "Notação científica não é um jeito de escrever números grandes. É o reconhecimento de que o nome deles deixou de importar."
