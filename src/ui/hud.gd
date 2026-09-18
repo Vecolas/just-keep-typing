@@ -134,7 +134,8 @@ func _pintar() -> void:
 	%ValorDescobertas.text = Formatador.formatar(
 		Grande.de_float(float(Descobertas.quantas_encontradas()))
 	)
-	%ValorMacacos.text = Formatador.formatar(Jogo.macacos)
+	# ⚠️ CONTAVEL (issue #66): "48,99 macacos" apareceu numa captura, e le como defeito
+	%ValorMacacos.text = Formatador.formatar_discreto(Jogo.macacos)
 	_pintar_combo()
 	_pintar_o_digitar()
 	# a unidade vem da ERA, e nao esta escrita aqui: na era 14 a contagem de macacos
@@ -293,7 +294,7 @@ func _pintar_sala() -> void:
 	var atual := Economia.sala_atual()
 	%NomeSala.text = "%s  %s" % [
 		tr(atual.nome), tr("%s de %s macacos") % [
-			Formatador.formatar(Jogo.macacos), Formatador.formatar(Economia.capacidade()),
+			Formatador.formatar_discreto(Jogo.macacos), Formatador.formatar_discreto(Economia.capacidade()),
 		],
 	] if atual != null else ""
 

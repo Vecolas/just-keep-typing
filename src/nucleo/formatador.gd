@@ -96,6 +96,32 @@ const _EPSILON_TRUNCAMENTO: float = 1e-9
 ## reaproveitam _mantissa_curta e _truncar_casas. Um formato que arredondasse mostraria
 ## dinheiro que nao existe ao lado de uma loja que o pede -- que e exatamente o que a issue
 ## #2 proibiu.
+## O MESMO NUMERO, MAS PARA UMA GRANDEZA CONTAVEL (issue #66).
+##
+## ⚠️ MACACO, BANANA E MESA SAO COISAS CONTAVEIS, e "48,99 macacos" le como defeito para
+## qualquer jogador. Apareceu numa captura, e apareceu de novo nas Estatisticas com
+## "50,79 bananas" -- que e pior, porque ali o valor esta CERTO: bananas consumidas e
+## macacos vezes tempo, uma a cada meia hora, e a conta e legitimamente continua. O que
+## esta errado e mostrar uma fracao de uma coisa que nao se divide.
+##
+## ⚠️ E ISTO NAO E UM round() PARA ESCONDER DEFEITO. A distincao e semantica e mora na
+## CHAMADA: quem pede formatar_discreto esta dizendo "isto se conta". Onde a integralidade
+## e CONTRATO -- a contagem de macacos -- existe portao afirmando o valor, e nao so a
+## exibicao. Arredondar na tela sem o portao esconderia a causa.
+##
+## Trunca em vez de arredondar: 48,99 bananas consumidas viram 48, e nao 49. O jogador
+## consumiu 48 bananas inteiras e está no meio da quadragesima nona.
+static func formatar_discreto(valor: Grande) -> String:
+	if valor.e_zero():
+		return "0"
+	# acima do limite do separador a fracao ja nao aparece na tela de qualquer jeito, e
+	# truncar um Grande enorme custaria precisao a toa
+	if valor.absoluto().expoente >= LIMITE_SEPARADOR:
+		return formatar(valor)
+	var sinal := "-" if valor.sinal() < 0 else ""
+	return sinal + _agrupar_milhares(floori(valor.absoluto().para_float()))
+
+
 static func formatar(valor: Grande) -> String:
 	if valor.e_zero():
 		return "0"

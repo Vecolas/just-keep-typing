@@ -66,15 +66,23 @@ func _montar() -> void:
 		antigo.queue_free()
 
 	for linha in Estatisticas.uteis():
-		%Lista.add_child(_linha(linha["rotulo"], Formatador.formatar(linha["valor"])))
+		%Lista.add_child(_linha(linha["rotulo"], _numero(linha)))
 	for linha in Estatisticas.tempos():
 		%Lista.add_child(_linha(linha["rotulo"], linha["valor"]))
 
 	%Lista.add_child(_secao("SEM GRANDE UTILIDADE"))
 	for linha in Estatisticas.inuteis():
-		%Lista.add_child(_linha(linha["rotulo"], Formatador.formatar(linha["valor"])))
+		%Lista.add_child(_linha(linha["rotulo"], _numero(linha)))
 
 	_montar_o_registro()
+
+
+## ⚠️ A GRANDEZA DIZ SE SE CONTA, e a tela obedece (issue #66). Campo ausente cai no
+## continuo, que e o comportamento de sempre e o certo para a maioria.
+func _numero(linha: Dictionary) -> String:
+	if bool(linha.get("discreto", false)):
+		return Formatador.formatar_discreto(linha["valor"])
+	return Formatador.formatar(linha["valor"])
 
 
 ## O REGISTRO RECENTE (issue #69).
