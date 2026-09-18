@@ -478,6 +478,54 @@ func producao_por_segundo() -> Grande:
 	)
 
 
+## A PRODUCAO DECOMPOSTA POR FONTE (issue #71).
+##
+## ⚠️ ELA EXISTE PORQUE A v0.7 PROCUROU NO LUGAR ERRADO. A regua dizia
+## `producao = 8,4e17`, e isso nao permite perguntar DE ONDE VEIO. Os upgrades eram o
+## suspeito obvio -- 38 multiplicadores que compunham mais de 10^13 --, e separar todos eles
+## moveu o primeiro Teorema de 04:22 para 04:01. O numero estava nas descobertas, x10^41,
+## vinte e oito ordens de grandeza acima.
+##
+## ⚠️ E ELA SAI DA MESMA FORMULA, e nao de uma segunda conta. Somar os fatores por fora faria
+## as duas divergirem -- e a decomposicao passaria a mentir exatamente quando alguem
+## precisasse dela. Por isso `producao_por_segundo()` e `multiplicador_total()` continuam
+## sendo a verdade, e esta funcao devolve as PARTES delas.
+##
+## ⚠️ E ha portao cruzando as duas: teste_economia reconstroi a producao a partir desta
+## arvore e exige que feche. Fonte nova que entre na formula sem entrar aqui reprova -- que
+## e o unico jeito de a arvore continuar completa sem alguem lembrar de mante-la.
+func producao_por_fonte() -> Array[Dictionary]:
+	var macaco := macaco_padrao()
+	var base: float = macaco.producao_base if macaco != null else 0.0
+	return [
+		{"nome": "base do macaco", "fator": base, "tipo": "soma"},
+		{
+			"nome": "upgrades: velocidade somada",
+			"fator": soma_de(DadosUpgrade.Efeito.VELOCIDADE_SOMADA), "tipo": "soma",
+		},
+		{"nome": "descobertas", "fator": soma_de_descobertas(), "tipo": "soma"},
+		{
+			"nome": "upgrades: velocidade local",
+			"fator": bonus_de(DadosUpgrade.Efeito.VELOCIDADE_DO_MACACO), "tipo": "vezes",
+		},
+		{
+			"nome": "teoremas: memoria genetica",
+			"fator": Teoremas.bonus_de(DadosTeorema.Efeito.MEMORIA_GENETICA),
+			"tipo": "vezes",
+		},
+		{"nome": "macacos", "fator": Jogo.macacos.para_float(), "tipo": "vezes"},
+		{"nome": "maquina", "fator": multiplicador_de_maquina(), "tipo": "vezes"},
+		{
+			"nome": "upgrades: global",
+			"fator": bonus_de(DadosUpgrade.Efeito.PRODUCAO_GLOBAL), "tipo": "vezes",
+		},
+		{"nome": "sala", "fator": multiplicador_de_sala(), "tipo": "vezes"},
+		{"nome": "prestigio", "fator": multiplicador_de_prestigio(), "tipo": "vezes"},
+		{"nome": "eventos", "fator": Eventos.multiplicador_de_producao(), "tipo": "vezes"},
+		{"nome": "global do save", "fator": Jogo.multiplicador_global, "tipo": "vezes"},
+	]
+
+
 ## Teto da producao offline em segundos. Zero significa sem limite (GDD §38).
 ##
 ## A ARVORE MANDA QUANDO ELA JA MEXEU NISSO. O no Producao Offline destrava a escada de

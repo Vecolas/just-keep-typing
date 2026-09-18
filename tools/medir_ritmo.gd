@@ -462,12 +462,52 @@ func _imprimir_a_primeira_hora(
 	if _prestigios.is_empty():
 		print("  NENHUM -- o jogador simulado nunca achou que valia a pena")
 
+	_imprimir_as_fontes()
+
 	print("")
 	print("o primeiro Teorema:")
 	print("  disponivel      %s" % (
 		"NUNCA" if teorema_disponivel < 0.0 else _como_tempo(teorema_disponivel)))
 	print("  vale a pena     %s  (dobrar a producao)" % (
 		"NUNCA" if teorema_vale < 0.0 else _como_tempo(teorema_vale)))
+
+
+## A PRODUCAO DECOMPOSTA POR FONTE, no estado em que a medicao terminou (issue #71).
+##
+## ⚠️ ELA EXISTE PORQUE "producao = 8,4e17" NAO PERMITE PERGUNTAR DE ONDE VEIO. A v0.7
+## gastou uma investigacao inteira separando os 38 multiplicadores dos upgrades -- o
+## suspeito obvio -- e isso moveu o primeiro Teorema de 04:22 para 04:01. O numero estava
+## nas descobertas, vinte e oito ordens de grandeza acima.
+##
+## ⚠️ E ELA SAI DA MESMA FORMULA que a producao: ha portao em teste_economia reconstruindo
+## a producao a partir desta arvore. Fonte nova que entre na formula sem entrar aqui
+## reprova.
+func _imprimir_as_fontes() -> void:
+	print("")
+	print("──── a producao, por fonte ────")
+	print("")
+	print("%-30s %6s %s" % ["fonte", "tipo", "fator"])
+	print("%-30s %6s %s" % ["-".repeat(30), "-".repeat(6), "-".repeat(20)])
+	for fonte in Economia.producao_por_fonte():
+		# ⚠️ IMPRIME O VALOR CRU ao lado do legivel. Formato humano e terminal, nunca fonte
+		# de dados: o script de analise da v0.7 leu "64 bilhoes" como 64, e isso fez dois
+		# instrumentos PARECEREM discordar em oito ordens de grandeza.
+		var fator := float(fonte["fator"])
+		print("%-30s %6s %-20s  %s" % [
+			fonte["nome"], fonte["tipo"],
+			Formatador.formatar(Grande.de_float(fator)), _cru(fator),
+		])
+
+
+## O numero cru, para quem le com maquina.
+##
+## ⚠️ var_to_str, e nao "%.17g": o `%` do GDScript NAO suporta %g, e a primeira versao disto
+## imprimiu a propria marca de formato como se fosse o numero -- "base do macaco 1 %.17g".
+## Um dado ilegivel que PARECE dado e o defeito que esta issue existe para impedir.
+##
+## var_to_str faz ida e volta pelo str_to_var, que e o que "cru" quer dizer aqui.
+func _cru(valor: float) -> String:
+	return var_to_str(valor)
 
 
 ## Quantos instantes de uma lista caem em (de, ate].
