@@ -4,6 +4,6 @@
 
 [resource]
 script = ExtResource("1_dados_prestigio")
-limite_inicial = 1e+16
+limite_inicial = 10000.0
 ganho_por_ponto = 0.15
 pontos_minimos = 1.0
