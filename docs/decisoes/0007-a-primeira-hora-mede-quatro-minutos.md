@@ -67,7 +67,7 @@ resolve, e já estava escrito no `TUNING.md` desde a primeira sessão de tuning:
 
 Agora há número em cima disso.
 
-**A direção**, que é a próxima issue e não esta:
+**A direção**, que é a issue #58 e não esta:
 
 1. O custo de upgrade tem de crescer em função da **mesma composição** que a produção usa,
    e não de uma escada digitada. Curva derivada contra curva derivada se cruzam sempre
