@@ -35,6 +35,32 @@ const LOTES: Array[int] = [1, 10, 100]
 ## este numero e o PISO contra o qual a regua mede.
 const AVISO_VISIVEL: float = 1.6
 
+## OS TRES ESTADOS DA LOJA (issue #67).
+##
+## ⚠️ "DESABILITADO" REPRESENTAVA SITUACOES ECONOMICAMENTE MUITO DIFERENTES, e o jogador via
+## o mesmo cinza nas tres. A sessao observada achou a coluna inteira apagada no minuto 1 e
+## no minuto 30 -- e a tabela da regua registrava aquilo como "3 na loja", que le como um
+## minuto saudavel. "Tres na loja" e "tres botoes apagados" eram o mesmo numero.
+##
+##   ALCANCAVEL   da para comprar agora
+##   PERTO        ainda nao, mas voce esta chegando -- mostra a porcentagem
+##   LONGE        nao compete visualmente com o proximo objetivo
+##
+## A regra que separa os tres, e ela cabe numa linha:
+##
+##   botao caro e META. ausencia e VAZIO. botao que nunca acende e PROMESSA FALSA.
+##
+## ⚠️ E A PORCENTAGEM E TEXTO, e nao cor (issue #43). "72%" se le em qualquer monitor e em
+## qualquer daltonismo; a cor so acompanha.
+enum Alcance { ALCANCAVEL, PERTO, LONGE }
+
+## A partir de quanto do custo o item vira "proximo objetivo".
+##
+## ⚠️ Limite de DESIGN, e nao botao de tuning: ele responde "a partir de quando vale a pena
+## mostrar que voce esta chegando", e nao "quanto o jogo deve custar". Numero ajustavel e
+## ajustado, e este nao tem por que ser.
+const PERTO_O_BASTANTE: float = 0.4
+
 ## Quanto tempo o icone de gravacao ainda fica aceso.
 ##
 ## ⚠️ O AUTOSAVE SAIU DA FILA DE AVISOS. Ele nao e um acontecimento do jogo -- e o jogo se
@@ -112,7 +138,7 @@ func _pintar() -> void:
 			continue
 		var dados: DadosUpgrade = Economia.upgrade_de(filho.get_meta("id"))
 		if dados != null:
-			filho.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+			_vestir_pelo_alcance(filho, Grande.de_float(dados.custo))
 
 	for botao in %ListaAutomacao.get_children():
 		var id: String = botao.get_meta("id")
@@ -120,10 +146,13 @@ func _pintar() -> void:
 		# funcionar mesmo sem um centavo no saldo
 		if Automacao.comprada(id):
 			botao.disabled = false
+			# ⚠️ devolve o brilho: sem isto ela herda o apagado de quando ainda era cara, e
+			# o interruptor de uma automacao LIGADA fica com cara de indisponivel
+			botao.modulate.a = 1.0
 			continue
 		var dados := Automacao.de(id)
 		if dados != null:
-			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+			_vestir_pelo_alcance(botao, Grande.de_float(dados.custo))
 
 
 ## O combo de digitacao (issue #54). ⚠️ ELE PRECISA SER VISIVEL: multiplicador que age
@@ -146,6 +175,52 @@ func _pintar_combo() -> void:
 	%Combo.text = "%s ×%.2f" % [tr("COMBO"), multiplicador]
 
 
+## Veste um botao de compra conforme o quanto o jogador esta longe de poder paga-lo.
+##
+## ⚠️ O TEXTO BASE FICA NA META, e nao e relido do dado: ele ja passou por tr() na montagem,
+## e refazer a traducao todo quadro seria trabalho por quadro para um texto que so muda
+## quando o idioma muda -- e o idioma ja remonta a lista inteira.
+func _vestir_pelo_alcance(botao: Button, custo: Grande) -> void:
+	var alcance := _alcance_de(custo)
+	botao.disabled = alcance != Alcance.ALCANCAVEL
+
+	if not botao.has_meta("texto_base"):
+		botao.set_meta("texto_base", botao.text)
+	var base: String = botao.get_meta("texto_base")
+
+	match alcance:
+		Alcance.ALCANCAVEL:
+			botao.text = base
+			botao.modulate.a = 1.0
+		Alcance.PERTO:
+			# "%s  %d%%" e marca de formato, nao texto: nao passa por traducao
+			botao.text = "%s  %d%%" % [base, int(_quanto_do_custo(custo) * 100.0)]
+			botao.modulate.a = 0.85
+		_:
+			botao.text = base
+			# ⚠️ apagado de proposito: o distante nao pode competir com o proximo objetivo.
+			# Mas nao some -- ele continua sendo a promessa do que vem depois.
+			botao.modulate.a = 0.45
+
+
+func _alcance_de(custo: Grande) -> Alcance:
+	if not custo.maior_que(Jogo.dinheiro):
+		return Alcance.ALCANCAVEL
+	if _quanto_do_custo(custo) >= PERTO_O_BASTANTE:
+		return Alcance.PERTO
+	return Alcance.LONGE
+
+
+## Que fracao do custo o jogador ja tem, de 0 a 1.
+##
+## ⚠️ Custo zero ou negativo devolve 1: divisao por zero num contador de interface nao
+## quebra o jogo, ela desenha "inf%" e ninguem descobre de onde veio.
+func _quanto_do_custo(custo: Grande) -> float:
+	if custo.sinal() <= 0:
+		return 1.0
+	return clampf(Jogo.dinheiro.dividido(custo).para_float(), 0.0, 1.0)
+
+
 ## A sala em uso, a ocupacao e a proxima da escada do GDD §15.
 ##
 ## A ocupacao fica ao lado do botao de comprar macaco, e nao escondida no card da sala: a
@@ -166,7 +241,11 @@ func _pintar_sala() -> void:
 			tr(proxima.nome), Formatador.formatar(Grande.de_float(proxima.custo)),
 		]
 		%BotaoSala.tooltip_text = tr(proxima.descricao)
-		%BotaoSala.disabled = Grande.de_float(proxima.custo).maior_que(Jogo.dinheiro)
+		# ⚠️ a meta e refeita aqui porque estes dois botoes reescrevem o proprio texto todo
+		# quadro -- guardar o texto_base uma vez so deixaria a porcentagem grudada num nome
+		# de sala que ja mudou
+		%BotaoSala.set_meta("texto_base", %BotaoSala.text)
+		_vestir_pelo_alcance(%BotaoSala, Grande.de_float(proxima.custo))
 
 	var vagas := Economia.vagas_livres()
 	%VagasMacaco.text = tr("Sala cheia") if vagas.e_zero() else ""
@@ -241,7 +320,8 @@ func _pintar_maquina() -> void:
 		tr(proxima.nome), Formatador.formatar(Grande.de_float(proxima.custo)),
 	]
 	%BotaoMaquina.tooltip_text = tr(proxima.descricao)
-	%BotaoMaquina.disabled = Grande.de_float(proxima.custo).maior_que(Jogo.dinheiro)
+	%BotaoMaquina.set_meta("texto_base", %BotaoMaquina.text)
+	_vestir_pelo_alcance(%BotaoMaquina, Grande.de_float(proxima.custo))
 
 
 ## Um cartao por automacao ja disponivel (GDD §16). A comprada vira botao de LIGAR e

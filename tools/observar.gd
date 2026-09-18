@@ -134,11 +134,11 @@ func _observar() -> void:
 	print("   jogador parou de ler. Isto responde o que estava na tela.")
 	print("")
 	print("%-6s %-12s %-12s %7s %7s %9s" % [
-		"min", "producao/s", "total", "na loja", "compras", "acontecimentos",
+		"min", "producao/s", "total", "na loja", "perto", "compras",
 	])
 	print("%-6s %-12s %-12s %7s %7s %9s" % [
 		"-".repeat(6), "-".repeat(12), "-".repeat(12), "-".repeat(7), "-".repeat(7),
-		"-".repeat(14),
+		"-".repeat(9),
 	])
 
 	var relogio := 0.0
@@ -151,6 +151,9 @@ func _observar() -> void:
 	var minutos_sem_escolha := 0
 	var minutos_sem_acontecimento := 0
 	var minutos_sem_oferta := 0
+	# ⚠️ a pergunta que a coluna "na loja" nao respondia: o jogador tem algum alvo ALCANCAVEL
+	# a vista, ou so uma vitrine de precos que ele nao encosta?
+	var minutos_sem_alvo := 0
 
 	# ⚠️ "QUANDO O JOGADOR PAROU DE LER OS TEXTOS" TEM UMA METADE MEDIVEL, e e esta.
 	#
@@ -217,13 +220,15 @@ func _observar() -> void:
 				minutos_sem_escolha += 1
 			if na_loja == 0:
 				minutos_sem_oferta += 1
+			if _quantos_perto() == 0 and compraveis == 0:
+				minutos_sem_alvo += 1
 			if acontecimentos == 0:
 				minutos_sem_acontecimento += 1
 			print("%-6d %-12s %-12s %7d %7d %9d" % [
 				int(proximo_minuto / 60.0),
 				Formatador.formatar(Jogo.caracteres_por_segundo),
 				Formatador.formatar(Jogo.total_caracteres),
-				na_loja, compraveis, acontecimentos,
+				na_loja, _quantos_perto(), compraveis,
 			])
 			var minuto := int(proximo_minuto / 60.0)
 			if minuto in MINUTOS_FOTOGRAFADOS:
@@ -242,6 +247,9 @@ func _observar() -> void:
 	])
 	print("⚠️ minutos com a LOJA VAZIA (nada a mirar):  %d de %d" % [
 		minutos_sem_oferta, _minutos,
+	])
+	print("⚠️ minutos so com VITRINE (nada perto):      %d de %d" % [
+		minutos_sem_alvo, _minutos,
 	])
 	print("⚠️ minutos SEM MARCO NEM DESCOBERTA:         %d de %d" % [
 		minutos_sem_acontecimento, _minutos,
@@ -348,6 +356,28 @@ func _quantos_na_loja() -> int:
 		if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
 			continue
 		quantos += 1
+	return quantos
+
+
+## ⚠️ QUANTOS DELES SAO "PROXIMO OBJETIVO" (issue #67). Esta e a coluna que faltava: "3 na
+## loja" e "3 botoes apagados" eram o mesmo numero, e foi por isso que a tabela registrou
+## como saudavel um minuto em que o jogador nao tinha o que fazer.
+##
+## Vitrine e oferta sao coisas diferentes: um item a 5% do custo e uma promessa distante;
+## um a 70% e um alvo. O limiar sai da HUD, e nao de um numero digitado aqui.
+func _quantos_perto() -> int:
+	var perto: float = preload("res://src/ui/hud.gd").PERTO_O_BASTANTE
+	var quantos := 0
+	for dados in Economia.upgrades():
+		if Jogo.upgrades_comprados.has(dados.id):
+			continue
+		if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
+			continue
+		var custo := Grande.de_float(dados.custo)
+		if custo.sinal() <= 0 or not custo.maior_que(Jogo.dinheiro):
+			continue
+		if Jogo.dinheiro.dividido(custo).para_float() >= perto:
+			quantos += 1
 	return quantos
 
 
