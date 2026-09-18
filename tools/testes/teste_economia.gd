@@ -34,6 +34,7 @@ func executar() -> void:
 	_capacidade_da_sala()
 	_entradas_invalidas()
 	_a_contagem_de_macacos_e_inteira()
+	_a_decomposicao_reconstroi_a_producao()
 
 
 func _custo_do_proximo() -> void:
@@ -542,3 +543,120 @@ func _inteiro(valor: Grande, descricao: String) -> void:
 	if absf(numero) > 9.0e15:
 		return
 	perto(numero - floorf(numero), 0.0, 1e-9, descricao)
+
+
+## ⚠️ A DECOMPOSICAO TEM QUE RECONSTRUIR A PRODUCAO, e este e o portao que impede a issue
+## #71 de virar decoracao.
+##
+## Uma arvore de fontes que nao fecha com o total e pior que nenhuma: ela parece uma
+## resposta. Foi exatamente por nao ter isso que a v0.7 passou uma investigacao inteira
+## procurando o multiplicador nos upgrades enquanto ele estava nas descobertas.
+##
+## ⚠️ E FONTE NOVA CAI AQUI SOZINHA. Quem acrescentar um multiplicador a
+## multiplicador_total() sem por na arvore ve esta afirmacao reprovar -- que e o unico jeito
+## de a arvore continuar completa sem alguem lembrar de mante-la.
+func _a_decomposicao_reconstroi_a_producao() -> void:
+	var guardado := _guardar_o_jogo()
+
+	# ⚠️ TODAS AS FONTES TEM QUE VALER DIFERENTE DE 1, e a primeira versao deste cenario
+	# nao garantia isso. Removi a maquina da arvore de proposito para ver o portao morder,
+	# e ele PASSOU -- porque naquele cenario a maquina valia 1,0 e a ausencia dela era
+	# invisivel. Portao que so pega fonte ligada da falsa confianca exatamente sobre as
+	# fontes que ninguem lembrou de ligar.
+	Jogo.macacos = Grande.de_float(7.0)
+	# ⚠️ MODERADO DE PROPOSITO. Com 10^40 de saldo o cenario comprava TUDO, e o produto dos
+	# fatores estourava o double: `inf` de um lado, `inf` do outro, e a comparacao passava
+	# com qualquer arvore. O portao ficava CEGO exatamente no cenario mais completo.
+	Jogo.dinheiro = Grande.new(1.0, 12)
+	Jogo.total_caracteres = Grande.new(1.0, 12)
+	Jogo.upgrades_comprados = [] as Array[String]
+	for dados in Economia.upgrades():
+		Economia.comprar_upgrade(dados.id)
+	Jogo.descobertas = [] as Array[String]
+	for descoberta in Descobertas.todas():
+		Jogo.descobertas.append(descoberta.id)
+
+	# ⚠️ O SALDO E REPOSTO ANTES DE CADA FASE DE COMPRA. A primeira versao comprava os
+	# upgrades primeiro, e eles gastavam TUDO -- entao o laco de maquinas nao comprava
+	# nenhuma, o multiplicador dela ficava em 1,0, e remover a maquina da arvore nao
+	# quebrava nada. O portao passava com a arvore incompleta.
+	Jogo.dinheiro = Grande.new(1.0, 12)
+	var proxima := Economia.proxima_maquina()
+	while proxima != null and Economia.comprar_maquina(proxima.id):
+		Jogo.dinheiro = Grande.new(1.0, 12)
+		proxima = Economia.proxima_maquina()
+
+	# sala: macacos ACIMA da capacidade fazem o multiplicador dela cair abaixo de 1
+	Jogo.macacos = Economia.capacidade().vezes(Grande.de_float(3.0))
+
+	# prestigio: pontos ganhos dao multiplicador
+	Jogo.pontos_totais = Grande.de_float(9.0)
+
+	# ⚠️ AS DUAS QUE A CHECAGEM DE NEUTRALIDADE ACUSOU. Sem elas o cenario tinha duas
+	# fontes valendo 1, e a ausencia delas na arvore passaria despercebida -- que e
+	# exatamente o defeito que esta afirmacao existe para impedir.
+	#
+	# Memoria Genetica e um no da Arvore; multiplicador_global e um campo que so o save
+	# escreve, e por isso nunca sai de 1 sozinho.
+	Jogo.teoremas = {"memoria_genetica": 2}
+	Jogo.multiplicador_global = 1.3
+
+	# evento: um que multiplique producao
+	Eventos.limpar()
+	for evento in Eventos.todos():
+		if evento.multiplicador_producao > 1.0 and Eventos.comecar(evento.id):
+			break
+
+	ok(Economia.producao_automatica(), "o cenario tem producao automatica ligada")
+
+	# ⚠️ a afirmacao que faltava: nenhuma fonte pode estar neutra, senao a ausencia dela
+	# passa despercebida
+	var neutras := PackedStringArray()
+	for fonte in Economia.producao_por_fonte():
+		var neutro := 0.0 if str(fonte["tipo"]) == "soma" else 1.0
+		if is_equal_approx(float(fonte["fator"]), neutro):
+			neutras.append(str(fonte["nome"]))
+	ok(
+		neutras.is_empty(),
+		"nenhuma fonte esta neutra no cenario -- neutras: %s" % ", ".join(neutras),
+	)
+
+	var fontes := Economia.producao_por_fonte()
+	ok(fontes.size() >= 8, "a arvore tem %d fontes" % fontes.size())
+
+	# reconstroi: as somas entram na base, os multiplicadores multiplicam
+	var soma := 0.0
+	var produto := 1.0
+	for fonte in fontes:
+		# tipo desconhecido REPROVA: fonte sem classificacao sairia da conta em silencio
+		ok(
+			str(fonte["tipo"]) in ["soma", "vezes"],
+			"a fonte %s declara soma ou vezes" % fonte["nome"],
+		)
+		if str(fonte["tipo"]) == "soma":
+			soma += float(fonte["fator"])
+		else:
+			produto *= float(fonte["fator"])
+
+	# ⚠️ E A AFIRMACAO QUE IMPEDE A CEGUEIRA DE VOLTAR: produto infinito faz qualquer arvore
+	# "reconstruir" a producao, porque inf == inf.
+	ok(
+		is_finite(produto) and is_finite(soma),
+		"a conta nao estourou o double -- soma %s, produto %s" % [soma, produto],
+	)
+
+	var reconstruida := Grande.de_float(soma).vezes(Grande.de_float(produto))
+	var real := Economia.producao_por_segundo()
+	ok(
+		reconstruida.igual_a(real, 1e-9),
+		"a arvore reconstroi a producao: %s contra %s" % [
+			reconstruida.para_texto(), real.para_texto(),
+		],
+	)
+
+	# ⚠️ QUEM LIGA, DESLIGA. Este cenario dispara um evento, e _devolver_o_jogo nao mexe em
+	# Eventos -- o evento ficava ativo e vazava para as suites seguintes. O sintoma foi a
+	# contagem total de afirmacoes CAIR de 6529 para 6514 sem nenhuma reprovar: outra suite
+	# passou a rodar menos afirmacoes porque o estado dela ja vinha sujo.
+	Eventos.limpar()
+	_devolver_o_jogo(guardado)
