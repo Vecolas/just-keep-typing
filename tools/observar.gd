@@ -154,6 +154,7 @@ func _observar() -> void:
 	# ⚠️ a pergunta que a coluna "na loja" nao respondia: o jogador tem algum alvo ALCANCAVEL
 	# a vista, ou so uma vitrine de precos que ele nao encosta?
 	var minutos_sem_alvo := 0
+	var fracionarios := 0
 
 	# ⚠️ "QUANDO O JOGADOR PAROU DE LER OS TEXTOS" TEM UMA METADE MEDIVEL, e e esta.
 	#
@@ -208,6 +209,18 @@ func _observar() -> void:
 			_comprar_o_que_der()
 
 		relogio += PASSO
+
+		# ⚠️ A CACA DA ISSUE #66, e ela roda a cada meio segundo. "48,99 macacos" apareceu
+		# numa captura e nao se reproduz em teste isolado: a aritmetica do Grande e exata
+		# nos casos obvios, e nenhum caminho de compra produz fracao. Entao o flagrante tem
+		# que ser pego na partida rodando, no instante em que acontece.
+		var macacos := Jogo.macacos.para_float()
+		if macacos < 1e12 and absf(macacos - roundf(macacos)) > 1e-6 and fracionarios < 3:
+			fracionarios += 1
+			print("⚠️ MACACO FRACIONARIO aos %.1f s: %.10f (sala %s, maquina %s)" % [
+				relogio, macacos, Jogo.sala_atual, Jogo.maquina_atual,
+			])
+
 		if relogio >= proximo_minuto:
 			var na_loja := _quantos_na_loja()
 			var compraveis: int = compras[0]

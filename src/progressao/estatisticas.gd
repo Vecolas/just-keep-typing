@@ -48,11 +48,21 @@ static func uteis() -> Array[Dictionary]:
 	]
 
 
+## ⚠️ `discreto` DIZ QUE A GRANDEZA SE CONTA (issue #66). Ele mora no DADO e nao na tela:
+## quem sabe se banana se divide e quem escreveu a estatistica, e nao quem a desenha. A
+## tela le o campo; ausente, ela formata como grandeza continua -- que e o comportamento de
+## sempre, e o certo para a maioria.
+##
+## Foi assim que "50,79 bananas consumidas" chegou a uma captura: a conta estava certa e a
+## exibicao mentia sobre a natureza da coisa contada.
+##
 ## As do GDD §24, que sao metade da piada. Toda uma derivada de estado real.
 static func inuteis() -> Array[Dictionary]:
 	return [
 		{
 			"rotulo": "Bananas consumidas",
+			# ⚠️ CONTAVEL: a conta e continua (macacos x tempo), e banana nao se divide
+			"discreto": true,
 			# macacos x tempo, uma a cada meia hora
 			"valor": Jogo.macacos.vezes(
 				Grande.de_float(Jogo.tempo_jogado / SEGUNDOS_POR_BANANA)
@@ -60,17 +70,20 @@ static func inuteis() -> Array[Dictionary]:
 		},
 		{
 			"rotulo": "Máquinas destruídas",
+			"discreto": true,
 			# cada troca de tier aposenta a anterior, e "aposentar" e generoso
 			"valor": Grande.de_float(float(maxi(Economia.maquina_atual().tier - 1, 0))
 				if Economia.maquina_atual() != null else 0.0),
 		},
 		{
 			"rotulo": "Macacos que aprenderam a escrever",
+			"discreto": true,
 			# um por descoberta: alguem ali acertou de propósito
 			"valor": Grande.de_float(float(Descobertas.quantas_encontradas())),
 		},
 		{
 			"rotulo": "Macacos que aparentemente aprenderam física",
+			"discreto": true,
 			# um a cada dez marcos: por volta dai o Panorama para de falar de livro
 			"valor": Grande.de_float(floorf(float(Jogo.marcos_alcancados.size()) / 10.0)),
 		},

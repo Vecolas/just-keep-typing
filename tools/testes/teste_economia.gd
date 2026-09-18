@@ -33,6 +33,7 @@ func executar() -> void:
 	_escada_de_maquinas()
 	_capacidade_da_sala()
 	_entradas_invalidas()
+	_a_contagem_de_macacos_e_inteira()
 
 
 func _custo_do_proximo() -> void:
@@ -499,3 +500,45 @@ func _somar_uma_a_uma(quantidade: float, quantos: int) -> Grande:
 
 func _vale(obtido: Grande, esperado: float, descricao: String) -> void:
 	perto(obtido.para_float(), esperado, absf(esperado) * 1e-9 + 1e-9, descricao)
+
+
+## ⚠️ MACACO E CONTAVEL, E ISSO E CONTRATO DO VALOR -- nao da exibicao (issue #66).
+##
+## A formatacao discreta existe para grandezas legitimamente continuas que se CONTAM, como
+## "bananas consumidas" (macacos x tempo). A contagem de macacos e outra coisa: ela DEVE ser
+## inteira, e formatar por cima esconderia a causa.
+##
+## "48,99 macacos" apareceu numa captura e nao se reproduziu nem em teste isolado nem numa
+## corrida de trinta minutos. Este portao existe para o dia em que reproduzir.
+func _a_contagem_de_macacos_e_inteira() -> void:
+	var guardado := _guardar_o_jogo()
+
+	Jogo.macacos = Grande.um()
+	Jogo.dinheiro = Grande.new(1.0, 30)
+	Jogo.sala_atual = ""
+	Jogo.upgrades_comprados = [] as Array[String]
+
+	# compras em lotes irregulares, que e como a automacao e o "Comprar Maximo" fazem
+	for lote in [1, 7, 3, 25, 1, 60, 11, 140, 2]:
+		Economia.comprar_macacos(lote)
+		_inteiro(Jogo.macacos, "depois de comprar %d, a contagem continua inteira" % lote)
+
+	# e depois do prestigio, que a reinicia
+	Jogo.total_caracteres = Grande.new(1.0, 30)
+	Teoremas.provar()
+	_inteiro(Jogo.macacos, "e depois do prestigio")
+
+	# e depois da ida e volta pelo save, que passa por texto
+	var texto := Jogo.macacos.para_texto()
+	_inteiro(Grande.de_texto(texto), "e depois de ir e voltar como texto: %s" % texto)
+
+	_devolver_o_jogo(guardado)
+
+
+func _inteiro(valor: Grande, descricao: String) -> void:
+	var numero := valor.para_float()
+	# ⚠️ a tolerancia e do float e nao folga de design: acima de 2^53 nem os inteiros cabem
+	# exatos num double, e ali a pergunta deixa de fazer sentido
+	if absf(numero) > 9.0e15:
+		return
+	perto(numero - floorf(numero), 0.0, 1e-9, descricao)

@@ -24,6 +24,7 @@ func _init() -> void:
 func executar() -> void:
 	var caminho_original := Config.caminho
 	Config.caminho = CAMINHO_DE_TESTE
+	_grandeza_discreta()
 
 	_separador_de_milhar()
 	_numero_pequeno()
@@ -233,3 +234,51 @@ func _com_formato(nome: String) -> void:
 
 func _texto(valor: Grande, esperado: String, descricao: String) -> void:
 	igual(Formatador.formatar(valor), esperado, descricao)
+
+
+## ⚠️ GRANDEZA CONTAVEL NUNCA SAI COM VIRGULA (issue #66).
+##
+## "48,99 macacos" apareceu numa captura e "50,79 bananas" em outra. No segundo caso o
+## VALOR estava certo -- bananas consumidas e macacos vezes tempo --, e o que mentia era a
+## exibicao: uma fracao de uma coisa que nao se divide.
+func _grandeza_discreta() -> void:
+	igual(Formatador.formatar_discreto(Grande.zero()), "0", "zero contavel e zero")
+
+	# ⚠️ NAO DA PARA PROCURAR "." NEM "," NA SAIDA: em portugues o ponto e o separador de
+	# MILHAR, e 1.234 e um inteiro perfeitamente formatado. A primeira versao desta
+	# afirmacao reprovou exatamente nisso -- ela confundia separador de milhar com casa
+	# decimal, e o defeito era dela.
+	#
+	# A regra de verdade: o discreto de um numero e o discreto do seu piso.
+	for bruto in [48.99, 49.0, 50.79, 1.5, 0.9, 1234.7]:
+		igual(
+			Formatador.formatar_discreto(Grande.de_float(bruto)),
+			Formatador.formatar_discreto(Grande.de_float(floorf(bruto))),
+			"%s sai igual ao piso dele" % bruto,
+		)
+
+	# ⚠️ TRUNCA, e nao arredonda: quem consumiu 48,99 bananas comeu 48 inteiras e esta no
+	# meio da quadragesima nona. Arredondar para 49 contaria uma banana que nao acabou.
+	igual(Formatador.formatar_discreto(Grande.de_float(48.99)), "48", "48,99 vira 48")
+	igual(Formatador.formatar_discreto(Grande.de_float(0.9)), "0", "menos de um vira zero")
+
+	# o agrupamento de milhar continua valendo
+	igual(
+		Formatador.formatar_discreto(Grande.de_float(1234.7)),
+		Formatador.formatar_discreto(Grande.de_float(1234.0)),
+		"a fracao nao muda o agrupamento de milhar",
+	)
+
+	# ⚠️ acima do regime do separador a fracao ja nao aparece, e truncar um Grande enorme
+	# custaria precisao a toa: ali ele delega para o formatador normal
+	igual(
+		Formatador.formatar_discreto(Grande.new(1.0, 12)),
+		Formatador.formatar(Grande.new(1.0, 12)),
+		"numero grande demais para mostrar fracao delega ao formatador normal",
+	)
+
+	# negativo nao acontece no jogo, mas formatador que inventa sinal e defeito calado
+	ok(
+		Formatador.formatar_discreto(Grande.de_float(-3.7)).begins_with("-"),
+		"negativo mantem o sinal",
+	)
