@@ -91,6 +91,7 @@ que é quem sabe se há partida aberta.
 | `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) e `NomesDeManuscrito` (o que o nome pode ser) |
 | `src/ui/` | Telas: Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — mais `TelaSobreposta` (base das que abrem por cima) e `BotaoDeSegurar` |
 | `src/cena/` | O Boot, a Partida, a cena das eras e a câmera que se afasta |
+| `assets/menu/` | A pixel art do menu (issue #45). O briefing é `docs/ASSETS.md`; a tabela que vale é `src/ui/assets_do_menu.gd` |
 | `data/` | `.tres` de balanceamento — nenhum código |
 | `i18n/` | `textos.csv`: `keys,pt_BR,en`. A chave É o texto em português. |
 | `tools/` | Testes, réguas e capturas. Nada daqui entra no build. |
