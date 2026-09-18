@@ -18,6 +18,11 @@
 ## ⚠️ As letras soltas sao DECORACAO, e nao texto produzido. Elas saem de um alfabeto fixo
 ## e ninguem as le nem as conta -- o GDD §10 proibe gerar o texto do macaco, e este efeito
 ## nao gera: ele desenha. E a mesma distincao entre a moldura e o quadro.
+##
+## Tem class_name para a suite poder perguntar a REGRA (desenhando(), GLIFOS) sem subir
+## cena nenhuma: copiar as duas condicoes para dentro do teste criaria uma segunda copia
+## delas, e a segunda e a que mente.
+class_name Letras
 extends Control
 
 ## Alfabeto de decoracao do docs/ARTE.md, secao 9: letras, interrogacao e o infinito.
@@ -56,17 +61,25 @@ func _ready() -> void:
 	# a piscina nasce inteira: criar Label no meio da producao e alocar no pior momento,
 	# que e exatamente quando o efeito esta mais denso
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 	for i in TETO:
 		var rotulo := Label.new()
 		rotulo.visible = false
 		rotulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		rotulo.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+		rotulo.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 		add_child(rotulo)
 		_livres.append(rotulo)
 
 
 func _process(delta: float) -> void:
 	_avancar(delta)
+
+	# ⚠️ AS DUAS OPCOES LIDAS NO QUADRO, e nunca guardadas (issue #43). Desligar particulas
+	# e um gosto; reduzir movimento e acessibilidade -- e as duas param o EFEITO, nunca a
+	# producao. Letra que para de subir nao e caractere que deixa de ser digitado: opcao de
+	# interface que mexesse em progressao seria dificuldade disfarcada de conforto.
+	if not desenhando():
+		return
 
 	_ate_nascer -= delta
 	if _ate_nascer > 0.0:
@@ -75,14 +88,28 @@ func _process(delta: float) -> void:
 	_nascer(Jogo.caracteres_por_segundo.vezes(Grande.de_float(1.0 / POR_SEGUNDO)))
 
 
+## Se as letras devem nascer agora. Publica porque a suite le daqui: afirmar a regra
+## copiando as duas condicoes para dentro do teste criaria uma segunda copia dela.
+##
+## ⚠️ A regua medir_quadro nao passa por aqui -- ela chama nascer() direto, que e o que
+## permite SATURAR a piscina mesmo com o efeito desligado.
+static func desenhando() -> bool:
+	return Config.ligado("particulas_de_letra") and not Config.ligado("reduzir_movimento")
+
+
 ## Rotulo vivo carrega numero ja formatado, e a virgula decimal muda com a lingua. Em vez
 ## de reescrever cada um, apaga: eles vivem 1,6 s e a proxima leva nasce na lingua nova.
 ## Repintar nao e reexecutar -- apagar nao devolve caractere nenhum ao jogador.
 func _ao_mudar_idioma(_codigo: String) -> void:
-	for rotulo in _vivos:
-		rotulo.visible = false
-		_livres.append(rotulo)
-	_vivos.clear()
+	limpar()
+
+
+## O mesmo, e pelo mesmo motivo: rotulo vivo carrega numero ja formatado, e o FORMATO muda
+## com a opcao tanto quanto a virgula muda com a lingua. E se o efeito acabou de ser
+## desligado, os que estao no ar tem que sumir -- desligar e ver letra subindo por mais um
+## segundo e meio parece que o jogo ignorou a escolha.
+func _ao_mudar_interface() -> void:
+	limpar()
 
 
 ## Quantos rotulos estao vivos agora. A regua medir_quadro le isto.
@@ -115,11 +142,11 @@ func _nascer(producao: Grande) -> void:
 
 	if producao.menor_que(Grande.de_float(LIMIAR_DE_NUMERO)):
 		rotulo.text = GLIFOS[_gerador.randi_range(0, GLIFOS.size() - 1)]
-		rotulo.add_theme_font_size_override("font_size", 26)
+		rotulo.add_theme_font_size_override("font_size", Tema.fonte(26))
 	else:
 		# "+%s" e marca de formato, nao texto
 		rotulo.text = "+%s" % Formatador.formatar(producao)
-		rotulo.add_theme_font_size_override("font_size", 20)
+		rotulo.add_theme_font_size_override("font_size", Tema.fonte(20))
 
 	rotulo.position = Vector2(
 		size.x * 0.5 + _gerador.randf_range(-ESPALHAMENTO, ESPALHAMENTO),

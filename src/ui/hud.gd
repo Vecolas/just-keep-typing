@@ -36,7 +36,7 @@ var _ate_esconder_o_aviso: float = 0.0
 
 func _ready() -> void:
 	theme = Tema.montar()
-	%Fundo.color = Paleta.INK_BROWN.darkened(0.4)
+	%Fundo.color = Tema.fundo()
 
 	# a cena das eras desenha sozinha e nao pode ser repintada como rotulo da HUD
 	_liberar_clique(self)
@@ -51,6 +51,7 @@ func _ready() -> void:
 	EventBus.evento_terminou.connect(_ao_mudar_eventos)
 	EventBus.voltou_do_offline.connect(_ao_voltar_do_offline)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
 	EventBus.jogo_gravado.connect(_ao_gravar)
 	EventBus.marco_alcancado.connect(_ao_alcancar_marco)
@@ -172,7 +173,7 @@ func _montar_eventos() -> void:
 		rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		rotulo.add_theme_color_override(
 			"font_color",
-			Paleta.MAGENTA_COSMICO if dados.e_punicao() else Paleta.BANANA_GOLD,
+			Tema.cor(Paleta.MAGENTA_COSMICO if dados.e_punicao() else Paleta.BANANA_GOLD),
 		)
 		linha.add_child(rotulo)
 		# guardado por id em vez de procurado na arvore: find_child devolve o primeiro
@@ -445,40 +446,40 @@ func _ao_mudar_idioma(_codigo: String) -> void:
 ## O contador e a coisa mais importante da tela e nao compete com nada: e o maior corpo,
 ## na cor de producao, e todo o resto fica pequeno e creme.
 func _estilizar() -> void:
-	%ValorCaracteres.add_theme_font_size_override("font_size", Tema.CONTADOR)
-	%ValorCaracteres.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	%ValorCaracteres.add_theme_font_size_override("font_size", Tema.fonte(Tema.CONTADOR))
+	%ValorCaracteres.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 
 	for grande in [%ValorPorSegundo, %ValorDinheiro, %ValorMacacos, %ValorDescobertas]:
-		grande.add_theme_font_size_override("font_size", Tema.DESTAQUE)
-		grande.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
+		grande.add_theme_font_size_override("font_size", Tema.fonte(Tema.DESTAQUE))
+		grande.add_theme_color_override("font_color", Tema.cor(Paleta.PAPER_CREAM))
 
-	%AvisoOffline.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	%AvisoOffline.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 	# discreto de proposito: marrom apagado, corpo de legenda. O aviso confirma, e nao
 	# disputa atencao com o contador.
-	%Aviso.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
-	%Aviso.add_theme_font_size_override("font_size", Tema.TITULO)
+	%Aviso.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.25)))
+	%Aviso.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
 	# sala cheia e o unico aviso da loja: cor de alerta, e nao mais um creme apagado
-	%VagasMacaco.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
-	%VagasMacaco.add_theme_font_size_override("font_size", Tema.TITULO)
+	%VagasMacaco.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
+	%VagasMacaco.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
 
 	for legenda in [
 		%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco,
 		%NomeMaquina, %NomeSala, %NomeDescobertas,
 	]:
-		legenda.add_theme_font_size_override("font_size", Tema.TITULO)
-		legenda.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
+		legenda.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
+		legenda.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.25)))
 
 	for titulo in [
 		%TituloMacacos, %TituloUpgrades, %TituloMaquina, %TituloSala, %TituloAutomacao,
 	]:
-		titulo.add_theme_font_size_override("font_size", Tema.TITULO)
-		titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+		titulo.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
+		titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 
 	# o botao principal do docs/ARTE.md, secao 9: dourado, borda grossa, texto escuro
-	%BotaoDigitar.add_theme_font_size_override("font_size", Tema.BOTAO_GRANDE)
-	%BotaoDigitar.add_theme_color_override("font_color", Paleta.INK_BROWN)
-	%BotaoDigitar.add_theme_color_override("font_hover_color", Paleta.INK_BROWN)
-	%BotaoDigitar.add_theme_color_override("font_pressed_color", Paleta.INK_BROWN)
+	%BotaoDigitar.add_theme_font_size_override("font_size", Tema.fonte(Tema.BOTAO_GRANDE))
+	%BotaoDigitar.add_theme_color_override("font_color", Tema.cor(Paleta.INK_BROWN))
+	%BotaoDigitar.add_theme_color_override("font_hover_color", Tema.cor(Paleta.INK_BROWN))
+	%BotaoDigitar.add_theme_color_override("font_pressed_color", Tema.cor(Paleta.INK_BROWN))
 	%BotaoDigitar.add_theme_stylebox_override("normal", _digitar(Paleta.BANANA_GOLD))
 	%BotaoDigitar.add_theme_stylebox_override("hover", _digitar(Paleta.BANANA_GOLD.lightened(0.15)))
 	%BotaoDigitar.add_theme_stylebox_override("pressed", _digitar(Paleta.MECHANICAL_GOLD))
@@ -497,3 +498,14 @@ func _digitar(fundo: Color) -> StyleBoxFlat:
 	estilo.content_margin_top = 16
 	estilo.content_margin_bottom = 16
 	return estilo
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	_estilizar()
+	_montar_upgrades()
+	_montar_automacao()

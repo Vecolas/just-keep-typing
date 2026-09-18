@@ -31,6 +31,23 @@ const CENARIO_PADRAO := "principal"
 const TAMANHO := Vector2i(1920, 1080)
 
 
+## Poe um campo de lista no valor pedido pela linha de comando. Zero significa "nao
+## pedido" -- nenhuma escala vale zero, entao ele serve de sentinela sem ambiguidade.
+func _ajustar(campo: String, valor: float) -> void:
+	if valor <= 0.0:
+		return
+	var valores: Array = Config.campo(campo)["valores"]
+	var indice := -1
+	for i in valores.size():
+		if is_equal_approx(float(valores[i]), valor):
+			indice = i
+	if indice < 0:
+		printerr("FALHA  %s nao oferece %s" % [campo, valor])
+		get_tree().quit(1)
+		return
+	Config.escolher(campo, indice)
+
+
 ## Poe o jogo na lingua pedida pela linha de comando. A captura em outra lingua e o unico
 ## jeito de ver texto estourando botao: caractere nao e pixel, e "Comprar Maximo" e
 ## "Buy Max" nao ocupam a mesma largura.
@@ -105,11 +122,27 @@ func _ready() -> void:
 	if not idioma.is_empty():
 		_falar(idioma)
 
+	# ⚠️ A CAPTURA QUE A ISSUE #43 PEDE: escala acima de 100% na MENOR resolucao da lista e
+	# o caso que estoura tudo, e caractere nao e pixel -- so a foto mostra rotulo saindo do
+	# botao. Entra pelo Config, que e a porta do jogador.
+	_ajustar("escala_da_interface", _argumento("escala", 0.0))
+	_ajustar("escala_do_texto", _argumento("escala_do_texto", 0.0))
+	if _texto_do_argumento("contraste", "").begins_with("1"):
+		Config.escolher("alto_contraste", 1)
+
 	var pedida := Vector2i(
 		int(_argumento("largura", TAMANHO.x)), int(_argumento("altura", TAMANHO.y))
 	)
 	DisplayServer.window_set_size(pedida)
-	get_window().content_scale_size = pedida
+	# ⚠️ A AREA LOGICA NAO ENCOLHE JUNTO COM A JANELA, e isso e o jogo e nao a ferramenta.
+	# O modo de estiramento e canvas_items: a interface e SEMPRE montada em 1920x1080 e
+	# depois desenhada no tamanho da janela. Cravar a area logica em 1280x720 aqui mediria
+	# um layout que nenhum jogador ve -- e foi assim que a primeira captura em escala 125%
+	# saiu com a loja pela metade, acusando um defeito que era da captura.
+	get_window().content_scale_size = Vector2i(
+		int(ProjectSettings.get_setting("display/window/size/viewport_width", pedida.x)),
+		int(ProjectSettings.get_setting("display/window/size/viewport_height", pedida.y)),
+	)
 
 	var caminho: String = ProjectSettings.get_setting("application/run/main_scene", "")
 	var empacotada := load(caminho) as PackedScene
@@ -279,6 +312,8 @@ func _ready() -> void:
 	var sufixo := ""
 	if cenario == "opcoes":
 		sufixo += "_aba%d" % int(_argumento("aba", 0.0))
+	if _argumento("escala", 0.0) > 0.0:
+		sufixo += "_escala%d" % int(_argumento("escala", 0.0) * 100.0)
 	if not idioma.is_empty():
 		sufixo += "_" + idioma
 	var destino := PASTA.path_join(cenario + sufixo + ".png")

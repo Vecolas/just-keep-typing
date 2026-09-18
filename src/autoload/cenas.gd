@@ -218,6 +218,14 @@ func _trocar(id: String, caminho: String) -> bool:
 	raiz.add_child(empacotada.instantiate())
 	_atual = id
 
+	# ⚠️ REDUZIR FLASHES APAGA O CLARAO (issue #43). Ele e literalmente uma tela inteira
+	# indo de opaca a transparente em um quarto de segundo, que e a definicao do que aquela
+	# opcao existe para evitar. Sem ele a cena simplesmente aparece -- o caminho continua o
+	# mesmo, e o que some e o piscar.
+	if Config.ligado("reduzir_flashes"):
+		_fade.visible = false
+		_ate_clarear = 0.0
+		return true
 	_fade.visible = true
 	_fade.modulate.a = 1.0
 	_ate_clarear = CLARAO

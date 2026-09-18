@@ -22,9 +22,10 @@
 ## mesma fonte que o Config vai alimentar. Quando Config entrar, esta constante muda de
 ## casa e _convencao() passa a ler Config.IDIOMAS; nada mais nesta classe muda.
 ##
-## Nao escuta EventBus.idioma_mudou de proposito: e sem estado e nao tem rotulo para
-## repintar. Quem monta texto e guarda na tela -- HUD, Panorama -- e que precisa escutar,
-## porque o Godot so retraduz sozinho o text que veio da CENA.
+## Nao escuta EventBus.idioma_mudou nem interface_mudou de proposito: e sem estado e nao
+## tem rotulo para repintar. Quem monta texto e guarda na tela -- HUD, Panorama -- e que
+## precisa escutar os dois, porque o Godot so retraduz sozinho o text que veio da CENA e
+## nao sabe nada sobre formato de numero.
 class_name Formatador
 extends RefCounted
 
@@ -89,17 +90,59 @@ const _EPSILON_TRUNCAMENTO: float = 1e-9
 
 ## Ponto de entrada. Escolhe o regime pela ordem de grandeza e nunca pelo valor em float,
 ## que satura em 10^308 muito antes de o jogo acabar.
+##
+## ⚠️ O FORMATO ESCOLHIDO PELO JOGADOR NAO E UMA QUARTA REGRA DE ARREDONDAMENTO (issue
+## #43). Os tres formatos passam pelos MESMOS truncadores: cientifico e engenharia
+## reaproveitam _mantissa_curta e _truncar_casas. Um formato que arredondasse mostraria
+## dinheiro que nao existe ao lado de uma loja que o pede -- que e exatamente o que a issue
+## #2 proibiu.
 static func formatar(valor: Grande) -> String:
 	if valor.e_zero():
 		return "0"
 
 	var sinal := "-" if valor.sinal() < 0 else ""
 	var modulo := valor.absoluto()
+	match formato():
+		"cientifico":
+			return sinal + _cientifico(modulo)
+		"engenharia":
+			return sinal + _engenharia(modulo)
+
 	if modulo.expoente < LIMITE_SEPARADOR:
 		return sinal + _com_separador(modulo)
 	if modulo.expoente < LIMITE_ESCALA:
 		return sinal + _por_escala(modulo)
 	return sinal + _cientifico(modulo)
+
+
+## O formato que o jogador escolheu. Lido na hora de usar, e nunca guardado: esta classe
+## continua sem estado, e e por isso que ela nao precisa se repintar -- quem repinta e a
+## tela, escutando EventBus.interface_mudou.
+##
+## Cair no abreviado quando o Config nao responde deixa o Formatador utilizavel numa suite
+## que rode fora do jogo.
+static func formato() -> String:
+	return Config.formato_numerico()
+
+
+## Notacao de engenharia: o expoente e sempre MULTIPLO DE TRES, e a mantissa cresce para
+## compensar. 15 mil vira 15e3, e nao 1,5e4.
+##
+## ⚠️ TRUNCA COMO TODO O RESTO. A mantissa aqui chega a tres digitos inteiros (ate 999), e
+## por isso o teto do truncador e 1000 e nao 10 -- passar o teto do cientifico deixaria
+## 999,999 virar "1000e3", que nao e forma que exista nesta notacao.
+static func _engenharia(modulo: Grande) -> String:
+	# ⚠️ o resto de um negativo e negativo em GDScript: -1 % 3 da -1, e sem esta correcao
+	# um numero abaixo de 1 sairia com expoente nao multiplo de tres
+	var resto := modulo.expoente % 3
+	if resto < 0:
+		resto += 3
+	var expoente := modulo.expoente - resto
+	var mantissa := absf(modulo.mantissa) * pow(10.0, float(resto))
+	var escrita := _numero_curto(_truncar_casas(mantissa, CASAS_DECIMAIS, 1000.0))
+	if expoente == 0:
+		return escrita
+	return "%s%s%d" % [escrita, SIMBOLO_EXPOENTE, expoente]
 
 
 ## A convencao do idioma corrente, com "en_US" caindo em "en": a lingua traz a pontuacao,

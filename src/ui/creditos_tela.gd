@@ -30,16 +30,17 @@ const CREDITOS: Array[Dictionary] = [
 
 func _ready() -> void:
 	theme = Tema.montar()
-	%Cortina.color = Paleta.INK_BROWN.darkened(0.4)
+	%Cortina.color = Tema.fundo()
 	%Cortina.color.a = 0.96
 	%Painel.add_theme_stylebox_override("panel", Tema.painel())
-	%Titulo.add_theme_font_size_override("font_size", TITULO_TELA)
-	%Titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+	%Titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_TELA))
+	%Titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 	%BotaoFechar.focus_mode = Control.FOCUS_ALL
 	%BotaoFechar.pressed.connect(fechar)
 
 	EventBus.creditos_pedidos.connect(abrir)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 
 
 func abrir() -> void:
@@ -98,8 +99,8 @@ func _linha(papel: String, nome: String) -> Control:
 func _rotulo(texto: String, tamanho: int, cor: Color) -> Label:
 	var rotulo := Label.new()
 	rotulo.text = texto
-	rotulo.add_theme_font_size_override("font_size", tamanho)
-	rotulo.add_theme_color_override("font_color", cor)
+	rotulo.add_theme_font_size_override("font_size", Tema.fonte(tamanho))
+	rotulo.add_theme_color_override("font_color", Tema.cor(cor))
 	return rotulo
 
 
@@ -107,3 +108,13 @@ func _respiro() -> Control:
 	var espaco := Control.new()
 	espaco.custom_minimum_size = Vector2(0, 12)
 	return espaco
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	if visible:
+		_montar()

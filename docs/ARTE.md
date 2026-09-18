@@ -308,15 +308,28 @@ brilhando no fim — a passagem humano → tecnológico → cósmico numa linha 
 
 ### Raridades
 
-| Raridade | Cor |
-|---|---|
-| Comum | creme |
-| Incomum | verde suave |
-| Raro | azul |
-| Épico | violeta |
-| Lendário | dourado |
-| Impossível | ciano |
-| Paradoxal | magenta + azul cósmico |
+⚠️ **A regra é cor + símbolo + nome, e nunca cor sozinha** (issue #43). São sete
+categorias, com dois roxos e dois azuis entre elas: quem não distingue as sete cores não lê
+a raridade de nada. O nome está na tela desde a issue #17; o símbolo é a marca que se lê de
+relance, sem parar para ler a palavra.
+
+| Raridade | Cor | Símbolo |
+|---|---|---|
+| Comum | creme | `-` |
+| Incomum | verde suave | `+` |
+| Raro | azul | `*` |
+| Épico | violeta | `#` |
+| Lendário | dourado | `@` |
+| Impossível | ciano | `%` |
+| Paradoxal | magenta + azul cósmico | `∞` |
+
+Os símbolos **escalam em densidade**, do tracinho ao infinito: a ordem se lê sem legenda.
+
+⚠️ **Só glifos que a fonte monoespaçada tem.** Seis são ASCII e o sétimo é o `∞`, que o
+efeito de letras já usa — ou seja, provado presente. Glifo ausente não aparece como erro:
+ele faz o Godot percorrer a cadeia de *fallback* a cada desenho, e foi assim que a era 14
+custou 22 ms com dezesseis rótulos (`TUNING.md`). A suíte consulta a fonte de verdade, e
+não o olho de quem escreveu.
 
 ---
 

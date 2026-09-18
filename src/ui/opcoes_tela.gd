@@ -60,6 +60,13 @@ const ROTULOS: Dictionary = {
 	"vsync": "Sincronização vertical",
 	"limite_de_fps": "Limite de quadros por segundo",
 	"modo_economico": "Modo econômico",
+	"escala_da_interface": "Escala da interface",
+	"formato_numerico": "Formato numérico",
+	"particulas_de_letra": "Partículas de letra",
+	"escala_do_texto": "Escala do texto",
+	"reduzir_movimento": "Reduzir movimento",
+	"reduzir_flashes": "Reduzir flashes",
+	"alto_contraste": "Alto contraste",
 }
 
 ## Dica por campo, ou nenhuma. Cada uma existe porque o campo, sozinho, seria lido errado.
@@ -69,21 +76,28 @@ const DICAS: Dictionary = {
 	"confirmacoes": "Excluir Manuscrito confirma sempre — essa não tem volta.",
 	"modo_economico": "Com o jogo em segundo plano, desenha menos quadros.",
 	"som_de_digitacao": "O ritmo acompanha a produção, e para de subir num teto.",
+	"escala_da_interface": "Aumenta tudo: texto, botões e margens.",
+	"formato_numerico": "Nenhum deles arredonda — o número na tela é o que dá para gastar.",
+	"escala_do_texto": "Aumenta só o texto. Só aparecem as escalas que cabem junto da escala da interface.",
+	"reduzir_movimento": "As letras param de subir e a troca de era acontece num quadro.",
+	"reduzir_flashes": "Tira o clarão entre uma tela e outra.",
+	"alto_contraste": "Clareia o que se lê e escurece o que fica atrás.",
 }
 
 
 func _ready() -> void:
 	theme = Tema.montar()
-	%Cortina.color = Paleta.INK_BROWN.darkened(0.4)
+	%Cortina.color = Tema.fundo()
 	%Cortina.color.a = 0.96
 	%Painel.add_theme_stylebox_override("panel", Tema.painel())
-	%Titulo.add_theme_font_size_override("font_size", TITULO_TELA)
-	%Titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+	%Titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_TELA))
+	%Titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 	%BotaoFechar.focus_mode = Control.FOCUS_ALL
 	%BotaoFechar.pressed.connect(fechar)
 
 	EventBus.opcoes_pedidas.connect(abrir)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 
 
 func abrir() -> void:
@@ -149,8 +163,8 @@ func _campo(linha: Dictionary) -> Control:
 
 	var rotulo := Label.new()
 	rotulo.text = tr(str(ROTULOS.get(nome, nome)))
-	rotulo.add_theme_font_size_override("font_size", ROTULO_CAMPO)
-	rotulo.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
+	rotulo.add_theme_font_size_override("font_size", Tema.fonte(ROTULO_CAMPO))
+	rotulo.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 	coluna.add_child(rotulo)
 
 	if Config.tipo_de(nome) == Config.Tipo.FAIXA:
@@ -161,8 +175,8 @@ func _campo(linha: Dictionary) -> Control:
 	if DICAS.has(nome):
 		var dica := Label.new()
 		dica.text = tr(str(DICAS[nome]))
-		dica.add_theme_font_size_override("font_size", DICA)
-		dica.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.2))
+		dica.add_theme_font_size_override("font_size", Tema.fonte(DICA))
+		dica.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.2)))
 		dica.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		coluna.add_child(dica)
 
@@ -214,3 +228,13 @@ func _faixa(nome: String) -> Control:
 func _escolher(nome: String, indice: int) -> void:
 	Config.escolher(nome, indice)
 	_montar()
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	if visible:
+		_montar()

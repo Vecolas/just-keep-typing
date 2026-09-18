@@ -38,6 +38,22 @@ const RARIDADE_LENDARIO := BANANA_GOLD
 const RARIDADE_IMPOSSIVEL := INFINITY_CYAN
 const RARIDADE_PARADOXAL := MAGENTA_COSMICO
 
+## O SIMBOLO de cada raridade, na ordem do enum DadosDescoberta.Categoria.
+##
+## ⚠️ A REGRA E COR + SIMBOLO + NOME, e nao cor sozinha (issue #43, docs/ARTE.md §9). Quem
+## nao distingue as sete cores -- e sao sete, com dois roxos e dois azuis entre elas -- nao
+## consegue ler a raridade de nada. O nome ja estava na tela desde a issue #17; o simbolo e
+## a marca que se le de relance, sem parar para ler a palavra.
+##
+## ⚠️ SO GLIFOS QUE A FONTE MONOESPACADA TEM. Seis sao ASCII e o setimo e o ∞, que o efeito
+## de letras ja usa -- ou seja, provado presente. Glifo ausente nao aparece como erro: ele
+## faz o Godot percorrer a cadeia de fallback a cada desenho, e foi assim que a era 14
+## custou 22 ms com dezesseis rotulos (TUNING.md). O teste_texto confere isso na fonte de
+## verdade, e nao no olho de quem escreveu.
+##
+## E eles ESCALAM em densidade, do tracinho ao infinito: a ordem se le sem legenda.
+const SIMBOLOS_DE_RARIDADE: PackedStringArray = ["-", "+", "*", "#", "@", "%", "∞"]
+
 ## Na ordem do enum DadosDescoberta.Categoria.
 const RARIDADES: Array[Color] = [
 	RARIDADE_COMUM,

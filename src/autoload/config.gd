@@ -147,7 +147,72 @@ const CAMPOS: Array[Dictionary] = [
 		"valores": [false, true], "rotulos": ["Desligado", "Ligado"],
 		"aplicar": "_aplicar_video",
 	},
+	{
+		"nome": "escala_da_interface", "aba": "INTERFACE", "tipo": Tipo.LISTA,
+		"valores": [0.75, 1.0, 1.25, 1.5],
+		"rotulos": ["75%", "100%", "125%", "150%"],
+		"aplicar": "_aplicar_interface",
+	},
+	{
+		"nome": "formato_numerico", "aba": "INTERFACE", "tipo": Tipo.LISTA,
+		# ⚠️ TEXTO e nao enum inteiro: o valor zero de um enum e o que todo dado esquecido
+		# recebe, e um formato novo inserido no meio reescreveria o que ja foi gravado
+		"valores": ["abreviado", "cientifico", "engenharia"],
+		"rotulos": ["Abreviado", "Científico", "Engenharia"],
+		"aplicar": "_aplicar_interface",
+	},
+	{
+		"nome": "particulas_de_letra", "aba": "INTERFACE", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"],
+		"aplicar": "_aplicar_interface",
+	},
+	# ⚠️ SEM `valores`: a lista DELE muda em runtime, como a de resolucao. Ver
+	# escalas_do_texto() -- as duas escalas dividem o mesmo orcamento de espaco.
+	{
+		"nome": "escala_do_texto", "aba": "ACESSIBILIDADE", "tipo": Tipo.LISTA,
+		"aplicar": "_aplicar_interface",
+	},
+	{
+		"nome": "reduzir_movimento", "aba": "ACESSIBILIDADE", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"],
+		"aplicar": "_aplicar_interface",
+	},
+	{
+		"nome": "reduzir_flashes", "aba": "ACESSIBILIDADE", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"],
+		"aplicar": "_aplicar_interface",
+	},
+	{
+		"nome": "alto_contraste", "aba": "ACESSIBILIDADE", "tipo": Tipo.LISTA,
+		"valores": [false, true], "rotulos": ["Desligado", "Ligado"],
+		"aplicar": "_aplicar_interface",
+	},
 ]
+
+## ⚠️ DIVIDA DECLARADA da issue #43. O plano §21 e §22 pedem mais duas opcoes de interface
+## -- animacoes de numero e shake --, e as duas NAO estao aqui porque os sistemas que elas
+## desligariam ainda nao existem: hoje a HUD escreve o numero direto e nada treme.
+##
+## Opcao que nao tem o que desligar e opcao que a pessoa mexe e conclui que o jogo ignorou
+## (a mesma regra da resolucao apagada em tela cheia, issue #34). Elas entram junto do
+## sistema, e nao antes dele -- como a barra de Musica espera a trilha (Audio).
+##
+## O teste_config confere que nenhum nome desta lista virou campo pelas costas.
+const SEM_SISTEMA_AINDA: PackedStringArray = ["animacoes_de_numero", "shake"]
+
+## O catalogo de escalas de texto. O que a tela ve e o resultado de escalas_do_texto(),
+## que corta o que nao cabe junto da escala de interface escolhida.
+const ESCALAS_DE_TEXTO: Array[float] = [1.0, 1.15, 1.3, 1.5]
+
+## ⚠️ O ORCAMENTO DE ESPACO DAS DUAS ESCALAS, MEDIDO E NAO SUPOSTO. A interface e montada
+## em 1920x1080 logicos e a fumaca mede o que vaza para fora da tela: com interface em 1,5
+## E texto em 1,5 ao mesmo tempo, oito controles da HUD saem pela esquerda. O produto das
+## duas e o que precisa caber.
+##
+## O numero e 1920/1280: a area logica nunca desce abaixo do que o layout precisa. Ele e
+## limite de DESIGN e nao botao de tuning -- girar isso para 2,0 nao daria mais espaco,
+## daria a mesma tela cortada de novo.
+const TETO_DE_ESCALA: float = 1.5
 
 ## Quantos quadros por segundo o jogo desenha com a janela em segundo plano e o modo
 ## economico ligado. Limite de DESIGN e nao botao de tuning: este e um jogo que fica aberto
@@ -175,6 +240,13 @@ const PADRAO := {
 	"vsync": DisplayServer.VSYNC_ENABLED,
 	"limite_de_fps": 60,
 	"modo_economico": true,
+	"escala_da_interface": 1.0,
+	"formato_numerico": "abreviado",
+	"particulas_de_letra": true,
+	"escala_do_texto": 1.0,
+	"reduzir_movimento": false,
+	"reduzir_flashes": false,
+	"alto_contraste": false,
 	"slot": 1,
 }
 
@@ -292,6 +364,7 @@ func aplicar() -> void:
 	_aplicar_idioma()
 	_aplicar_video()
 	_aplicar_audio()
+	_aplicar_interface()
 	Save.caminho = caminho_do_slot(slot())
 
 
@@ -343,6 +416,11 @@ func rotulos_de(nome: String) -> PackedStringArray:
 			for tamanho in resolucoes():
 				rotulos.append(_rotulo_de(tamanho))
 			return rotulos
+		"escala_do_texto":
+			for escala in escalas_do_texto():
+				# marca de formato, nao texto: "115%" nao muda de idioma
+				rotulos.append("%d%%" % int(round(escala * 100.0)))
+			return rotulos
 
 	var linha := campo(nome)
 	if not linha.has("rotulos"):
@@ -370,6 +448,14 @@ func indice_de(nome: String) -> int:
 			for i in lista.size():
 				if _rotulo_de(lista[i]) == str(_opcoes["resolucao"]):
 					return i
+			return 0
+		"escala_do_texto":
+			var escalas := escalas_do_texto()
+			for i in escalas.size():
+				if is_equal_approx(escalas[i], float(_opcoes.get("escala_do_texto", 1.0))):
+					return i
+			# a escolha saiu da lista porque a escala de interface subiu: cai na primeira,
+			# que e 100% -- e o campo passa a MOSTRAR 100%, que e o que o jogo desenha
 			return 0
 
 	var linha := campo(nome)
@@ -428,6 +514,8 @@ func escolher(nome: String, indice: int) -> void:
 			_opcoes["idioma"] = IDIOMAS[indice]["codigo"]
 		"resolucao":
 			_opcoes["resolucao"] = _rotulo_de(resolucoes()[indice])
+		"escala_do_texto":
+			_opcoes["escala_do_texto"] = escalas_do_texto()[indice]
 		_:
 			if not linha.has("valores"):
 				push_error("Config: campo %s nao tem valores" % nome)
@@ -539,6 +627,40 @@ func tela_cheia() -> bool:
 
 func volume() -> float:
 	return valor_de("volume")
+
+
+## As escalas de texto que CABEM junto da escala de interface escolhida. Nunca volta
+## vazia: 100% fica de qualquer jeito, porque uma lista vazia deixaria a pessoa sem campo.
+##
+## ⚠️ E O MESMO REMEDIO DA LISTA DE RESOLUCOES (issue #34): oferecer o que nao cabe cria
+## uma tela com a loja pela metade, e a pessoa nao tem como saber que foi ela quem pediu.
+## A diferenca e que aqui ha volta -- ainda assim, campo que oferece o impossivel e campo
+## que mente.
+func escalas_do_texto() -> Array[float]:
+	var da_interface := maxf(float(_opcoes.get("escala_da_interface", 1.0)), 0.1)
+	var cabem: Array[float] = []
+	for escala in ESCALAS_DE_TEXTO:
+		if escala * da_interface <= TETO_DE_ESCALA + 0.001:
+			cabem.append(escala)
+	if cabem.is_empty():
+		cabem.append(ESCALAS_DE_TEXTO[0])
+	return cabem
+
+
+## Quanto o texto cresce AGORA. Lido na hora de usar pelo Tema, e nunca guardado.
+##
+## ⚠️ DEVOLVE O QUE ESTA OFERECIDO, e nao o que esta guardado. Quem escolheu 150% de texto
+## e depois subiu a interface para 150% tem o texto cortado para o que cabe -- e o campo na
+## tela mostra exatamente esse valor. Devolver o guardado deixaria a tela dizendo 100%
+## enquanto o jogo desenha 150%, que e a pior das duas.
+func escala_do_texto() -> float:
+	var oferecidas := escalas_do_texto()
+	return oferecidas[clampi(indice_de("escala_do_texto"), 0, oferecidas.size() - 1)]
+
+
+## O formato de numero escolhido. Lido na hora pelo Formatador.
+func formato_numerico() -> String:
+	return str(_opcoes.get("formato_numerico", "abreviado"))
 
 
 ## O timbre de digitacao escolhido. Lido na hora de usar, e nunca guardado.
@@ -656,6 +778,25 @@ func _aplicar_ritmo_do_quadro() -> void:
 ## conta de volume aqui seria uma segunda definicao de "volume zero muta" (issue #42).
 func _aplicar_audio() -> void:
 	Audio.aplicar_volumes()
+
+
+## Escala da janela e AVISO A QUEM DESENHA. Escala do texto, alto contraste, formato de
+## numero, particulas e reduzir movimento nao sao aplicados aqui: eles sao lidos na hora de
+## usar por quem desenha (CONVENCOES.md, regra 2). O que este metodo faz e dizer que
+## MUDOU -- Theme e um objeto construido, e ele nao se atualiza sozinho.
+##
+## ⚠️ E O SINAL E PROPRIO, e nao um idioma_mudou emitido por conveniencia. Emitir "a lingua
+## mudou" quando a lingua nao mudou e uma afirmacao falsa dentro do barramento: quem
+## escutasse para trocar a bandeira do idioma trocaria a bandeira a cada mexida no volume
+## do texto. O preco de um sinal novo e alguem esquecer de conectar, e e por isso que o
+## teste_texto passa a exigir os DOIS de todo arquivo que monta texto em codigo.
+func _aplicar_interface() -> void:
+	var janela := get_window()
+	if janela != null:
+		janela.content_scale_factor = maxf(
+			float(_opcoes.get("escala_da_interface", 1.0)), 0.1
+		)
+	EventBus.interface_mudou.emit()
 
 
 ## Aponta o jogo para um slot SEM gravar o que estava aberto, e guarda a escolha.

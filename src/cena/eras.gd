@@ -95,6 +95,7 @@ func _ready() -> void:
 	_aviso.visible = false
 
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 	_trocar(_da_producao(), true)
 
 
@@ -104,7 +105,14 @@ func _process(delta: float) -> void:
 		_trocar(alvo, false)
 
 	if not is_equal_approx(_escala, _escala_alvo):
-		_escala = move_toward(_escala, _escala_alvo, delta / QUADROS_DE_TRANSICAO)
+		# ⚠️ REDUZIR MOVIMENTO CHEGA NA CAMERA (issue #43). Este e um dos dois lugares que
+		# se mexem sozinhos -- o outro sao as letras --, e e o mais longo dos dois: a
+		# camera se afastando dura varios segundos. Com a opcao ligada a era troca NUM
+		# QUADRO, e nao deixa de trocar: o destino e o mesmo, o caminho e que some.
+		if Config.ligado("reduzir_movimento"):
+			_escala = _escala_alvo
+		else:
+			_escala = move_toward(_escala, _escala_alvo, delta / QUADROS_DE_TRANSICAO)
 		_ajustar_grade()
 
 	if _ate_esconder > 0.0:
@@ -175,11 +183,13 @@ func _trocar(era: DadosEra, imediato: bool) -> void:
 func _reestilizar() -> void:
 	for i in _fundo.size():
 		_fundo[i].text = SIMBOLOS[i % SIMBOLOS.size()] if _abstrata else MAQUINA
-		_fundo[i].add_theme_font_size_override("font_size", 30 if _abstrata else 11)
+		_fundo[i].add_theme_font_size_override("font_size", Tema.fonte(30 if _abstrata else 11))
 		_fundo[i].add_theme_color_override(
 			"font_color",
-			Paleta.INFINITY_CYAN.darkened(0.15) if _abstrata
-			else Paleta.MONKEY_BROWN.lightened(0.05),
+			Tema.cor(
+				Paleta.INFINITY_CYAN.darkened(0.15) if _abstrata
+				else Paleta.MONKEY_BROWN.lightened(0.05)
+			),
 		)
 
 
@@ -189,6 +199,14 @@ func _pintar_aviso() -> void:
 
 
 func _ao_mudar_idioma(_codigo: String) -> void:
+	_pintar_aviso()
+
+
+## A escala do texto entra nos rotulos de fundo, e eles so sao reestilizados quando a
+## METAFORA troca -- uma vez por partida. Sem esta linha, mexer na escala deixaria a cena
+## das eras no tamanho antigo ate o jogador cruzar uma era (issue #43).
+func _ao_mudar_interface() -> void:
+	_reestilizar()
 	_pintar_aviso()
 
 
@@ -232,8 +250,8 @@ func _ajustar_grade() -> void:
 func _rotulo(cor: Color, corpo: int, pai: Node = null) -> Label:
 	var rotulo := Label.new()
 	rotulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	rotulo.add_theme_color_override("font_color", cor)
-	rotulo.add_theme_font_size_override("font_size", corpo)
+	rotulo.add_theme_color_override("font_color", Tema.cor(cor))
+	rotulo.add_theme_font_size_override("font_size", Tema.fonte(corpo))
 	(pai if pai != null else self).add_child(rotulo)
 	return rotulo
 

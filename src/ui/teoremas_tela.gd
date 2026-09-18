@@ -20,25 +20,25 @@ const NO_TEXTO: int = 16
 
 func _ready() -> void:
 	theme = Tema.montar()
-	%Cortina.color = Paleta.INK_BROWN.darkened(0.4)
+	%Cortina.color = Tema.fundo()
 	%Cortina.color.a = 0.96
 	%Painel.add_theme_stylebox_override("panel", Tema.painel())
-	%Titulo.add_theme_font_size_override("font_size", TITULO_TELA)
-	%Titulo.add_theme_color_override("font_color", Paleta.MECHANICAL_GOLD)
+	%Titulo.add_theme_font_size_override("font_size", Tema.fonte(TITULO_TELA))
+	%Titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
 	%Titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	%Contagem.add_theme_color_override("font_color", Paleta.BANANA_GOLD)
-	%Ganho.add_theme_font_size_override("font_size", GANHO)
-	%Ganho.add_theme_color_override("font_color", Paleta.MAGENTA_COSMICO)
-	%Aviso.add_theme_font_size_override("font_size", NO_TEXTO)
-	%Aviso.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
+	%Contagem.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
+	%Ganho.add_theme_font_size_override("font_size", Tema.fonte(GANHO))
+	%Ganho.add_theme_color_override("font_color", Tema.cor(Paleta.MAGENTA_COSMICO))
+	%Aviso.add_theme_font_size_override("font_size", Tema.fonte(NO_TEXTO))
+	%Aviso.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.25)))
 
 	for botao in [
 		%BotaoFechar, %BotaoProvar, %BotaoConfirmar, %BotaoCancelar,
 		%BotaoReescrever, %ConfirmarReescrita, %CancelarReescrita,
 	]:
 		botao.focus_mode = Control.FOCUS_NONE
-	%GanhoFragmentos.add_theme_font_size_override("font_size", GANHO)
-	%GanhoFragmentos.add_theme_color_override("font_color", Paleta.INFINITY_CYAN)
+	%GanhoFragmentos.add_theme_font_size_override("font_size", Tema.fonte(GANHO))
+	%GanhoFragmentos.add_theme_color_override("font_color", Tema.cor(Paleta.INFINITY_CYAN))
 	%BotaoReescrever.pressed.connect(_ao_pedir_reescrita)
 	%ConfirmarReescrita.pressed.connect(_ao_confirmar_reescrita)
 	%CancelarReescrita.pressed.connect(_ao_cancelar)
@@ -52,6 +52,7 @@ func _ready() -> void:
 	EventBus.teorema_provado.connect(_ao_provar)
 	EventBus.universo_reescrito.connect(_ao_reescrever)
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
+	EventBus.interface_mudou.connect(_ao_mudar_interface)
 
 
 func abrir() -> void:
@@ -127,16 +128,16 @@ func _coluna(titulo: String, itens: PackedStringArray, cor: Color) -> Control:
 
 	var cabeca := Label.new()
 	cabeca.text = tr(titulo)
-	cabeca.add_theme_font_size_override("font_size", NO_TEXTO)
-	cabeca.add_theme_color_override("font_color", cor)
+	cabeca.add_theme_font_size_override("font_size", Tema.fonte(NO_TEXTO))
+	cabeca.add_theme_color_override("font_color", Tema.cor(cor))
 	caixa.add_child(cabeca)
 
 	for item in itens:
 		var linha := Label.new()
 		# "— %s" e marca de formato, nao texto
 		linha.text = "— %s" % tr(item)
-		linha.add_theme_font_size_override("font_size", NO_TEXTO)
-		linha.add_theme_color_override("font_color", Paleta.PAPER_CREAM)
+		linha.add_theme_font_size_override("font_size", Tema.fonte(NO_TEXTO))
+		linha.add_theme_color_override("font_color", Tema.cor(Paleta.PAPER_CREAM))
 		caixa.add_child(linha)
 	return caixa
 
@@ -229,25 +230,23 @@ func _item(no: DadosTeorema) -> Control:
 
 	var titulo := Label.new()
 	titulo.text = tr(no.nome)
-	titulo.add_theme_font_size_override("font_size", NO_TITULO)
+	titulo.add_theme_font_size_override("font_size", Tema.fonte(NO_TITULO))
 	titulo.add_theme_color_override(
-		"font_color", Paleta.BANANA_GOLD if aberto else Paleta.MONKEY_BROWN.lightened(0.1)
-	)
+		"font_color", Tema.cor(Paleta.BANANA_GOLD if aberto else Paleta.MONKEY_BROWN.lightened(0.1)))
 	coluna.add_child(titulo)
 
 	var texto := Label.new()
 	texto.text = tr(no.descricao) if aberto else tr("Ainda não desbloqueado")
 	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	texto.add_theme_font_size_override("font_size", NO_TEXTO)
+	texto.add_theme_font_size_override("font_size", Tema.fonte(NO_TEXTO))
 	texto.add_theme_color_override(
-		"font_color", Paleta.PAPER_CREAM if aberto else Paleta.MONKEY_BROWN.lightened(0.1)
-	)
+		"font_color", Tema.cor(Paleta.PAPER_CREAM if aberto else Paleta.MONKEY_BROWN.lightened(0.1)))
 	coluna.add_child(texto)
 
 	var estado := Label.new()
 	estado.text = tr("Nível %s de %s") % [str(nivel), str(no.niveis)]
-	estado.add_theme_font_size_override("font_size", NO_TEXTO)
-	estado.add_theme_color_override("font_color", Paleta.MONKEY_BROWN.lightened(0.25))
+	estado.add_theme_font_size_override("font_size", Tema.fonte(NO_TEXTO))
+	estado.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.25)))
 	coluna.add_child(estado)
 
 	if not cheio and aberto:
@@ -262,11 +261,21 @@ func _item(no: DadosTeorema) -> Control:
 	elif cheio:
 		var maximo := Label.new()
 		maximo.text = tr("Máximo")
-		maximo.add_theme_font_size_override("font_size", NO_TEXTO)
-		maximo.add_theme_color_override("font_color", Paleta.MAGENTA_COSMICO)
+		maximo.add_theme_font_size_override("font_size", Tema.fonte(NO_TEXTO))
+		maximo.add_theme_color_override("font_color", Tema.cor(Paleta.MAGENTA_COSMICO))
 		coluna.add_child(maximo)
 	return moldura
 
 
 func _ao_comprar(id: String) -> void:
 	Teoremas.comprar(id)
+
+
+## ⚠️ REMONTA O TEMA, e nao so repinta (issue #43). A escala do texto e o alto contraste
+## entram dentro do Theme, e Theme e um objeto CONSTRUIDO: ele nao se atualiza sozinho
+## quando a opcao muda. Repintar sem remontar deixaria a tela com os tamanhos antigos e
+## nenhum erro no console.
+func _ao_mudar_interface() -> void:
+	theme = Tema.montar()
+	if visible:
+		_montar()
