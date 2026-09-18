@@ -9,5 +9,6 @@ requisito = "1.2e7"
 titulo = "Uma Prateleira"
 texto = "Vinte livros lado a lado. A madeira já reclama."
 categoria = 2
+tipo = 0
 era = 2
 nota = "20 livros x 500.000 caracteres. Prateleira de um metro."

@@ -9,5 +9,6 @@ requisito = "40000"
 titulo = "Um Conto"
 texto = "Curto o bastante para ser lido de uma vez. Ninguém leu."
 categoria = 1
+tipo = 0
 era = 2
 nota = "Conto literario: 7.000 palavras x 5,7 caracteres."

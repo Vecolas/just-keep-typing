@@ -9,5 +9,6 @@ requisito = "5"
 titulo = "A Primeira Palavra"
 texto = "Cinco teclas ao acaso e uma delas virou palavra. O macaco não percebeu."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Palavra media do portugues escrito: 4,7 letras. Arredondado para 5."

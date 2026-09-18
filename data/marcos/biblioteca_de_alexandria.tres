@@ -9,5 +9,6 @@ requisito = "2e11"
 titulo = "A Biblioteca de Alexandria"
 texto = "O acervo que o mundo antigo perdeu num incêndio. Seus macacos refizeram numa tarde."
 categoria = 2
+tipo = 1
 era = 3
 nota = "Estimativa alta do acervo: 400.000 rolos x 500.000 caracteres."

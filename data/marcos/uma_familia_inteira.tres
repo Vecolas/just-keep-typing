@@ -9,5 +9,6 @@ requisito = "6.4e10"
 titulo = "Uma Família Inteira"
 texto = "Todas as conversas de uma família durante gerações. Inclusive as brigas."
 categoria = 3
+tipo = 1
 era = 3
 nota = "6 pessoas x 4 geracoes x uma vida de conversa."

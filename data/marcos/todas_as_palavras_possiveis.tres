@@ -9,5 +9,6 @@ requisito = "1e33"
 titulo = "Todas as Palavras Possíveis"
 texto = "Cada sequência de até vinte letras. A maioria não significa nada em idioma nenhum."
 categoria = 5
+tipo = 2
 era = 6
 nota = "27^20 = 4e28 sequencias x 20 caracteres. Cota baixa."

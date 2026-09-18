@@ -9,5 +9,6 @@ requisito = "3e8"
 titulo = "Uma Enciclopédia"
 texto = "Trinta volumes que ninguém abre desde 1998."
 categoria = 2
+tipo = 1
 era = 3
 nota = "Enciclopedia de 30 volumes x 10 milhoes de caracteres."

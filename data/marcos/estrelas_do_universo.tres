@@ -9,5 +9,6 @@ requisito = "1e24"
 titulo = "Um Caractere por Estrela"
 texto = "Um caractere para cada estrela do universo observável. Sobrou macaco."
 categoria = 5
+tipo = 0
 era = 6
 nota = "Estimativa: 1e24 estrelas no universo observavel."

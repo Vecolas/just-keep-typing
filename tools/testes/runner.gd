@@ -33,6 +33,7 @@ const SUITES: Array = [
 	preload("res://tools/testes/teste_config.gd"),
 	preload("res://tools/testes/teste_cenas.gd"),
 	preload("res://tools/testes/teste_texto.gd"),
+	preload("res://tools/testes/teste_redacao.gd"),
 ]
 
 func _ready() -> void:

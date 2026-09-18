@@ -9,5 +9,6 @@ requisito = "1e82"
 titulo = "Um Caractere por Átomo do Universo"
 texto = "Um caractere para cada átomo do universo observável. Ainda sobra macaco digitando."
 categoria = 5
+tipo = 0
 era = 7
 nota = "Estimativa padrao de atomos no universo observavel: 1e80. Margem de duas ordens."

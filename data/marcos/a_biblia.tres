@@ -9,5 +9,6 @@ requisito = "3.5e6"
 titulo = "A Bíblia"
 texto = "Setecentas e oitenta mil palavras. O macaco levou menos tempo que os autores."
 categoria = 1
+tipo = 1
 era = 2
 nota = "Biblia completa: 783.000 palavras x 4,5 caracteres."

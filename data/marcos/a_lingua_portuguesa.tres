@@ -9,5 +9,6 @@ requisito = "5.5e9"
 titulo = "A Língua Portuguesa"
 texto = "Caracteres suficientes para representar o vocabulário inteiro de um idioma vivo."
 categoria = 3
+tipo = 1
 era = 4
 nota = "Corpus de referencia do portugues: 1 bilhao de palavras x 5,5 caracteres."

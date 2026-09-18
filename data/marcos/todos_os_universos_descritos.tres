@@ -9,5 +9,6 @@ requisito = "1e200"
 titulo = "Todos os Universos Descritos"
 texto = "Para cada universo descrito existem outros textos descrevendo universos quase idênticos."
 categoria = 5
+tipo = 2
 era = 8
 nota = "Marco de transicao (GDD §44). Escolhido pelo tom."

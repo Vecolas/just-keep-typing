@@ -19,6 +19,10 @@
 ## Monta a lista so quando abre e quando um marco e cruzado, nunca por quadro: sao ate
 ## cem itens na v0.2 (issue #19), e remontar cem nos sessenta vezes por segundo seria
 ## queimar quadro para desenhar exatamente a mesma coisa.
+##
+## Tem class_name para a suite poder perguntar a MARCA de cada tipo de marco sem subir cena
+## nenhuma -- copiar a lista para dentro do teste criaria uma segunda tabela.
+class_name Panorama
 extends Control
 
 const TITULO_ITEM: int = 26
@@ -27,6 +31,26 @@ const TEXTO_ITEM: int = 19
 
 ## Marca de formato, nao texto: nao passa por traducao.
 const SILHUETA := "? ? ?"
+
+## A MARCA DE CADA TIPO DE MARCO (issue #51), na ordem do enum DadosMarco.Tipo.
+##
+## ⚠️ FORMA + NOME, e nunca cor sozinha. E a mesma regra da raridade das descobertas
+## (issue #43): quem nao distingue matiz tem que ler o tipo do mesmo jeito. A marca se le
+## de relance; o nome ao lado dela e quem diz o que ela quer dizer.
+##
+## ⚠️ E SO GLIFOS QUE A FONTE MONOESPACADA TEM. Os tres sao ASCII, e o teste_acessibilidade
+## confere isso na fonte de verdade -- glifo ausente nao aparece como erro, ele faz o Godot
+## percorrer a cadeia de fallback a cada desenho (TUNING.md, a era 14).
+##
+## Eles escalam em abstracao, e a escada se le sem legenda:
+##
+##   =  quantitativo   uma igualdade: isto tem o tamanho daquilo
+##   §  humano         o sinal de paragrafo, que e um artefato escrito por gente
+##   ∞  conceitual     o glifo do proprio jogo, que e onde essa escada termina
+const MARCAS_DE_TIPO: PackedStringArray = ["=", "§", "∞"]
+
+## O nome de cada tipo, na mesma ordem. Texto de jogo: entra no CSV nas duas colunas.
+const NOMES_DE_TIPO: PackedStringArray = ["Tamanho", "Humano", "Conceito"]
 
 
 func _ready() -> void:
@@ -101,6 +125,31 @@ func _montar() -> void:
 		%Lista.add_child(_item(proximo, false, true))
 
 
+## A marca de um tipo. Publica porque a suite le daqui: copiar a lista para dentro do teste
+## criaria uma segunda tabela, e a segunda e a que mente.
+static func marca_de(tipo: int) -> String:
+	if tipo < 0 or tipo >= MARCAS_DE_TIPO.size():
+		return "?"
+	return MARCAS_DE_TIPO[tipo]
+
+
+static func nome_do_tipo(tipo: int) -> String:
+	if tipo < 0 or tipo >= NOMES_DE_TIPO.size():
+		return "? ? ?"
+	return NOMES_DE_TIPO[tipo]
+
+
+## A cor e o TERCEIRO canal, e nunca o unico. Conceitual puxa para o ciano porque e ele que
+## prepara a transicao para o endgame, e o ciano e a cor do infinito no docs/ARTE.md §6.
+static func _cor_do_tipo(tipo: int) -> Color:
+	match tipo:
+		DadosMarco.Tipo.HUMANO:
+			return Paleta.PAPER_CREAM.darkened(0.25)
+		DadosMarco.Tipo.CONCEITUAL:
+			return Paleta.INFINITY_CYAN.darkened(0.2)
+	return Paleta.MONKEY_BROWN.lightened(0.2)
+
+
 func _item(marco: DadosMarco, destaque: bool, silhueta: bool) -> Control:
 	var moldura := PanelContainer.new()
 	var borda := Paleta.BANANA_GOLD if destaque else Color(0, 0, 0, 0)
@@ -118,9 +167,16 @@ func _item(marco: DadosMarco, destaque: bool, silhueta: bool) -> Control:
 	# o requisito fica aqui em cima, pequeno e apagado. Ele nao divide linha com o texto:
 	# numero grande ao lado da frase rouba a frase, e a frase e a razao da tela existir
 	var requisito := Label.new()
-	requisito.text = Formatador.formatar(marco.requisito_grande())
+	# ⚠️ O TIPO ENTRA NA MESMA LINHA DO REQUISITO, e nao numa linha propria: o Panorama ja
+	# tem numero, titulo e frase por item, e uma quarta linha por marco transformaria uma
+	# lista de noventa e um numa parede. "%s %s  %s" e marca de formato, nao texto.
+	requisito.text = "%s %s  %s" % [
+		marca_de(marco.tipo),
+		tr(nome_do_tipo(marco.tipo)),
+		Formatador.formatar(marco.requisito_grande()),
+	]
 	requisito.add_theme_font_size_override("font_size", Tema.fonte(REQUISITO_ITEM))
-	requisito.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.2)))
+	requisito.add_theme_color_override("font_color", Tema.cor(_cor_do_tipo(marco.tipo)))
 	coluna.add_child(requisito)
 
 	var titulo := Label.new()

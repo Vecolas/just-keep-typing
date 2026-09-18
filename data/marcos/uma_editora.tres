@@ -9,5 +9,6 @@ requisito = "1.75e10"
 titulo = "Um Catálogo de Editora"
 texto = "Cinquenta mil títulos publicados. Nenhum deles passou por revisão."
 categoria = 2
+tipo = 0
 era = 3
 nota = "35.000 titulos publicados x 500.000 caracteres."

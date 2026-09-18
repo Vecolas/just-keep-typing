@@ -9,5 +9,6 @@ requisito = "1e1000"
 titulo = "A Combinação Inevitável"
 texto = "Se existe uma combinação finita de caracteres seus macacos inevitavelmente chegarão até ela."
 categoria = 6
+tipo = 2
 era = 8
 nota = "Marco de transicao (GDD §44). O numero e simbolico: 10^1000 e onde o Formatador troca de forma."

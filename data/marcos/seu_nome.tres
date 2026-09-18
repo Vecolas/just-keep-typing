@@ -9,5 +9,6 @@ requisito = "15"
 titulo = "Seu Nome"
 texto = "Daria para escrever seu nome — se o macaco soubesse qual é."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Nome completo brasileiro medio: 15 caracteres com espacos."

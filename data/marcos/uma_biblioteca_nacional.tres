@@ -9,5 +9,6 @@ requisito = "7.5e11"
 titulo = "Uma Biblioteca Nacional"
 texto = "Dois milhões de volumes. O acervo de um país inteiro."
 categoria = 2
+tipo = 1
 era = 4
 nota = "1,5 milhao de volumes x 500.000 caracteres."

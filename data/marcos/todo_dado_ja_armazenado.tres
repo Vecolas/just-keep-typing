@@ -9,5 +9,6 @@ requisito = "1e23"
 titulo = "Todo Dado Já Armazenado"
 texto = "Cem zetabytes. Fotos, vídeos, planilhas e uma quantidade absurda de backups."
 categoria = 4
+tipo = 1
 era = 6
 nota = "100 zettabytes = 1e23 bytes. Um caractere por byte."

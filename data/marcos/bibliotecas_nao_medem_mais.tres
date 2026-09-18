@@ -9,5 +9,6 @@ requisito = "1e31"
 titulo = "Bibliotecas Não Medem Mais"
 texto = "Bibliotecas deixaram de ser uma unidade de medida relevante."
 categoria = 5
+tipo = 2
 era = 6
 nota = "Marco de transicao (GDD §44): 10^31 = 2e20 bibliotecas do Congresso."

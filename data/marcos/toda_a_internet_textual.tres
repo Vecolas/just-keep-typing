@@ -9,5 +9,6 @@ requisito = "5e15"
 titulo = "Toda a Internet"
 texto = "Cada página que alguém já publicou. O macaco não leu os comentários."
 categoria = 4
+tipo = 1
 era = 5
 nota = "50 bilhoes de paginas indexadas x 10.000 caracteres de texto."

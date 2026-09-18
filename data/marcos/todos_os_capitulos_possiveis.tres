@@ -9,5 +9,6 @@ requisito = "1e250"
 titulo = "Todos os Capítulos Possíveis"
 texto = "Inclusive o capítulo em que alguém desiste de contar."
 categoria = 5
+tipo = 2
 era = 8
 nota = "Cota baixa para 27^20000."

@@ -9,5 +9,6 @@ requisito = "2.1e6"
 titulo = "Dom Quixote"
 texto = "O tamanho exato do livro. O conteúdo continua sendo outro assunto."
 categoria = 1
+tipo = 1
 era = 2
 nota = "Dom Quixote: cerca de 380.000 palavras x 5,5 caracteres."

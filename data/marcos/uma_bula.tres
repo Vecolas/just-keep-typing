@@ -9,5 +9,6 @@ requisito = "3000"
 titulo = "Uma Bula de Remédio"
 texto = "Efeitos colaterais que ninguém lê. Agora existem em quantidade suficiente."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Bula de medicamento comum: 3.000 caracteres."

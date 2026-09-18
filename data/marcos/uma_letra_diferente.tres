@@ -9,5 +9,6 @@ requisito = "1e120"
 titulo = "Uma Única Letra Diferente"
 texto = "Para cada história que poderia ser escrita existem incontáveis versões nas quais uma única letra é diferente."
 categoria = 5
+tipo = 2
 era = 8
 nota = "Marco de transicao (GDD §44). 1e120 e a ordem do numero de partidas legais de xadrez."

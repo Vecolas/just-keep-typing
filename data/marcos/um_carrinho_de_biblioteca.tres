@@ -9,5 +9,6 @@ requisito = "4e7"
 titulo = "Um Carrinho de Devoluções"
 texto = "Sessenta livros esperando alguém devolver à prateleira certa."
 categoria = 2
+tipo = 0
 era = 3
 nota = "80 livros x 500.000 caracteres."

@@ -9,5 +9,6 @@ requisito = "12000"
 titulo = "Um Contrato"
 texto = "Cláusulas suficientes para alguém assinar sem ler."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Contrato de prestacao de servico de 6 paginas: 12.000 caracteres."

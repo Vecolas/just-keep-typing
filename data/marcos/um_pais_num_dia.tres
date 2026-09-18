@@ -9,5 +9,6 @@ requisito = "2e13"
 titulo = "Um País em Um Dia"
 texto = "Duzentos e vinte milhões de pessoas conversando ao mesmo tempo. Por um dia."
 categoria = 3
+tipo = 1
 era = 4
 nota = "220 milhoes de pessoas x 16.000 palavras x 5,7 caracteres, num dia."

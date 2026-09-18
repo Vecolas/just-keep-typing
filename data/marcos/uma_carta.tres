@@ -9,5 +9,6 @@ requisito = "4000"
 titulo = "Uma Carta"
 texto = "Duas páginas e meia para alguém que não pediu notícias."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Carta pessoal de duas paginas e meia: 4.000 caracteres."

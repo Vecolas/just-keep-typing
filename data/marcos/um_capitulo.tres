@@ -9,5 +9,6 @@ requisito = "20000"
 titulo = "Um Capítulo"
 texto = "Onze páginas com começo e sem fim. O macaco parou no meio de uma palavra."
 categoria = 1
+tipo = 0
 era = 1
 nota = "Capitulo de romance: 3.500 palavras x 5,7 caracteres."

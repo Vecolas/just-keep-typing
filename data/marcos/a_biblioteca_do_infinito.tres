@@ -9,5 +9,6 @@ requisito = "1e10000"
 titulo = "A Biblioteca do Infinito"
 texto = "Todos os textos possíveis. Tudo que foi escrito e tudo que poderia ter sido."
 categoria = 6
+tipo = 2
 era = 8
 nota = "Ultimo marco da escada da issue #19. O MACACO INFINITO e a issue #33."

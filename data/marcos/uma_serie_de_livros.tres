@@ -9,5 +9,6 @@ requisito = "8e6"
 titulo = "Uma Série Inteira"
 texto = "Sete volumes com continuidade. A continuidade é acidental."
 categoria = 1
+tipo = 0
 era = 2
 nota = "Serie de 7 livros x 1,1 milhao de caracteres."

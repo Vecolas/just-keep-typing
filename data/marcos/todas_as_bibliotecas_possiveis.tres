@@ -9,5 +9,6 @@ requisito = "1e3000"
 titulo = "Todas as Bibliotecas Possíveis"
 texto = "Não uma biblioteca com todos os livros: todas as bibliotecas que poderiam existir."
 categoria = 6
+tipo = 2
 era = 8
 nota = "Cota simbolica. Acima de todos os livros possiveis e abaixo da Biblioteca do Infinito."

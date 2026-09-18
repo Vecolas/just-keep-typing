@@ -9,5 +9,6 @@ requisito = "8e12"
 titulo = "A Biblioteca do Congresso"
 texto = "A maior biblioteca do mundo. Dezesseis milhões de livros catalogados."
 categoria = 2
+tipo = 1
 era = 4
 nota = "16 milhoes de livros x 500.000 caracteres."

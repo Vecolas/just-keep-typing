@@ -9,5 +9,6 @@ requisito = "700"
 titulo = "Um Soneto"
 texto = "Catorze versos. Nenhum deles sabe que faz parte de um soneto."
 categoria = 0
+tipo = 0
 era = 1
 nota = "14 versos x 50 caracteres."

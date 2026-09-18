@@ -377,6 +377,51 @@ opção de interface que mexesse em progressão seria dificuldade disfarçada de
 
 ---
 
+## Redação do conteúdo
+
+Regras que valem para todo marco e toda descoberta. **Duas delas são portão**
+(`teste_redacao`).
+
+⚠️ **Equivalência em caracteres NÃO é ter escrito a obra.** O texto diz *"caracteres
+suficientes para preencher um livro"*, e **nunca** *"você escreveu um livro"*. Isso não é
+preciosismo: é o conceito probabilístico inteiro do jogo. O macaco não escreveu Hamlet — ele
+produziu tanto caractere quanto Hamlet tem. No dia em que o texto afirmar autoria, o jogo
+deixa de ser sobre o Teorema do Macaco Infinito e passa a ser sobre um macaco talentoso.
+
+O vocabulário certo, que é a metade positiva da regra:
+
+```text
+caracteres suficientes para…     o mesmo número de…
+…em caracteres                   o tamanho exato de…
+```
+
+⚠️ **E a regra vale nas DUAS línguas.** O portão quase nasceu protegendo metade do produto:
+ele varria só os `.tres`, que estão em português. O marco "Um Livro" dizia *"Você já escreveu
+um livro"* e foi pego; a linha em inglês do mesmo marco dizia *"You have written a book"* e
+passou inteira.
+
+⚠️ **O portão pega a CONSTRUÇÃO, não o sentido.** Ele varre uma lista de construções
+proibidas, cada uma com o motivo escrito ao lado. Uma expressão regular ampla — `escrev` em
+qualquer lugar — reprovaria *"tudo que a humanidade escreveu"*, que é uma frase **certa**.
+Portão que morde o código certo é portão que alguém desliga. O que ele **não** pega é
+autoria afirmada por outras palavras: isso é leitura humana.
+
+**O marco tem dois eixos, e eles respondem perguntas diferentes:**
+
+| Eixo | Pergunta | Valores |
+|---|---|---|
+| `Categoria` | sobre **o que** este número fala | a escala do GDD §45: `LETRAS → … → INFINITO` |
+| `Tipo` | **o que a frase faz** com o jogador | `QUANTITATIVO`, `HUMANO`, `CONCEITUAL` |
+
+⚠️ **Os conceituais são os mais importantes** — são eles que preparam a transição para o
+endgame. E eles moram na **metade final** do Panorama: um "as comparações acabaram" na
+primeira hora seria o jogo desistindo antes de começar. Isso é portão.
+
+⚠️ **Marco não dá bônus** (decisão 0003) — continua valendo. O Panorama é a única tela do
+jogo que não é uma loja.
+
+---
+
 ## Easter egg
 
 Só existe um, e ele tem uma regra: ⚠️ **easter egg não encosta no save.** A tecla que o

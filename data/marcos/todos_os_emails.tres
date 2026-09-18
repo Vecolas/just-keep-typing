@@ -9,5 +9,6 @@ requisito = "1e17"
 titulo = "Todos os E-mails de Um Ano"
 texto = "Trezentos e cinquenta bilhões por dia. A maioria não precisava ter sido enviada."
 categoria = 4
+tipo = 1
 era = 5
 nota = "350 bilhoes de e-mails/dia x 365 x 800 caracteres."

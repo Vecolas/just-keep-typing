@@ -9,5 +9,6 @@ requisito = "40"
 titulo = "Uma Frase"
 texto = "Quarenta caracteres em fila. Um deles é ponto final e ninguém sabe explicar por quê."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Frase curta: 7 palavras x 5,7 caracteres com espaco."
