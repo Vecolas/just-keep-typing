@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "o_texto_perfeito"
+nome = "O Texto Perfeito"
+texto = "Nenhuma palavra sobra e nenhuma falta. Ninguém consegue lê-lo duas vezes igual."
+categoria = 5
+chance_base = 1e-26
+bonus = 80.0
+papel = 0

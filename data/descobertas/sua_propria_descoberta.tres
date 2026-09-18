@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "sua_propria_descoberta"
+nome = "Sua Própria Descoberta"
+texto = "O macaco acabou de escrever uma descrição desta descoberta."
+categoria = 6
+chance_base = 1e-33
+bonus = 75.0
+papel = 0

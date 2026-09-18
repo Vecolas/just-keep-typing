@@ -49,6 +49,20 @@ const SUBIDA: float = 90.0
 const DURACAO: float = 1.6
 const ESPALHAMENTO: float = 150.0
 
+## ⚠️ O EFEITO DO PAPEL INTERFACE (issue #52). Por alguns segundos depois de uma descoberta
+## de interface, as letras que sobem deixam de ser o alfabeto de decoracao e passam a ser A
+## PALAVRA QUE O MACACO ACABOU DE PRODUZIR.
+##
+## E o unico momento do jogo em que o efeito de letras diz alguma coisa. Nos outros ele e
+## decoracao explicitamente: o GDD §10 proibe gerar o texto do macaco, e este efeito nao
+## gera -- ele repete uma palavra que ja existe num .tres escrito a mao.
+var _tomada: PackedStringArray = PackedStringArray()
+var _ate_devolver: float = 0.0
+
+## Quanto tempo a palavra toma conta das letras. Limite de design: seis segundos e o que
+## deixa a pessoa ler sem transformar o efeito noutra coisa permanente.
+const TOMADA: float = 6.0
+
 var _gerador := RandomNumberGenerator.new()
 var _livres: Array[Label] = []
 var _vivos: Array[Label] = []
@@ -62,6 +76,7 @@ func _ready() -> void:
 	# que e exatamente quando o efeito esta mais denso
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 	EventBus.interface_mudou.connect(_ao_mudar_interface)
+	EventBus.descoberta_encontrada.connect(_ao_descobrir)
 	for i in TETO:
 		var rotulo := Label.new()
 		rotulo.visible = false
@@ -73,6 +88,13 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_avancar(delta)
+	if _ate_devolver > 0.0:
+		_ate_devolver -= delta
+		if _ate_devolver <= 0.0:
+			# ⚠️ QUEM TOMA, DEVOLVE, e no mesmo lugar. Espalhar a devolucao pelos varios
+			# lugares de onde a partida pode sair e o desenho que ja perdeu uma chamada
+			# critica, com sintoma silencioso (CONVENCOES.md).
+			_tomada = PackedStringArray()
 
 	# ⚠️ AS DUAS OPCOES LIDAS NO QUADRO, e nunca guardadas (issue #43). Desligar particulas
 	# e um gosto; reduzir movimento e acessibilidade -- e as duas param o EFEITO, nunca a
@@ -112,6 +134,38 @@ func _ao_mudar_interface() -> void:
 	limpar()
 
 
+## ⚠️ SO A DESCOBERTA DE PAPEL INTERFACE TOMA A TELA. As outras sessenta e uma passam por
+## aqui e nao fazem nada -- e e o `papel` declarado no .tres que decide, e nao um id nesta
+## linha. Descoberta nova que queira o efeito e uma linha no .tres, e nenhuma aqui.
+func _ao_descobrir(descoberta: DadosDescoberta) -> void:
+	if descoberta.papel != DadosDescoberta.Papel.INTERFACE:
+		return
+	tomar(tr(descoberta.nome))
+
+
+## Faz uma palavra tomar conta das letras por alguns segundos (issue #52).
+##
+## ⚠️ SO AS LETRAS DELA, e nada mais. A palavra vem de um .tres escrito a mao -- e o
+## `texto` da descoberta, e nao algo montado aqui. O jogo continua sem gerar texto.
+func tomar(palavra: String) -> void:
+	var letras := PackedStringArray()
+	for i in palavra.length():
+		var caractere := palavra.substr(i, 1)
+		if caractere.strip_edges().is_empty():
+			continue
+		letras.append(caractere)
+	if letras.is_empty():
+		return
+	_tomada = letras
+	_ate_devolver = TOMADA
+	limpar()
+
+
+## Se uma palavra esta tomando conta das letras agora. A suite le isto.
+func tomada() -> bool:
+	return not _tomada.is_empty()
+
+
 ## Quantos rotulos estao vivos agora. A regua medir_quadro le isto.
 func vivos() -> int:
 	return _vivos.size()
@@ -140,7 +194,11 @@ func _nascer(producao: Grande) -> void:
 	var rotulo: Label = _livres.pop_back()
 	_vivos.append(rotulo)
 
-	if producao.menor_que(Grande.de_float(LIMIAR_DE_NUMERO)):
+	if not _tomada.is_empty():
+		# a palavra tomou conta: cada rotulo e uma LETRA dela, na ordem em que sai
+		rotulo.text = _tomada[_gerador.randi_range(0, _tomada.size() - 1)]
+		rotulo.add_theme_font_size_override("font_size", Tema.fonte(30))
+	elif producao.menor_que(Grande.de_float(LIMIAR_DE_NUMERO)):
 		rotulo.text = GLIFOS[_gerador.randi_range(0, GLIFOS.size() - 1)]
 		rotulo.add_theme_font_size_override("font_size", Tema.fonte(26))
 	else:

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "um_best_seller"
+nome = "Um Best-Seller"
+texto = "Teria vendido milhões. Foi produzido por um macaco às três da manhã."
+categoria = 4
+chance_base = 5e-14
+bonus = 14.0
+papel = 0

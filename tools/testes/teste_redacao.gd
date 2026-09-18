@@ -21,16 +21,22 @@ extends TesteBase
 const PASTA_DE_MARCOS := "res://data/marcos"
 const PASTA_DE_DESCOBERTAS := "res://data/descobertas"
 
-## ⚠️ AS CONSTRUCOES PROIBIDAS, e o motivo de cada uma.
+## ⚠️ DUAS LISTAS, E A DIFERENCA ENTRE ELAS E O SISTEMA INTEIRO.
 ##
-## A lista e explicita e curta de proposito. Uma expressao regular ampla -- "escrev" em
-## qualquer lugar -- reprovaria "tudo que a humanidade escreveu", que e uma frase CERTA:
-## ela fala do que a humanidade escreveu, e nao do que o jogador escreveu. Portao que
-## morde o codigo certo e portao que alguem desliga.
-const PROIBIDAS: Array[Dictionary] = [
+## A primeira versao desta suite tinha uma lista so, aplicada a marco e a descoberta. Isso
+## estava errado, e o erro so apareceu ao escrever a descoberta "JUST KEEP TYPING":
+##
+##   NUM MARCO, o jogo compara TAMANHO. O macaco nao escreveu Hamlet -- ele produziu tanto
+##   caractere quanto Hamlet tem. Afirmar autoria ali destroi o conceito probabilistico.
+##
+##   NUMA DESCOBERTA, o macaco PRODUZIU AQUELE TEXTO. E isso que uma descoberta e: o padrao
+##   que saiu por acidente (GDD §9). "Ele escreveu o nome do jogo" nao e exagero, e o fato.
+##
+## O que nunca muda, nos dois: o JOGADOR nao escreveu nada. Ele apertou uma tecla.
+const PROIBIDAS_EM_TODO_LUGAR: Array[Dictionary] = [
 	{
 		"trecho": "você escreveu",
-		"porque": "afirma autoria do jogador -- ele produziu caracteres, nao a obra",
+		"porque": "o jogador nunca escreve -- ele aperta tecla, o macaco produz",
 	},
 	{
 		"trecho": "você já escreveu",
@@ -40,25 +46,29 @@ const PROIBIDAS: Array[Dictionary] = [
 		"trecho": "voce escreveu",
 		"porque": "a mesma afirmacao sem acento -- o portao nao pode depender de acento",
 	},
-	{
-		"trecho": "você redigiu",
-		"porque": "sinonimo de autoria",
-	},
-	{
-		"trecho": "você compôs",
-		"porque": "sinonimo de autoria",
-	},
+	{"trecho": "você redigiu", "porque": "sinonimo de autoria do jogador"},
+	{"trecho": "você compôs", "porque": "sinonimo de autoria do jogador"},
 	{
 		"trecho": "você publicou",
 		"porque": "autoria mais distribuicao, que o jogo nunca afirma",
 	},
+]
+
+## ⚠️ SO PARA MARCO. Num marco, autoria do macaco tambem e falsa: ele nao escreveu a
+## Biblia, ele produziu o mesmo numero de caracteres que ela tem.
+##
+## A lista e explicita e curta de proposito. Uma expressao regular ampla -- "escrev" em
+## qualquer lugar -- reprovaria "tudo que a humanidade escreveu", que e uma frase CERTA:
+## ela fala do que a humanidade escreveu. Portao que morde o codigo certo e portao que
+## alguem desliga.
+const PROIBIDAS_EM_MARCO: Array[Dictionary] = [
 	{
 		"trecho": "seus macacos escreveram",
-		"porque": "a autoria pelo macaco e a mesma afirmacao, com outro sujeito",
+		"porque": "no marco a comparacao e de tamanho, e nao de autoria",
 	},
 	{
 		"trecho": "o macaco escreveu",
-		"porque": "idem -- a piada e a coincidencia, e nao o talento",
+		"porque": "idem -- a piada do marco e a equivalencia, e nao o talento",
 	},
 ]
 
@@ -75,9 +85,16 @@ const PROIBIDAS_EM_INGLES: Array[Dictionary] = [
 	{"trecho": "you've written", "porque": "idem, contraido"},
 	{"trecho": "you composed", "porque": "sinonimo de autoria"},
 	{"trecho": "you published", "porque": "autoria mais distribuicao"},
-	{"trecho": "the monkey wrote", "porque": "a autoria pelo macaco e a mesma afirmacao"},
-	{"trecho": "your monkeys wrote", "porque": "idem, no plural"},
 ]
+
+## ⚠️ E AS DO MACACO EM INGLES NAO ENTRAM AQUI. A coluna `en` do CSV mistura texto de marco
+## e de descoberta na mesma lista, e numa descoberta "the monkey wrote" e o FATO. Separar
+## por origem exigiria saber de qual .tres cada linha veio -- o CSV nao guarda isso, e
+## inventar um terceiro arquivo para guardar seria uma terceira fonte para a mesma verdade.
+##
+## PONTO CEGO DECLARADO: autoria do macaco afirmada num MARCO, e escrita so na coluna em
+## ingles, passa. O que cobre isso e a coluna `en` ser traducao de uma linha em portugues
+## que ja passou pelo portao de cima.
 
 const CSV := "res://i18n/textos.csv"
 
@@ -110,10 +127,20 @@ func executar() -> void:
 func _nenhum_texto_afirma_autoria() -> void:
 	var conferidos := 0
 	for pasta in [PASTA_DE_MARCOS, PASTA_DE_DESCOBERTAS]:
+		var so_de_marco: bool = pasta == PASTA_DE_MARCOS
 		for caminho in _listar(pasta):
 			var conteudo := _ler(caminho).to_lower()
 			conferidos += 1
-			for proibida in PROIBIDAS:
+			for proibida in PROIBIDAS_EM_TODO_LUGAR:
+				ok(
+					not conteudo.contains(str(proibida["trecho"])),
+					"%s -- nao diz \"%s\" (%s)" % [
+						caminho.get_file(), proibida["trecho"], proibida["porque"],
+					],
+				)
+			if not so_de_marco:
+				continue
+			for proibida in PROIBIDAS_EM_MARCO:
 				ok(
 					not conteudo.contains(str(proibida["trecho"])),
 					"%s -- nao diz \"%s\" (%s)" % [

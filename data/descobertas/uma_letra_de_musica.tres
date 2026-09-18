@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "uma_letra_de_musica"
+nome = "Uma Letra de Música"
+texto = "Com refrão. O refrão se repete porque o acaso também se repete."
+categoria = 2
+chance_base = 6e-08
+bonus = 1.9
+papel = 0

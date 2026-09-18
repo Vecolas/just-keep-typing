@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "um_conto_curto"
+nome = "Um Conto"
+texto = "Começo, meio e fim. Nessa ordem, inclusive."
+categoria = 2
+chance_base = 8e-08
+bonus = 1.8
+papel = 0

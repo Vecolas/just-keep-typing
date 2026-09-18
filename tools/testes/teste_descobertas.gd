@@ -21,11 +21,44 @@ func _init() -> void:
 	nome = "descobertas"
 
 
+## Os treze degraus do plano v0.6 §3, e a faixa de raridade em que cada um deve cair.
+##
+## ⚠️ ISTO E O ESQUELETO DO CONTEUDO, e nao uma taxonomia decorativa. Um degrau vazio e um
+## buraco na escada que o jogador sobe -- ele passa de PALAVRA para PARAGRAFO sem encontrar
+## uma FRASE, e a progressao que o sistema promete deixa de acontecer.
+const DEGRAUS: Array[Dictionary] = [
+	{"nome": "LETRA/SILABA/PALAVRA", "de": DadosDescoberta.Categoria.COMUM,
+	 "ate": DadosDescoberta.Categoria.COMUM, "minimo": 8},
+	{"nome": "EXPRESSAO/FRASE/PARAGRAFO", "de": DadosDescoberta.Categoria.INCOMUM,
+	 "ate": DadosDescoberta.Categoria.INCOMUM, "minimo": 8},
+	{"nome": "POEMA/CONTO/TEXTO COERENTE", "de": DadosDescoberta.Categoria.RARO,
+	 "ate": DadosDescoberta.Categoria.RARO, "minimo": 8},
+	{"nome": "OBRA", "de": DadosDescoberta.Categoria.EPICO,
+	 "ate": DadosDescoberta.Categoria.LENDARIO, "minimo": 12},
+	{"nome": "TEXTO IMPROVAVEL/IMPOSSIVEL", "de": DadosDescoberta.Categoria.IMPOSSIVEL,
+	 "ate": DadosDescoberta.Categoria.IMPOSSIVEL, "minimo": 5},
+	{"nome": "PARADOXO", "de": DadosDescoberta.Categoria.PARADOXAL,
+	 "ate": DadosDescoberta.Categoria.PARADOXAL, "minimo": 5},
+]
+
+## As sete autorais do plano v0.6 §4. Elas sao O PRODUTO desta versao -- o resto e o
+## caminho ate elas --, e por isso sao cobradas por id.
+const AUTORAIS: PackedStringArray = [
+	"banana", "eu", "ola", "uma_frase_gramatical", "um_poema",
+	"sua_propria_descoberta", "just_keep_typing",
+]
+
+
 func executar() -> void:
 	_catalogo()
 	_ordem_das_raridades()
 	_teto_da_chance()
 	_sorteio_reprodutivel()
+	_o_papel_separa_sem_bonus_de_esquecido()
+	_os_degraus_estao_cheios()
+	_as_autorais_existem()
+	_o_poema_tem_versos()
+	_o_papel_interface_tem_o_que_entregar()
 	_bonus_permanente()
 	_as_lendarias_e_o_espaco_entre_elas()
 
@@ -39,11 +72,26 @@ func _catalogo() -> void:
 		ok(not ids.has(descoberta.id), "%s -- id nao repete" % descoberta.id)
 		ids[descoberta.id] = true
 		ok(descoberta.chance_base > 0.0, "%s -- chance_base positiva" % descoberta.id)
-		# bonus 1 seria descoberta que nao recompensa nada, e descoberta E o sistema de
-		# bonus do jogo (o de significado e o Panorama)
-		ok(descoberta.bonus > 1.0, "%s -- bonus %s recompensa alguma coisa" % [
-			descoberta.id, descoberta.bonus,
-		])
+		# ⚠️ ESTA REGRA FICOU MAIS PRECISA NA ISSUE #52, e nao mais frouxa.
+		#
+		# Ate a v0.5 ela era "toda descoberta tem bonus > 1", e servia para pegar dado
+		# esquecido pela metade. Com descobertas que existem SO pela piada, 1.0 virou um
+		# valor legitimo -- e a regra passou a ser condicional ao papel declarado:
+		#
+		#   papel BONUS  exige bonus > 1.0   (e o que esta linha cobra)
+		#   outro papel  exige bonus == 1.0  (cobrado em _o_papel_separa_sem_bonus_de_esquecido)
+		#
+		# As duas juntas pegam MAIS do que a antiga pegava: a antiga nao percebia um bonus
+		# escondido numa descoberta que anuncia nao ter nenhum.
+		#
+		# ⚠️ E O RAMO E UM `if`, E NAO UM `continue`. A primeira versao saiu do laco com
+		# continue, e com isso as afirmacoes ABAIXO -- nome preenchido, texto preenchido --
+		# deixaram de rodar para toda descoberta de humor. Nove descobertas passariam a nao
+		# ter nome conferido, e a suite continuaria verde.
+		if descoberta.papel == DadosDescoberta.Papel.BONUS:
+			ok(descoberta.bonus > 1.0, "%s -- bonus %s recompensa alguma coisa" % [
+				descoberta.id, descoberta.bonus,
+			])
 		ok(not descoberta.nome.strip_edges().is_empty(), "%s -- nome preenchido" % descoberta.id)
 		ok(not descoberta.texto.strip_edges().is_empty(), "%s -- texto preenchido" % descoberta.id)
 		ok(
@@ -257,3 +305,169 @@ func _as_lendarias_e_o_espaco_entre_elas() -> void:
 	Jogo.descobertas = guardado_descobertas
 	Jogo.tempo_jogado = guardado_tempo
 	Jogo.tempo_da_ultima_rara = guardado_ultima
+
+
+# ── issue #52: o conteudo ───────────────────────────────────────────────────────────────
+
+## ⚠️ O PORTAO QUE A ISSUE PEDE, e ele morde dos dois lados.
+##
+## Ate a v0.5 toda descoberta dava bonus, e o padrao invalido (1.0) protegia contra dado
+## esquecido pela metade. Com descobertas de HUMOR, 1.0 virou legitimo -- e sem declarar
+## qual e qual, a suite teria que escolher entre aceitar o esquecido ou reprovar a piada.
+##
+##   papel BONUS  exige bonus > 1.0   senao e dado esquecido
+##   outro papel  exige bonus == 1.0  senao e bonus escondido num papel que nao o anuncia
+func _o_papel_separa_sem_bonus_de_esquecido() -> void:
+	var por_papel := {}
+	for descoberta in Descobertas.todas():
+		por_papel[descoberta.papel] = int(por_papel.get(descoberta.papel, 0)) + 1
+		if descoberta.papel == DadosDescoberta.Papel.BONUS:
+			ok(
+				descoberta.bonus > 1.0,
+				"%s -- papel BONUS com bonus de verdade (%s)" % [descoberta.id, descoberta.bonus],
+			)
+			continue
+		perto(
+			descoberta.bonus, 1.0, 1e-6,
+			"%s -- papel %d nao esconde bonus" % [descoberta.id, descoberta.papel],
+		)
+
+	# ⚠️ e os papeis que nao sao BONUS EXISTEM de verdade. Sem esta linha, um catalogo
+	# inteiro de BONUS passaria em tudo acima -- e o campo seria coluna morta.
+	var sem_bonus := 0
+	for papel in [
+		DadosDescoberta.Papel.HUMOR, DadosDescoberta.Papel.EXPLICACAO,
+		DadosDescoberta.Papel.INTERFACE,
+	]:
+		var quantas := int(por_papel.get(papel, 0))
+		ok(quantas > 0, "o papel %d e usado por alguma descoberta (%d)" % [papel, quantas])
+		sem_bonus += quantas
+	ok(sem_bonus >= 3, "ha descoberta que existe sem dar bonus (%d)" % sem_bonus)
+
+	# EXPLICACAO sem curiosidade e um papel que promete e nao entrega
+	for descoberta in Descobertas.todas():
+		if descoberta.papel != DadosDescoberta.Papel.EXPLICACAO:
+			continue
+		ok(
+			not descoberta.curiosidade.strip_edges().is_empty(),
+			"%s -- papel EXPLICACAO traz curiosidade" % descoberta.id,
+		)
+
+
+## Nenhum degrau da escada fica vazio.
+func _os_degraus_estao_cheios() -> void:
+	var por_categoria := {}
+	for descoberta in Descobertas.todas():
+		por_categoria[descoberta.categoria] = int(por_categoria.get(descoberta.categoria, 0)) + 1
+
+	for degrau in DEGRAUS:
+		var quantas := 0
+		for categoria in range(int(degrau["de"]), int(degrau["ate"]) + 1):
+			quantas += int(por_categoria.get(categoria, 0))
+		ok(
+			quantas >= int(degrau["minimo"]),
+			"o degrau %s tem %d descobertas (minimo %d)" % [
+				degrau["nome"], quantas, degrau["minimo"],
+			],
+		)
+
+	ok(
+		Descobertas.todas().size() >= 60,
+		"o catalogo chegou a sessenta (%d)" % Descobertas.todas().size(),
+	)
+
+
+## ⚠️ AS SETE AUTORAIS SAO O PRODUTO DESTA VERSAO. Cobradas por id: renomear uma delas sem
+## perceber apagaria a descoberta que o jogador ja tinha achado -- o id vai para o save.
+func _as_autorais_existem() -> void:
+	for id_autoral in AUTORAIS:
+		var achada := Descobertas.de(id_autoral)
+		ok(achada != null, "a descoberta autoral %s existe" % id_autoral)
+		if achada == null:
+			continue
+		ok(not achada.texto.strip_edges().is_empty(), "%s -- tem texto" % id_autoral)
+
+	# ⚠️ JUST KEEP TYPING E TARDIA, e isso e a issue inteira dela: ela e o fecho circular
+	# do jogo, e sair cedo a desperdica.
+	var fecho := Descobertas.de("just_keep_typing")
+	if fecho != null:
+		igual(
+			fecho.categoria, DadosDescoberta.Categoria.PARADOXAL,
+			"JUST KEEP TYPING e paradoxal",
+		)
+		var mais_rara := true
+		for descoberta in Descobertas.todas():
+			if descoberta.id != fecho.id and descoberta.chance_base <= fecho.chance_base:
+				mais_rara = false
+		ok(mais_rara, "e e a descoberta MAIS RARA do jogo -- o fecho nao sai cedo")
+
+
+## O poema mostra quatro linhas de um conjunto CURADO, e o sorteio e estavel.
+##
+## ⚠️ O JOGO NUNCA GERA TEXTO (GDD §10). O que se prova aqui e que ele escolhe entre linhas
+## escritas a mao, e que a mesma partida ve sempre o mesmo poema -- reabrir o Arquivo e ver
+## outras quatro linhas transformaria a descoberta numa maquina de frases.
+func _o_poema_tem_versos() -> void:
+	var poema := Descobertas.de("um_poema")
+	ok(poema != null, "o poema existe")
+	if poema == null:
+		return
+
+	ok(
+		poema.versos.size() > DadosDescoberta.VERSOS_MOSTRADOS,
+		"ha mais versos curados do que os mostrados (%d de %d)" % [
+			DadosDescoberta.VERSOS_MOSTRADOS, poema.versos.size(),
+		],
+	)
+
+	var primeiros := poema.versos_sorteados(1234)
+	igual(primeiros.size(), DadosDescoberta.VERSOS_MOSTRADOS, "mostra quatro versos")
+	igual(
+		poema.versos_sorteados(1234), primeiros,
+		"a mesma semente da o mesmo poema -- o poema do jogador e o poema dele",
+	)
+	ok(
+		poema.versos_sorteados(4321) != primeiros,
+		"e sementes diferentes dao poemas diferentes",
+	)
+
+	# verso repetido dentro do mesmo poema parece defeito, e nao poesia
+	var vistos := {}
+	for verso in primeiros:
+		ok(not vistos.has(verso), "nenhum verso se repete no mesmo poema")
+		vistos[verso] = true
+
+	# e todo verso e texto escrito a mao, com linha no CSV -- o portao de texto cobra pela
+	# fonte, e esta linha garante que a fonte nao esta vazia
+	for verso in poema.versos:
+		ok(not verso.strip_edges().is_empty(), "nenhum verso curado esta vazio")
+
+
+## ⚠️ O PAPEL `INTERFACE` PRECISA TER O QUE ENTREGAR. Ate esta linha existir, ele era uma
+## promessa: a descoberta anunciava mudar a interface e nada mudava -- que e a mesma
+## familia de defeito da opcao sem consumidor (issue #41).
+##
+## O efeito e o das letras: por alguns segundos, a palavra que o macaco produziu toma o
+## lugar do alfabeto de decoracao. A suite prova a REGRA (tomar e devolver) sem subir cena
+## nenhuma; que ela aparece na tela e assunto de captura.
+func _o_papel_interface_tem_o_que_entregar() -> void:
+	var quantas := 0
+	for descoberta in Descobertas.todas():
+		if descoberta.papel == DadosDescoberta.Papel.INTERFACE:
+			quantas += 1
+	ok(quantas > 0, "ha descoberta de papel INTERFACE (%d)" % quantas)
+
+	# ⚠️ e o efeito EXISTE. Uma descoberta de interface sem nada que a interface faca e a
+	# promessa de novo, so que com o campo declarado.
+	var letras := Letras.new()
+	ok(not letras.tomada(), "as letras comecam sem palavra nenhuma tomando conta")
+	letras.tomar("BANANA")
+	ok(letras.tomada(), "uma palavra toma conta das letras")
+
+	# palavra vazia nao toma: seis segundos de nada seria o efeito parecendo quebrado
+	var vazias := Letras.new()
+	vazias.tomar("   ")
+	ok(not vazias.tomada(), "palavra em branco nao toma a tela")
+
+	letras.free()
+	vazias.free()
