@@ -304,6 +304,47 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### O estado no fim da v0.7.1
+
+| | v0.6 | v0.7 | v0.7.1 |
+|---|---|---|---|
+| blocos de 10 min com conteúdo | 1 de 6 | 5 de 6 | **5 de 6** |
+| 1º Teorema vale a pena | 00:04:22 | 00:32:55 | **00:30:48** |
+| vantagem do perfil ativo | 13% | **27%** ❌ | **12,4%** ✅ |
+| avisos ilegíveis | **20%** | 20% | **0%** |
+| minutos com a loja vazia | *não medido* | 24 de 30 | **0 de 30** |
+| minutos só com vitrine | *não medido* | *não medido* | **1 de 30** |
+
+⚠️ **E o bloco de 30–40 minutos deixou de ser morto** — minutos 31, 32, 34, 35, 39 e 40
+passaram a ter acontecimento (issue #74).
+
+**Mas a régua não mostra isso.** A coluna "descobertas" dela conta só a **primeira de cada
+categoria**, e a Estranheza é feita de Épicas — categoria que já tinha aparecido aos 13:35.
+Para a régua, o bloco continua em zero.
+
+> **Duas ferramentas medindo coisas diferentes, e só uma enxerga essa issue.** Quem for
+> avaliar o bloco de 30–40 lê a **sessão observada**, não a régua.
+
+### A produção, por fonte (issue #71)
+
+A régua passou a decompor. No fim de uma corrida normal:
+
+| fonte | tipo | fator |
+|---|---|---|
+| base do macaco | soma | 1 |
+| upgrades: velocidade somada | soma | 81.034 |
+| descobertas | soma | 426 |
+| upgrades: velocidade local | vezes | 15 |
+| teoremas: memória genética | vezes | 2,44 |
+| macacos | vezes | 406 |
+| **máquina** | vezes | **10⁹** |
+| upgrades: global | vezes | 168 |
+| prestígio | vezes | 4,15 |
+
+⚠️ **A máquina sozinha vale mais que upgrades e descobertas somados.** É o tipo de coisa que
+`producao = 8,4e17` nunca teria dito — e é exatamente por não ter isso que a v0.7 procurou o
+multiplicador no lugar errado.
+
 ### O combo de volta para a faixa (issue #73)
 
 Um parâmetro, antes e depois. `data/combo.tres` → `teto`: **1,5 → 1,28**.
