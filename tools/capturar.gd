@@ -192,6 +192,17 @@ func _ready() -> void:
 	for i in FRAMES_ATE_ESTABILIZAR:
 		await get_tree().process_frame
 
+	# ⚠️ QUADRO NAO E TEMPO. A transicao do menu para a partida dura 0,45 s; dez quadros
+	# numa maquina rapida sao 0,17 s, e a foto de `principal` saia com a maquina de
+	# escrever em pleno voo por cima do botao DIGITAR. No runner do CI, mais lento, os
+	# mesmos dez quadros passavam de 0,45 s e a foto saia limpa -- a MESMA ferramenta, no
+	# MESMO commit, dando imagens diferentes conforme a velocidade de quem roda.
+	#
+	# Esperar mais quadros so moveria a fronteira. O que resolve e cortar a transicao para
+	# o fim, que e o unico estado que nao depende de relogio nenhum.
+	Cenas.concluir_transicao()
+	await get_tree().process_frame
+
 	if cenario == "eventos":
 		Economia.digitar(50000)
 		Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
