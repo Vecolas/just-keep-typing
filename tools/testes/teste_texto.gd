@@ -129,6 +129,9 @@ func _moldes_em_constante() -> void:
 			_exigir(str(rotulo), "Config.CAMPOS[%s].rotulos" % linha["nome"])
 	for aba in Config.ABAS:
 		_exigir(str(aba), "Config.ABAS")
+	# o que o macaco escreve sozinho no menu (issue #49) e texto que o jogador le
+	for frase in CenarioDoMenu.FRASES_RARAS:
+		_exigir(frase, "CenarioDoMenu.FRASES_RARAS")
 
 	ok(
 		not NomesDeManuscrito.SUGESTOES.is_empty(),

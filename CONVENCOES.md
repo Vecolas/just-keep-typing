@@ -377,6 +377,18 @@ opção de interface que mexesse em progressão seria dificuldade disfarçada de
 
 ---
 
+## Easter egg
+
+Só existe um, e ele tem uma regra: ⚠️ **easter egg não encosta no save.** A tecla que o
+jogador aperta no menu faz o macaco bater aquela tecla e a letra aparece na folha — e mais
+nada. Nada em `CenarioDoMenu.datilografar` escreve em `Jogo`, `Save` ou `Economia`, e esse
+silêncio **é** a funcionalidade: é o que permite a brincadeira existir sem que um bug nela
+custe progresso a alguém.
+
+A fumaça afirma as duas metades: a letra aparece **e** o total de caracteres não muda.
+
+---
+
 ## O menu vivo
 
 - ⚠️ **Gestos independentes e sorteados, nunca um vídeo único.** Um vídeo de dez segundos é

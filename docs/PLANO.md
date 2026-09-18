@@ -107,7 +107,20 @@ justifica o resto.
 
 ---
 
-## v0.5 — Menu principal e arquivos
+## v0.5 — Menu principal e arquivos  ✅ **entregue**
+
+Fechada com a tag `v0.5`. O aceite é o caminho do §48, e ele é de fumaça:
+
+```text
+abrir -> abertura -> configurar -> criar Manuscrito -> jogar -> autosave
+-> voltar ao menu -> ver o cartão -> fechar -> abrir -> CONTINUAR
+-> estar exatamente onde parou
+```
+
+Ele roda do **zero** no fim da fumaça — slots apagados, opções apagadas, abertura não vista
+—, e não espalhado pelos passos anteriores: um caminho provado em pedaços é um caminho que
+ninguém andou.
+
 
 As quatro primeiras versões abrem direto na mesa. Esta dá ao jogo um começo: uma tela de
 boot, um menu que é a **primeira cena narrativa** do projeto, e Manuscritos que o jogador

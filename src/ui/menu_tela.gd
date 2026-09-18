@@ -250,6 +250,25 @@ func _dar_o_foco_inicial() -> void:
 			return
 
 
+## ⚠️ A TECLA DO JOGADOR VIRA A TECLA DO MACACO, e mais nada (issue #49, plano §37). Esta
+## é a única brincadeira do projeto sem consequência nenhuma — e ela só pode existir porque
+## não tem: um bug aqui não custa progresso a ninguém.
+##
+## ⚠️ `_unhandled_input` E NÃO `_input`: assim o botão focado consome `ui_accept` antes, e
+## apertar espaço no menu continua sendo "selecionar" em vez de escrever um espaço na folha.
+##
+## Só caractere imprimível entra. `unicode` vem zero em tecla de função, seta e modificador,
+## e escrever o caractere zero na folha é escrever um retângulo vazio.
+func _unhandled_input(evento: InputEvent) -> void:
+	var tecla := evento as InputEventKey
+	if tecla == null or not tecla.is_pressed() or tecla.is_echo():
+		return
+	if tecla.unicode < 32:
+		return
+	_cenario.datilografar(String.chr(tecla.unicode))
+	get_viewport().set_input_as_handled()
+
+
 # --------------------------------------------------------------------------------- ações
 
 func _ao_continuar() -> void:

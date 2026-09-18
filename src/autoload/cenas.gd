@@ -330,6 +330,14 @@ func _trocar(id: String, caminho: String) -> bool:
 	raiz.add_child(empacotada.instantiate())
 	_atual = id
 
+	# ⚠️ QUEM LIGA, DESLIGA, E A TROCA DESLIGA. A aproximacao da maquina (issue #48) dura
+	# quase meio segundo e vive num CanvasLayer que sobrevive a troca -- de proposito. Sem
+	# esta linha, sair da partida ANTES de ela terminar deixa uma maquina gigante e
+	# meio transparente pendurada por cima da tela seguinte, sem erro nenhum. Apareceu numa
+	# captura do menu, e nao num teste: e o tipo de sobra que so o olho pega.
+	_ate_chegar = 0.0
+	_maquina.visible = false
+
 	# ⚠️ REDUZIR FLASHES APAGA O CLARAO (issue #43). Ele e literalmente uma tela inteira
 	# indo de opaca a transparente em um quarto de segundo, que e a definicao do que aquela
 	# opcao existe para evitar. Sem ele a cena simplesmente aparece -- o caminho continua o
