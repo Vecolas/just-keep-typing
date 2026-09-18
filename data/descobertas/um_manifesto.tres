@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "um_manifesto"
+nome = "Um Manifesto"
+texto = "Convicto, urgente e completamente sem causa."
+categoria = 3
+chance_base = 3e-10
+bonus = 3.5
+papel = 0

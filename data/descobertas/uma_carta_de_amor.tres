@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "uma_carta_de_amor"
+nome = "Uma Carta de Amor"
+texto = "Endereçada a ninguém, assinada por acaso."
+categoria = 2
+chance_base = 1.5e-07
+bonus = 1.45
+papel = 0

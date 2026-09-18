@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "uma_silaba_pronunciavel"
+nome = "Uma Sílaba Pronunciável"
+texto = "Dá para dizer em voz alta sem treinar antes."
+categoria = 0
+chance_base = 0.0016
+bonus = 1.0
+papel = 2
+curiosidade = "Uma sílaba do português cabe em duas a quatro letras. Com vinte e seis teclas, a chance de acertar uma por acaso é bem maior do que a de acertar uma palavra."

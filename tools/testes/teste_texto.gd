@@ -135,6 +135,14 @@ func _moldes_em_constante() -> void:
 	# os nomes dos tres tipos de marco (issue #51)
 	for nome_do_tipo in Panorama.NOMES_DE_TIPO:
 		_exigir(nome_do_tipo, "Panorama.NOMES_DE_TIPO")
+	# ⚠️ OS VERSOS DO POEMA (issue #52). Eles chegam ao jogador por um PackedStringArray de
+	# um .tres, e a varredura de campo de texto do _texto_dos_dados so olha nome, descricao,
+	# titulo e texto -- os versos passariam inteiros sem linha no CSV.
+	for descoberta in Descobertas.todas():
+		for verso in descoberta.versos:
+			_exigir(verso, "versos de " + descoberta.id)
+		if not descoberta.curiosidade.strip_edges().is_empty():
+			_exigir(descoberta.curiosidade, "curiosidade de " + descoberta.id)
 
 	ok(
 		not NomesDeManuscrito.SUGESTOES.is_empty(),

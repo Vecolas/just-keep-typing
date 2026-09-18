@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "banana"
+nome = "BANANA"
+texto = "Contra todas as probabilidades, ele sabe exatamente o que quer."
+categoria = 0
+chance_base = 0.0002
+bonus = 1.12
+papel = 0

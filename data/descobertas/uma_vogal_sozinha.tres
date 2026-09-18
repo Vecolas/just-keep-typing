@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "uma_vogal_sozinha"
+nome = "Uma Vogal Sozinha"
+texto = "Uma letra que já é uma palavra inteira. Preguiça premiada."
+categoria = 0
+chance_base = 0.0013
+bonus = 1.0
+papel = 1

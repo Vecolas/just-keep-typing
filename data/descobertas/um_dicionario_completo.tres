@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "um_dicionario_completo"
+nome = "Um Dicionário Completo"
+texto = "Todas as palavras, cada uma com o significado certo ao lado."
+categoria = 4
+chance_base = 5e-17
+bonus = 35.0
+papel = 0

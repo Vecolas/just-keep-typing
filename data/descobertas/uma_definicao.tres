@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "uma_definicao"
+nome = "Uma Definição"
+texto = "Uma palavra e o que ela significa. As duas partes saíram por acaso."
+categoria = 1
+chance_base = 4e-06
+bonus = 1.0
+papel = 2
+curiosidade = "Para uma definição funcionar, duas sequências independentes precisam cair certas ao mesmo tempo. A chance de cada uma se multiplica — é por isso que ela é mais rara que uma frase do mesmo tamanho."

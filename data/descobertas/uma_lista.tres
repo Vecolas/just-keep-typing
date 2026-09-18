@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "uma_lista"
+nome = "Uma Lista"
+texto = "Três itens e um traço na frente de cada. Organizadíssima e sobre nada."
+categoria = 1
+chance_base = 4.5e-06
+bonus = 1.22
+papel = 0

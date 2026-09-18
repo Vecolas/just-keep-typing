@@ -420,6 +420,34 @@ primeira hora seria o jogo desistindo antes de começar. Isso é portão.
 ⚠️ **Marco não dá bônus** (decisão 0003) — continua valendo. O Panorama é a única tela do
 jogo que não é uma loja.
 
+⚠️ **Num MARCO o jogo compara tamanho; numa DESCOBERTA o macaco produziu aquilo.** A
+diferença é o sistema inteiro, e o portão tem **duas** listas por causa dela:
+
+| | marco | descoberta |
+|---|---|---|
+| "você escreveu…" | proibido | proibido |
+| "o macaco escreveu…" | **proibido** — ali a comparação é de tamanho | **permitido** — é o fato |
+
+O erro só apareceu ao escrever a descoberta *JUST KEEP TYPING*: "Ele escreveu o nome do
+jogo" não é exagero, é o que uma descoberta **é** (GDD §9). Uma lista só, aplicada aos dois,
+teria proibido a frase certa.
+
+**Descoberta tem PAPEL, e é ele que separa "sem bônus" de "campo esquecido":**
+
+| Papel | Exige |
+|---|---|
+| `BONUS` | `bonus > 1.0` — senão é dado pela metade |
+| `HUMOR`, `EXPLICACAO`, `INTERFACE` | `bonus == 1.0` — senão é bônus escondido num papel que não o anuncia |
+
+Até a v0.5 a regra era "toda descoberta tem bônus > 1", e o padrão inválido protegia contra
+dado esquecido. Com descobertas que existem **só pela piada**, 1.0 virou legítimo. A regra
+nova não é mais frouxa: as duas metades juntas pegam **mais** que a antiga, que não percebia
+bônus escondido.
+
+⚠️ **Papel declarado precisa ter o que entregar.** `INTERFACE` sem efeito é a mesma família
+de defeito da opção sem consumidor (issue #41) — e o que decide é o **papel no `.tres`**,
+nunca um id dentro do código.
+
 ---
 
 ## Easter egg

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados_descoberta"]
+
+[resource]
+script = ExtResource("1_dados_descoberta")
+id = "um_proverbio"
+nome = "Um Provérbio"
+texto = "Soa antigo e sábio. Tem doze segundos de idade."
+categoria = 1
+chance_base = 2e-06
+bonus = 1.3
+papel = 0

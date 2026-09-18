@@ -10,3 +10,4 @@ texto = "Rima. Não deveria rimar. Rimou."
 categoria = 2
 chance_base = 1e-07
 bonus = 1.5
+versos = PackedStringArray("a tecla desce e o mundo não repara", "há uma folha esperando desde ontem", "o acaso tem paciência de sobra", "alguém datilografa do outro lado", "entre duas letras cabe um século", "a máquina range como quem lembra", "nada disto foi dito de propósito", "a página aceita qualquer coisa", "o dedo não sabe o que a linha soube", "tudo que é possível já está escrito", "a noite é longa e o papel é branco", "ninguém prometeu que faria sentido")
