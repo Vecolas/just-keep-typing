@@ -9,5 +9,6 @@ requisito = "2.7e19"
 titulo = "Um Século da Humanidade"
 texto = "Cem anos de conversa. Três gerações que não se conheceram."
 categoria = 3
+tipo = 1
 era = 5
 nota = "100 x um ano da humanidade."

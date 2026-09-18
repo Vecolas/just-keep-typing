@@ -30,6 +30,7 @@ func executar() -> void:
 	Config.caminho = CAMINHO_DE_TESTE
 
 	_raridade_sem_cor()
+	_tipo_de_marco_sem_cor()
 	_os_simbolos_existem_na_fonte()
 	_escala_do_texto()
 	_alto_contraste_separa()
@@ -41,6 +42,28 @@ func executar() -> void:
 	Config.caminho = caminho_original
 	Config.carregar()
 	Config.aplicar()
+
+
+## ⚠️ E OS TRES TIPOS DE MARCO TAMBEM (issue #51). A mesma regra, o mesmo motivo: quem nao
+## distingue matiz tem que ler o tipo do mesmo jeito.
+func _tipo_de_marco_sem_cor() -> void:
+	var marcas := {}
+	var nomes := {}
+	for tipo in [
+		DadosMarco.Tipo.QUANTITATIVO, DadosMarco.Tipo.HUMANO, DadosMarco.Tipo.CONCEITUAL
+	]:
+		var marca := Panorama.marca_de(tipo)
+		var nome_do_tipo := Panorama.nome_do_tipo(tipo)
+		ok(not marca.strip_edges().is_empty(), "o tipo %d tem marca" % tipo)
+		ok(not marcas.has(marca), "a marca %s nao se repete" % marca)
+		ok(not nomes.has(nome_do_tipo), "o nome %s nao se repete" % nome_do_tipo)
+		marcas[marca] = true
+		nomes[nome_do_tipo] = true
+	igual(marcas.size(), 3, "os tres tipos sao distinguiveis SO pela marca")
+	igual(nomes.size(), 3, "e SO pelo nome tambem")
+
+	ok(not Panorama.marca_de(-1).is_empty(), "tipo invalido ainda tem marca")
+	ok(not Panorama.nome_do_tipo(99).is_empty(), "e ainda tem nome")
 
 
 ## ⚠️ O PORTAO. Apaga a cor e conta: sete leituras diferentes.
@@ -94,6 +117,14 @@ func _os_simbolos_existem_na_fonte() -> void:
 	# e o alfabeto do efeito de letras, pelo mesmo motivo -- ele ja custou 22 ms uma vez
 	for glifo in Letras.GLIFOS:
 		ok(fonte.has_char(glifo.unicode_at(0)), "a fonte tem o glifo de letra %s" % glifo)
+
+	# e as marcas de tipo de marco (issue #51), que entraram pelo mesmo caminho
+	for marca in Panorama.MARCAS_DE_TIPO:
+		for i in marca.length():
+			ok(
+				fonte.has_char(marca.unicode_at(i)),
+				"a fonte tem o glifo de tipo de marco %s" % marca,
+			)
 
 
 ## A escala do texto cresce o que se le, e nunca devolve tamanho invalido.

@@ -9,5 +9,6 @@ requisito = "9.12e7"
 titulo = "Um Bairro em Um Dia"
 texto = "Tudo que um bairro disse hoje. Ninguém percebeu que estava sendo contado."
 categoria = 3
+tipo = 1
 era = 4
 nota = "1.000 pessoas x 16.000 palavras x 5,7 caracteres, num dia."

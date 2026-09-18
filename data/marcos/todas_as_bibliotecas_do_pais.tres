@@ -9,5 +9,6 @@ requisito = "3e12"
 titulo = "Todas as Bibliotecas do País"
 texto = "Seis mil bibliotecas públicas somadas. Nenhuma delas sabe da outra."
 categoria = 2
+tipo = 1
 era = 4
 nota = "6.000 bibliotecas x 1.000 volumes medios x 500.000 caracteres."

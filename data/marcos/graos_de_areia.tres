@@ -9,5 +9,6 @@ requisito = "7.5e18"
 titulo = "Um Caractere por Grão de Areia"
 texto = "Um caractere para cada grão de areia de todas as praias do planeta."
 categoria = 5
+tipo = 0
 era = 5
 nota = "Estimativa classica: 7,5e18 graos de areia na Terra."

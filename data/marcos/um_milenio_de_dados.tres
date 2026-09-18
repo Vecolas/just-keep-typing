@@ -9,5 +9,6 @@ requisito = "1e25"
 titulo = "Mil Anos de Dados"
 texto = "Se a humanidade continuar guardando tudo no ritmo de hoje."
 categoria = 4
+tipo = 1
 era = 6
 nota = "1.000 anos x 100 zettabytes/ano no ritmo atual, sem crescimento."

@@ -9,5 +9,6 @@ requisito = "5.2e6"
 titulo = "A Obra de Shakespeare"
 texto = "Trinta e sete peças e cento e cinquenta e quatro sonetos. Em caracteres."
 categoria = 1
+tipo = 1
 era = 2
 nota = "Obra completa de Shakespeare: 884.000 palavras x 5,9 caracteres."

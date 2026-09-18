@@ -9,5 +9,6 @@ requisito = "1e28"
 titulo = "As Comparações Acabaram"
 texto = "Não existem mais comparações humanas úteis. A partir daqui é só escala."
 categoria = 5
+tipo = 2
 era = 6
 nota = "Marco de transicao (GDD §44). Uma ordem de grandeza acima de mil anos de humanidade."

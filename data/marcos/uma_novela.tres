@@ -9,5 +9,6 @@ requisito = "2e5"
 titulo = "Uma Novela"
 texto = "Personagens. Enredo. Nada disso está lá — mas o tamanho está."
 categoria = 1
+tipo = 0
 era = 2
 nota = "Novela de 35.000 palavras x 5,7 caracteres."

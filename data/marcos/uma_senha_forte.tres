@@ -9,5 +9,6 @@ requisito = "120"
 titulo = "Uma Senha Forte"
 texto = "Impossível de adivinhar. O macaco adivinhou por acidente e esqueceu."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Senha de 120 caracteres aleatorios, o teto de campos comuns."

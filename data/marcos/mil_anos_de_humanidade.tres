@@ -9,5 +9,6 @@ requisito = "1.3e26"
 titulo = "Mil Anos de Humanidade"
 texto = "Um milênio inteiro de tudo que a espécie disse e escreveu."
 categoria = 4
+tipo = 1
 era = 6
 nota = "1.000 x um ano da humanidade falando e escrevendo."

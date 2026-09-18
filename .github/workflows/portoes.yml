@@ -1,0 +1,104 @@
+# Os portões do projeto, rodando sozinhos.
+#
+# Até a issue #50 as 3.967 afirmações dependiam de alguém lembrar de rodá-las. Portão que
+# depende de memória é portão que um dia não roda -- e o dia em que ele não roda é
+# exatamente o dia em que ele teria pegado alguma coisa.
+#
+# ⚠️ EXIT 0 NÃO SIGNIFICA "O PROJETO ESTÁ SÃO". O Godot sai 0 em situações em que a suíte
+# não chegou a rodar: cena que não carrega, autoload que não sobe, argumento errado. Por
+# isso cada passo EXIGE A PALAVRA `PASSOU` na saída, e não confia no código de saída.
+# Ver CONVENCOES.md, "O que cada ferramenta prova".
+#
+# ⚠️ A VERSÃO DO GODOT É FIXADA, e não "a mais recente". Engine nova é uma mudança que
+# ninguém pediu entrando por um caminho que ninguém olha -- e ela chegaria como uma falha
+# de teste sem commit correspondente, que é o pior jeito de descobrir qualquer coisa.
+name: portões
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# ⚠️ Uma corrida por referência. Empurrar três vezes seguidas não deve deixar três corridas
+# competindo pelo mesmo runner -- a última é a única que interessa.
+concurrency:
+  group: portoes-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSAO: 4.7.2-stable
+  GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+
+jobs:
+  suites:
+    name: suíte e fumaça
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: baixar o Godot ${{ env.GODOT_VERSAO }}
+        run: |
+          set -euo pipefail
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSAO}/${GODOT_BIN}.zip"
+          curl -fsSL -o godot.zip "$url"
+          unzip -q godot.zip
+          chmod +x "${GODOT_BIN}"
+          sudo mv "${GODOT_BIN}" /usr/local/bin/godot
+          godot --version
+
+      # ⚠️ IMPORTAR ANTES DE TUDO. Os .translation são gerados na importação e não são
+      # versionados: sem este passo o portão de texto reprova por um motivo que não é o da
+      # mudança -- e a pessoa vai procurar o defeito no lugar errado.
+      #
+      # O `|| true` é porque a primeira importação de um projeto Godot sai com código de
+      # erro em situações normais (recursos ainda sem .import). O que prova que ela
+      # funcionou são os passos seguintes, e não o código de saída dela.
+      - name: importar recursos
+        run: godot --headless --path . --import || true
+
+      - name: suíte unitária
+        run: ./tools/ci/exigir_passou.sh "suíte unitária" godot --headless --path . tools/testes/runner.tscn
+
+      - name: fumaça
+        run: ./tools/ci/exigir_passou.sh "fumaça" godot --headless --path . tools/teste_fumaca.tscn
+
+  capturas:
+    name: capturas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: baixar o Godot ${{ env.GODOT_VERSAO }}
+        run: |
+          set -euo pipefail
+          url="https://github.com/godotengine/godot/releases/download/${GODOT_VERSAO}/${GODOT_BIN}.zip"
+          curl -fsSL -o godot.zip "$url"
+          unzip -q godot.zip
+          chmod +x "${GODOT_BIN}"
+          sudo mv "${GODOT_BIN}" /usr/local/bin/godot
+          godot --version
+
+      # ⚠️ CAPTURA PRECISA DE JANELA -- headless não renderiza, e a imagem sairia vazia.
+      # No CI isso é xvfb. Se ele não estiver disponível o passo FALHA ALTO: captura pulada
+      # em silêncio é a galeria envelhecendo sem ninguém saber.
+      - name: instalar xvfb e drivers de vídeo
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb mesa-vulkan-drivers libgl1 >/dev/null
+          which xvfb-run
+
+      - name: importar recursos
+        run: godot --headless --path . --import || true
+
+      # ⚠️ 1080p E DUAS ESCALAS DE INTERFACE. Escala acima de 100% é o caso que estoura
+      # tudo (issue #43), e caractere não é pixel: só a foto mostra rótulo saindo do botão.
+      - name: capturar
+        run: ./tools/ci/capturar_tudo.sh
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: capturas
+          path: capturas/
+          if-no-files-found: error

@@ -9,5 +9,6 @@ requisito = "280"
 titulo = "Uma Mensagem"
 texto = "Já dá para dizer alguma coisa na internet. Não necessariamente algo bom."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Limite de caracteres de um post de rede social: 280."

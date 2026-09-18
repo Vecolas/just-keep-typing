@@ -9,5 +9,6 @@ requisito = "1e150"
 titulo = "Todos os Parágrafos Possíveis"
 texto = "Cada parágrafo de quinhentos caracteres que poderia existir. Um deles descreve você."
 categoria = 5
+tipo = 2
 era = 8
 nota = "Cota baixa para 27^500. O expoente real passa de 700."

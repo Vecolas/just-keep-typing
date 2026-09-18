@@ -9,5 +9,6 @@ requisito = "9.12e4"
 titulo = "Um Dia da Sua Vida"
 texto = "Tudo que você disse hoje. Inclusive o que você preferia não ter dito."
 categoria = 3
+tipo = 1
 era = 3
 nota = "16.000 palavras/dia x 5,7 caracteres. Um dia de fala."

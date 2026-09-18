@@ -9,5 +9,6 @@ requisito = "1.1e12"
 titulo = "Uma Cidade em Um Dia"
 texto = "Tudo que uma cidade grande disse hoje. Inclusive o que foi dito baixinho."
 categoria = 3
+tipo = 1
 era = 4
 nota = "12 milhoes de pessoas x 16.000 palavras x 5,7 caracteres, num dia."

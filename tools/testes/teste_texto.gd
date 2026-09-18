@@ -132,6 +132,9 @@ func _moldes_em_constante() -> void:
 	# o que o macaco escreve sozinho no menu (issue #49) e texto que o jogador le
 	for frase in CenarioDoMenu.FRASES_RARAS:
 		_exigir(frase, "CenarioDoMenu.FRASES_RARAS")
+	# os nomes dos tres tipos de marco (issue #51)
+	for nome_do_tipo in Panorama.NOMES_DE_TIPO:
+		_exigir(nome_do_tipo, "Panorama.NOMES_DE_TIPO")
 
 	ok(
 		not NomesDeManuscrito.SUGESTOES.is_empty(),

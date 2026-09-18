@@ -9,5 +9,6 @@ requisito = "2.5e7"
 titulo = "Uma Obra Completa"
 texto = "Tudo que um autor escreveu na vida. Um autor produtivo."
 categoria = 2
+tipo = 1
 era = 2
 nota = "50 livros x 500.000 caracteres."

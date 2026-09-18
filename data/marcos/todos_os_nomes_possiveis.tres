@@ -9,5 +9,6 @@ requisito = "1e36"
 titulo = "Todos os Nomes Possíveis"
 texto = "Inclusive o seu. Inclusive o de quem ainda não nasceu."
 categoria = 5
+tipo = 2
 era = 6
 nota = "27^25 sequencias de nome x 25 caracteres. Cota baixa."

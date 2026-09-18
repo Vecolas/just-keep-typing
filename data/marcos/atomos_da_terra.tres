@@ -9,5 +9,6 @@ requisito = "1.3e50"
 titulo = "Um Caractere por Átomo da Terra"
 texto = "Um caractere para cada átomo deste planeta. O planeta inteiro, escrito."
 categoria = 5
+tipo = 0
 era = 7
 nota = "Massa da Terra / massa media atomica: cerca de 1,3e50 atomos."

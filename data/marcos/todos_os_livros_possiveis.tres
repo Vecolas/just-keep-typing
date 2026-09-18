@@ -9,5 +9,6 @@ requisito = "1e400"
 titulo = "Todos os Livros Possíveis"
 texto = "Todo livro que poderia existir em qualquer idioma. Inclusive este."
 categoria = 5
+tipo = 2
 era = 8
 nota = "Cota baixissima para 27^500000. O expoente real nao cabe num int64."

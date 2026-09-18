@@ -9,5 +9,6 @@ requisito = "1e40"
 titulo = "Todas as Mensagens Possíveis"
 texto = "Cada frase de vinte caracteres que poderia existir. Inclusive as que ninguém diria."
 categoria = 5
+tipo = 2
 era = 6
 nota = "Alfabeto de 27 simbolos elevado a 20 posicoes = 4e28 mensagens x 20 caracteres. Cota baixa."

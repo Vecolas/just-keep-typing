@@ -9,5 +9,6 @@ requisito = "120000"
 titulo = "Uma Tese"
 texto = "Quatro anos de trabalho. Ou quarenta segundos de macaco."
 categoria = 1
+tipo = 0
 era = 2
 nota = "Tese de doutorado: 80.000 palavras x 5,7 caracteres. Media em humanas."

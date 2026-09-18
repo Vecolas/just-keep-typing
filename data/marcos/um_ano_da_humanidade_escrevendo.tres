@@ -9,5 +9,6 @@ requisito = "5e24"
 titulo = "A Humanidade Só Escrevendo"
 texto = "Oito bilhões de pessoas digitando sem parar durante um ano. Nada mais."
 categoria = 4
+tipo = 1
 era = 6
 nota = "8 bilhoes de pessoas x 200 caracteres/minuto x 525.600 minutos."

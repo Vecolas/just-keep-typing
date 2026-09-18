@@ -9,5 +9,6 @@ requisito = "2.8e10"
 titulo = "Uma Wikipédia"
 texto = "Sete milhões de artigos escritos por voluntários. E agora por um macaco."
 categoria = 4
+tipo = 1
 era = 3
 nota = "7 milhoes de artigos x 4.000 caracteres de prosa por artigo."

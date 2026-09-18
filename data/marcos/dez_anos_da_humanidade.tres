@@ -9,5 +9,6 @@ requisito = "2.7e18"
 titulo = "Dez Anos da Humanidade"
 texto = "Uma década de tudo que a espécie disse em voz alta."
 categoria = 3
+tipo = 1
 era = 5
 nota = "10 x um ano da humanidade."

@@ -9,5 +9,6 @@ requisito = "1e19"
 titulo = "Tudo Que a Humanidade Escreveu"
 texto = "Todo texto produzido desde a escrita cuneiforme. Cinco mil anos de registro."
 categoria = 4
+tipo = 1
 era = 5
 nota = "5.000 anos x producao escrita crescente, integrada. Ordem de 10^19."

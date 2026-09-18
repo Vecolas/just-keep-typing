@@ -9,5 +9,6 @@ requisito = "1e14"
 titulo = "Todos os Verbos Conjugados"
 texto = "Cada verbo em cada tempo e cada pessoa. Inclusive os que ninguém usa."
 categoria = 3
+tipo = 1
 era = 4
 nota = "12.000 verbos x 66 formas x 12 letras x 1e7 repeticoes para cobertura."

@@ -23,6 +23,35 @@ enum Categoria {
 	INFINITO,
 }
 
+## QUE TIPO DE COISA O MARCO DIZ -- o outro eixo, e nao uma segunda taxonomia (issue #51).
+##
+## `Categoria` acima e o ASSUNTO: sobre o que aquele numero fala, na escala do GDD §45.
+## `Tipo` e a FORMA: o que a frase faz com o jogador. Um marco de LIVROS pode ser
+## quantitativo ("cabe numa estante") ou humano ("a obra de Shakespeare") -- sao duas
+## perguntas diferentes sobre o mesmo marco, e um enum so nao responde as duas.
+##
+##   QUANTITATIVO  a comparacao e uma quantidade contavel: uma pagina, uma prateleira,
+##                 os graos de areia de uma praia. Responde QUAO GRANDE
+##   HUMANO        a comparacao e um artefato ou uma atividade humana: Dom Quixote, um
+##                 idioma, tudo que uma cidade disse hoje. Responde DE QUE COISA HUMANA
+##                 isto tem o tamanho
+##   CONCEITUAL    a frase comenta a PROPRIA comparacao: diz que as comparacoes pararam de
+##                 servir, que o jogador deixou de produzir texto e passou a percorrer
+##                 possibilidades. Responde O QUE ISTO MUDA DAQUI PARA A FRENTE
+##
+## ⚠️ OS CONCEITUAIS SAO OS MAIS IMPORTANTES, e por isso precisavam de um nome. Sao eles que
+## preparam a transicao para o endgame -- e ate esta issue eles eram indistinguiveis de um
+## marco de tamanho, no dado e na tela.
+##
+## ⚠️ O ZERO E O NEUTRO. QUANTITATIVO e o valor que todo marco esquecido recebe, e ele e o
+## que afirma menos: dizer que um marco e conceitual sem alguem ter escrito isso e pior que
+## nao dizer nada (CONVENCOES.md, "o valor zero de um enum").
+enum Tipo {
+	QUANTITATIVO,
+	HUMANO,
+	CONCEITUAL,
+}
+
 ## snake_case sem acento: vai para o save e para chave de dicionario (decisao 0002).
 @export var id: String = ""
 
@@ -52,6 +81,8 @@ enum Categoria {
 @export_multiline var nota: String = ""
 
 @export var categoria: Categoria = Categoria.LETRAS
+
+@export var tipo: Tipo = Tipo.QUANTITATIVO
 
 ## Era visual em que este marco cai (docs/ARTE.md, secao 10). A cena das eras e a issue
 ## #26; ate la o campo so existe para o Panorama poder agrupar.

@@ -9,5 +9,6 @@ requisito = "2.66e9"
 titulo = "Uma Vida de Conversa"
 texto = "Oitenta anos falando sem parar. Alguém teria reclamado."
 categoria = 3
+tipo = 1
 era = 3
 nota = "16.000 palavras/dia x 365 x 80 anos x 5,7 caracteres."

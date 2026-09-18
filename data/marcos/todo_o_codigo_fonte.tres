@@ -9,5 +9,6 @@ requisito = "1e16"
 titulo = "Todo o Código Já Escrito"
 texto = "Cada linha de programa que alguém escreveu. Inclusive as que não compilam."
 categoria = 4
+tipo = 1
 era = 5
 nota = "5 bilhoes de repositorios x 2 milhoes de caracteres."

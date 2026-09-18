@@ -9,5 +9,6 @@ requisito = "300000"
 titulo = "Um Manual"
 texto = "Todas as instruções de um aparelho que ninguém liga."
 categoria = 1
+tipo = 0
 era = 2
 nota = "Manual tecnico de 150 paginas x 2.000 caracteres."

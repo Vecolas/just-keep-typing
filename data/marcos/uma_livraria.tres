@@ -9,5 +9,6 @@ requisito = "4e9"
 titulo = "Uma Livraria"
 texto = "Dez mil títulos diferentes. O macaco não organizou por gênero."
 categoria = 2
+tipo = 0
 era = 3
 nota = "8.000 livros x 500.000 caracteres."

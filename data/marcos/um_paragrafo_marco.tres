@@ -9,5 +9,6 @@ requisito = "500"
 titulo = "Um Parágrafo"
 texto = "Cinco frases seguidas. Se você apertar os olhos parece quase um assunto."
 categoria = 0
+tipo = 0
 era = 1
 nota = "Paragrafo de texto corrido: 5 frases x 100 caracteres."

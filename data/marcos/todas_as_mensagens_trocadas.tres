@@ -9,5 +9,6 @@ requisito = "5e19"
 titulo = "Todas as Mensagens Já Trocadas"
 texto = "Cada conversa digitada desde que existe teclado."
 categoria = 4
+tipo = 1
 era = 5
 nota = "50 anos x 5 bilhoes de pessoas x 100 mensagens/dia x 60 caracteres."
