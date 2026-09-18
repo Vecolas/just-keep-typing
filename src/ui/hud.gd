@@ -29,9 +29,19 @@ const LOTES: Array[int] = [1, 10, 100]
 
 ## Quanto tempo um aviso fica na tela (issue #37). Curto porque ele e confirmacao e nao
 ## informacao: quem esta olhando ve, e quem nao esta nao perde nada.
+## ⚠️ MANTIDO PARA A REGUA, e nao para a HUD. tools/observar.gd le esta constante para
+## contar quantos avisos sumiram antes do tempo minimo de leitura -- era 20% antes da
+## issue #69. A duracao de verdade agora vem de FilaDeAvisos.SEGUNDOS_POR_PRIORIDADE, e
+## este numero e o PISO contra o qual a regua mede.
 const AVISO_VISIVEL: float = 1.6
 
-var _ate_esconder_o_aviso: float = 0.0
+## Quanto tempo o icone de gravacao ainda fica aceso.
+##
+## ⚠️ O AUTOSAVE SAIU DA FILA DE AVISOS. Ele nao e um acontecimento do jogo -- e o jogo se
+## explicando --, e disputava espaco com uma descoberta Lendaria em igualdade. Virou um
+## icone discreto no canto, que e o que ele sempre foi: confirmacao, e nao informacao.
+var _ate_apagar_o_icone: float = 0.0
+const ICONE_DE_GRAVACAO_VISIVEL: float = 1.2
 
 
 func _ready() -> void:
@@ -54,13 +64,11 @@ func _ready() -> void:
 	EventBus.interface_mudou.connect(_ao_mudar_interface)
 	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
 	EventBus.jogo_gravado.connect(_ao_gravar)
-	EventBus.marco_alcancado.connect(_ao_alcancar_marco)
-	EventBus.descoberta_encontrada.connect(_ao_encontrar_descoberta)
 
 
 func _process(delta: float) -> void:
 	_pintar()
-	_apagar_o_aviso(delta)
+	_andar_a_fila(delta)
 
 
 # --- pintura --------------------------------------------------------------------------
@@ -471,43 +479,53 @@ func _ao_voltar_do_offline(produzido: Grande, _segundos: float) -> void:
 ## ⚠️ E E UM SO PARA TODOS OS AVISOS. Um Label por assunto seria dois avisos empilhados no
 ## quadro em que um marco cai junto de uma gravacao -- e o de baixo aparece por cima da
 ## loja. O ultimo a chegar manda, e o anterior ja tinha sido lido ou nao seria lido nunca.
-func _avisar(texto: String) -> void:
-	%Aviso.text = texto
-	%Aviso.visible = true
-	%Aviso.modulate.a = 1.0
-	_ate_esconder_o_aviso = AVISO_VISIVEL
-
-
+## ⚠️ O AUTOSAVE NAO ENTRA NA FILA. Ele acendia o mesmo rotulo que uma descoberta Lendaria,
+## com a mesma prioridade -- e e o unico dos tres que o jogador nao estava esperando.
+## Virou icone, e o icone nao apaga texto nenhum.
 func _ao_gravar() -> void:
-	_avisar(tr("Salvando..."))
+	%IconeGravando.visible = true
+	%IconeGravando.modulate.a = 1.0
+	_ate_apagar_o_icone = ICONE_DE_GRAVACAO_VISIVEL
 
 
-## ⚠️ AS DUAS OPCOES SAO LIDAS NO INSTANTE DO AVISO, e nunca guardadas (issue #41): o
-## jogador desliga no meio da partida e vale na hora. E elas so calam o AVISO -- o marco
-## continua caindo e a descoberta continua valendo bonus, porque opcao de interface que
-## mexesse em progressao seria dificuldade disfarcada de conforto.
-func _ao_alcancar_marco(marco: DadosMarco) -> void:
-	if not Config.ligado("aviso_de_marco"):
+
+
+## Anda a fila e o icone de gravacao. Os dois vivem em cantos diferentes da tela de
+## proposito: um e conteudo, o outro e sistema.
+func _andar_a_fila(delta: float) -> void:
+	if Avisos.tique(delta):
+		_pintar_o_aviso()
+	if Avisos.tem_aviso():
+		# desaparece nos ultimos segundos em vez de sumir num quadro: aviso que pisca vira
+		# ruido, e o jogador passa a nao ler nenhum deles
+		%Aviso.modulate.a = Avisos.quanto_resta()
+
+	if _ate_apagar_o_icone > 0.0:
+		_ate_apagar_o_icone -= delta
+		%IconeGravando.modulate.a = clampf(_ate_apagar_o_icone, 0.0, 1.0)
+		if _ate_apagar_o_icone <= 0.0:
+			%IconeGravando.visible = false
+
+
+func _pintar_o_aviso() -> void:
+	%Aviso.visible = Avisos.tem_aviso()
+	if not Avisos.tem_aviso():
 		return
-	# o tr() vem ANTES da substituicao: traduz-se o molde, nunca o resultado
-	_avisar(tr("Marco: %s") % tr(marco.titulo))
+	%Aviso.text = Avisos.texto_atual()
+	%Aviso.modulate.a = 1.0
+	# ⚠️ COR + o proprio TEXTO (issue #43). A cor separa critica de comum para quem a
+	# distingue; o texto do aviso ja diz "Descoberta:" ou "Marco:" para quem nao distingue.
+	%Aviso.add_theme_color_override("font_color", Tema.cor(_cor_da_prioridade()))
 
 
-func _ao_encontrar_descoberta(descoberta: DadosDescoberta) -> void:
-	if not Config.ligado("aviso_de_descoberta"):
-		return
-	_avisar(tr("Descoberta: %s") % tr(descoberta.nome))
-
-
-func _apagar_o_aviso(delta: float) -> void:
-	if _ate_esconder_o_aviso <= 0.0:
-		return
-	_ate_esconder_o_aviso -= delta
-	# desaparece nos ultimos segundos em vez de sumir num quadro: aviso que pisca vira
-	# ruido, e o jogador passa a nao ler nenhum deles
-	%Aviso.modulate.a = clampf(_ate_esconder_o_aviso, 0.0, 1.0)
-	if _ate_esconder_o_aviso <= 0.0:
-		%Aviso.visible = false
+func _cor_da_prioridade() -> Color:
+	match Avisos.prioridade_atual():
+		FilaDeAvisos.Prioridade.CRITICA:
+			return Paleta.BANANA_GOLD
+		FilaDeAvisos.Prioridade.ALTA:
+			return Paleta.MECHANICAL_GOLD
+		_:
+			return Paleta.MONKEY_BROWN.lightened(0.25)
 
 
 func _ao_mudar_idioma(_codigo: String) -> void:
