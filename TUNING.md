@@ -304,6 +304,51 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### ⚠️ O MAIOR MULTIPLICADOR DO JOGO ERAM AS DESCOBERTAS (issue #60)
+
+O suspeito óbvio eram os upgrades: 38 dos 44 eram multiplicadores que compõem.
+
+| fonte | composição |
+|---|---|
+| `VELOCIDADE_DO_MACACO` | 17 upgrades → ×5.627 |
+| `PRODUCAO_GLOBAL` | 21 upgrades → ×15.650.000 |
+| `CAPACIDADE` | 5 upgrades → ×112 |
+| **descobertas** | **62 → ×1,13 × 10^41** |
+| máquinas | escada, ×10^9 no topo (só a atual conta) |
+
+**As descobertas compunham vinte e oito ordens de grandeza acima dos upgrades.**
+
+⚠️ **E a issue #52 criou a maior parte disso** — 46 descobertas novas, quase todas com
+`bonus > 1`. Pior: **o portão que eu mesmo escrevi exigia `bonus > 1` de toda descoberta de
+papel `BONUS`.** A regra que protegia contra dado esquecido era a mesma que garantia a
+composição.
+
+**Separar só os upgrades quase não moveu nada** — o primeiro Teorema foi de 04:22 para
+04:01. Foi preciso medir de novo, por fonte, para achar onde o número morava. *O suspeito
+óbvio geralmente mente.*
+
+#### A conversão
+
+As descobertas passam a **somar** na base do macaco em vez de multiplicar a produção:
+as mesmas 53 somam **+1.665** no lugar de ×10^41. O `.tres` continua guardando o número que
+o autor escreveu; a conversão para parcela mora num lugar só, como `(bonus - 1)`.
+
+É o que a decisão 0008 já dizia: *"Descoberta — não aumenta CPS diretamente"*. Ela não
+deixou de valer nada; **deixou de multiplicar**.
+
+#### O antes e o depois (perfil normal)
+
+| | antes | depois |
+|---|---|---|
+| 0–10 min | 76 marcos, 44 upgrades | **51 marcos, 34 upgrades** |
+| 10–20 min | 0, 0 | **17, 10** |
+| 20–30 min | 0 | 2 |
+| 40–50 min | 0 | 1 |
+| 1º Teorema vale a pena | 04:22 | **09:36** |
+
+**Quatro dos seis blocos deixaram de estar vazios**, e isso é a issue #60 sozinha — antes de
+qualquer redistribuição (#61) ou de mover o prestígio (#62).
+
 ### A linha de base dos três perfis (issues #59 e #63)
 
 Régua de campanha — com eventos, automação e prestígio —, mesma semente nos três:

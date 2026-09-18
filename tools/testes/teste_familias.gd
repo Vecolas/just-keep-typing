@@ -156,9 +156,17 @@ func _custo_e_efeito_sobem_juntos(upgrades: Array) -> void:
 			var antes: DadosUpgrade = itens[i - 1]
 			var depois: DadosUpgrade = itens[i]
 			degraus_medidos += 1
+			# ⚠️ NO DESCONTO, "MELHOR" E MENOR (issue #60). A regra e "o mais caro nao
+			# rende menos", e para um desconto render mais quer dizer valor MENOR --
+			# comparar `>=` ali reprovaria a escada certa e aprovaria a errada.
+			var sobe: bool = (
+				depois.valor <= antes.valor
+				if depois.tipo_de_efeito in DadosUpgrade.DESCONTOS
+				else depois.valor >= antes.valor
+			)
 			ok(
-				depois.valor >= antes.valor,
-				"escada %s: %s (x%s por %s) nao multiplica menos que %s (x%s por %s)" % [
+				sobe,
+				"escada %s: %s (%s por %s) nao rende menos que %s (%s por %s)" % [
 					chave, depois.id, depois.valor, depois.custo,
 					antes.id, antes.valor, antes.custo,
 				],

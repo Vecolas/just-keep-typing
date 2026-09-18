@@ -87,13 +87,42 @@ func _upgrades() -> void:
 
 		ok(dados.custo > 0.0, "%s -- custo %s e maior que zero" % [caminho, dados.custo])
 
-		if dados.tipo_de_efeito == DadosUpgrade.Efeito.LIGA_PRODUCAO_AUTOMATICA:
+		# ⚠️ `valor` QUER DIZER COISAS DIFERENTES POR TIPO desde a issue #60, e cada um e
+		# cobrado pela regra DELE. Uma regra so -- "valor > 1" -- aprovaria um desconto de
+		# 1,05 (que ENCARECE o macaco) e reprovaria uma parcela de +0,5.
+		var tipo: DadosUpgrade.Efeito = dados.tipo_de_efeito
+		if tipo == DadosUpgrade.Efeito.LIGA_PRODUCAO_AUTOMATICA:
 			# interruptor nao multiplica nada, e numero solto num campo que ninguem le
 			# faz a proxima pessoa procurar um multiplicador que nao existe
 			perto(dados.valor, 1.0, 0.0, "%s -- interruptor tem valor neutro" % caminho)
+		elif tipo in DadosUpgrade.SOMADORES:
+			# parcela: zero e o neutro, e parcela zero e upgrade que nao faz nada
+			ok(dados.valor > 0.0, "%s -- parcela %s soma alguma coisa" % [caminho, dados.valor])
+		elif tipo in DadosUpgrade.DESCONTOS:
+			ok(
+				dados.valor > 0.0 and dados.valor < 1.0,
+				"%s -- desconto %s esta entre 0 e 1" % [caminho, dados.valor],
+			)
+			# ⚠️ e ele nao pode furar o piso sozinho: um desconto abaixo do DESCONTO_MINIMO
+			# ja chegaria no piso com UMA compra, e os outros da familia virariam enfeite
+			ok(
+				dados.valor > DadosUpgrade.DESCONTO_MINIMO,
+				"%s -- desconto %s nao fura o piso sozinho" % [caminho, dados.valor],
+			)
 		else:
 			# valor 1 e upgrade que nao faz nada: o jogador paga e nao ve diferenca
 			ok(dados.valor > 1.0, "%s -- valor %s multiplica alguma coisa" % [caminho, dados.valor])
+
+		# ⚠️ E TODO TIPO TEM QUE ESTAR EM ALGUMA DAS LISTAS. Tipo novo no enum que ninguem
+		# classificou cai no `else` acima e e cobrado como multiplicador -- em silencio, e
+		# errado. Item que fica fora da lista some da conta.
+		ok(
+			tipo == DadosUpgrade.Efeito.LIGA_PRODUCAO_AUTOMATICA
+				or tipo in DadosUpgrade.MULTIPLICADORES
+				or tipo in DadosUpgrade.SOMADORES
+				or tipo in DadosUpgrade.DESCONTOS,
+			"%s -- o tipo %d esta classificado em alguma lista" % [caminho, tipo],
+		)
 		ok(dados.requisito >= 0.0, "%s -- requisito nao e negativo" % caminho)
 		ok(
 			dados.tipo_de_efeito in DadosUpgrade.Efeito.values(),
