@@ -54,6 +54,32 @@ const AVISO_VISIVEL: float = 1.6
 ## qualquer daltonismo; a cor so acompanha.
 enum Alcance { ALCANCAVEL, PERTO, LONGE }
 
+## AS FASES DO BOTAO DIGITAR (issue #68).
+##
+## ⚠️ AOS TRINTA MINUTOS O MAIOR E MAIS BRILHANTE ELEMENTO DA TELA DAVA +1 CONTRA 37,7
+## MILHOES POR SEGUNDO. Sete ordens de grandeza. O jogador comecou digitando, e a interface
+## continuava dizendo que era isso que importava.
+##
+## ⚠️ O COMBO JA ENVELHECE DE PROPOSITO (issue #54): "quando a automacao cresce, o papel do
+## jogador passa de operador para administrador". O botao nao acompanhou -- esta issue e o
+## botao alcancando o combo.
+##
+## ⚠️ E ELE NUNCA SOME. Quem nao pode usar o mouse depende da tecla, e a acessibilidade da
+## issue #54 vale aqui: acelera, nunca obriga -- mas tambem nunca desaparece. A fase mais
+## tardia ainda e um botao clicavel e alcancavel por teclado.
+##
+## Altura em pixels por fase, e a fase e DERIVADA da razao entre o que o clique da e o que
+## a producao automatica da -- nunca uma lista de minutos, nunca um estado guardado
+## (regra 2 de arquitetura).
+const ALTURAS_DO_DIGITAR: Array[float] = [96.0, 72.0, 52.0, 36.0]
+
+## As fronteiras entre as fases, em "quantos segundos de producao automatica um clique
+## vale". Um clique que vale mais de um segundo de producao ainda e a acao principal.
+##
+## ⚠️ Limite de DESIGN. Ele responde "quando o clique deixa de ser o assunto", e nao
+## "quanto o clique deve render".
+const SEGUNDOS_QUE_O_CLIQUE_VALE: Array[float] = [1.0, 0.01, 0.0001]
+
 ## A partir de quanto do custo o item vira "proximo objetivo".
 ##
 ## ⚠️ Limite de DESIGN, e nao botao de tuning: ele responde "a partir de quando vale a pena
@@ -110,6 +136,7 @@ func _pintar() -> void:
 	)
 	%ValorMacacos.text = Formatador.formatar(Jogo.macacos)
 	_pintar_combo()
+	_pintar_o_digitar()
 	# a unidade vem da ERA, e nao esta escrita aqui: na era 14 a contagem de macacos
 	# deixa de fazer sentido e o jogador passa a manipular possibilidades (GDD §6).
 	# Trocar so o fundo contaria metade da historia.
@@ -173,6 +200,42 @@ func _pintar_combo() -> void:
 		return
 	# "%s ×%.2f" e marca de formato: o tr() vem ANTES da substituicao
 	%Combo.text = "%s ×%.2f" % [tr("COMBO"), multiplicador]
+
+
+## O botao DIGITAR encolhe conforme o papel do jogador muda (issue #68).
+##
+## ⚠️ A LEGENDA ENVELHECE JUNTO. "+1 caractere por clique ou espaco" e verdade e e
+## irrelevante aos trinta minutos; na fase tardia ela passa a dizer o que o clique vale
+## CONTRA a producao, que e a informacao que sobrou.
+func _pintar_o_digitar() -> void:
+	var fase := _fase_do_digitar()
+	%BotaoDigitar.custom_minimum_size.y = ALTURAS_DO_DIGITAR[fase]
+	# ⚠️ reduzir_movimento nao desliga o encolhimento, e sim a ANIMACAO dele -- e nao ha
+	# animacao: o tamanho segue a fase, e a fase muda uma vez por partida. Opcao de conforto
+	# que escondesse a mudanca de papel esconderia conteudo.
+	%BotaoDigitar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+
+	if fase == 0:
+		%DicaDigitar.text = tr("+1 caractere por clique ou espaço")
+		return
+	# "%s %s" e marca de formato: o tr() vem ANTES da substituicao
+	%DicaDigitar.text = "%s %s" % [
+		tr("o macaco produz isto sozinho a cada segundo:"),
+		Formatador.formatar(Jogo.caracteres_por_segundo),
+	]
+
+
+## Em que fase o botao esta, lida na hora. Zero e a fase inicial.
+func _fase_do_digitar() -> int:
+	var por_segundo := Jogo.caracteres_por_segundo
+	if por_segundo.sinal() <= 0:
+		return 0
+	# quantos segundos de producao automatica um clique vale
+	var vale := Combo.multiplicador() / por_segundo.para_float()
+	for i in SEGUNDOS_QUE_O_CLIQUE_VALE.size():
+		if vale >= SEGUNDOS_QUE_O_CLIQUE_VALE[i]:
+			return i
+	return ALTURAS_DO_DIGITAR.size() - 1
 
 
 ## Veste um botao de compra conforme o quanto o jogador esta longe de poder paga-lo.

@@ -28,6 +28,7 @@ func _init() -> void:
 func executar() -> void:
 	var caminho_original := Config.caminho
 	Config.caminho = CAMINHO_DE_TESTE
+	_o_digitar_nunca_some()
 
 	_raridade_sem_cor()
 	_tipo_de_marco_sem_cor()
@@ -220,3 +221,38 @@ func _divida_declarada() -> void:
 			not Config.campos_da_aba(aba).is_empty(),
 			"a aba %s tem campo para desenhar" % aba,
 		)
+
+
+## ⚠️ O BOTAO DIGITAR ENCOLHE, MAS NUNCA SOME (issue #68).
+##
+## Ele envelhece junto com o papel do jogador -- aos trinta minutos ele dava +1 contra 37,7
+## milhoes por segundo, e continuava sendo o maior elemento da tela. Mas quem nao pode usar
+## o mouse depende da tecla, e a issue #54 e explicita: atividade acelera, nunca obriga.
+##
+## A fase mais tardia ainda precisa ser um alvo clicavel de verdade.
+func _o_digitar_nunca_some() -> void:
+	var alturas: Array[float] = preload("res://src/ui/hud.gd").ALTURAS_DO_DIGITAR
+	var fronteiras: Array[float] = preload("res://src/ui/hud.gd").SEGUNDOS_QUE_O_CLIQUE_VALE
+
+	ok(not alturas.is_empty(), "o botao tem pelo menos uma fase")
+	igual(
+		fronteiras.size(), alturas.size() - 1,
+		"ha uma fronteira a menos que fases -- N fases, N-1 cortes",
+	)
+
+	var anterior := 99999.0
+	for i in alturas.size():
+		# ⚠️ o minimo alvo de toque: um botao mais baixo que isto e um alvo que a mao erra,
+		# e erro de clique num botao que produz recurso e progresso perdido em silencio
+		ok(
+			alturas[i] >= 32.0,
+			"a fase %d tem %.0f px de altura -- alvo clicavel de verdade" % [i, alturas[i]],
+		)
+		ok(alturas[i] <= anterior, "a fase %d nao e maior que a anterior" % i)
+		anterior = alturas[i]
+
+	var caindo := true
+	for i in range(1, fronteiras.size()):
+		if fronteiras[i] >= fronteiras[i - 1]:
+			caindo = false
+	ok(caindo, "as fronteiras caem: cada fase exige o clique valendo MENOS que a anterior")
