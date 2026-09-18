@@ -119,6 +119,21 @@ func _nome_e_data_de_criacao() -> void:
 	var nascimento := Jogo.criado_em
 	ok(nascimento > 0.0, "a primeira gravacao carimba a data de criacao")
 
+	# ⚠️ A TOLERANCIA 0,0 DAS TRES AFIRMACOES ABAIXO SO E VERDADE POR CAUSA DESTA LINHA.
+	# O JSON do Godot guarda 15 digitos significativos e um horario unix gasta 10 antes da
+	# virgula -- uma data com microssegundos NAO volta igual do disco. Save.gravar()
+	# carimba em segundos inteiros exatamente para que "a data nao muda" seja uma
+	# afirmacao verdadeira, e nao uma que passa por sorte.
+	#
+	# Esta afirmacao mora AQUI, na origem, e nao so nas comparacoes la embaixo: se alguem
+	# tirar o floorf(), a falha aponta para o carimbo em vez de apontar para a leitura --
+	# e apontar para o lugar errado custa a tarde inteira. Antes disso, a suite reprovava
+	# em Linux e passava em Windows, onde o relogio e grosso o bastante para caber.
+	perto(
+		nascimento - floorf(nascimento), 0.0, 0.0,
+		"e a data vem em segundos inteiros, que e o que o JSON consegue devolver igual",
+	)
+
 	Jogo.total_caracteres = Grande.de_float(999.0)
 	ok(Save.gravar(), "grava de novo")
 	perto(Jogo.criado_em, nascimento, 0.0, "e a data de criacao NAO muda na segunda")
