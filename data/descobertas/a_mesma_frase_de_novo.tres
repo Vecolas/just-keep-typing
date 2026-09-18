@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados"]
+
+[resource]
+script = ExtResource("1_dados")
+id = "a_mesma_frase_de_novo"
+nome = "A Mesma Frase, De Novo"
+texto = "Já tinha saído antes. Com produção suficiente, tudo já saiu antes."
+categoria = 3
+chance_base = 9e-13
+bonus = 1.0
+papel = 2
+curiosidade = "Com um alfabeto finito, repetir é inevitável antes de esgotar. É por isso que o teorema fala em certeza, e não em sorte."

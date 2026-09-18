@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="DadosDescoberta" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/progressao/dados_descoberta.gd" id="1_dados"]
+
+[resource]
+script = ExtResource("1_dados")
+id = "as_paginas_nao_contam_mais"
+nome = "As Páginas Não Contam Mais"
+texto = "Alguém parou de converter em páginas. Não havia mais papel suficiente na metáfora."
+categoria = 3
+chance_base = 8e-12
+bonus = 1.0
+papel = 2
+curiosidade = "Uma página cabe umas duas mil letras. A partir de certo ponto, dizer o número em páginas exige mais dígitos do que dizer o número."
