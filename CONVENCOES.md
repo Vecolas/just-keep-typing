@@ -619,6 +619,54 @@ O portão deriva os pontos de entrada da pasta — todo `.gd` com um `.tscn` irm
 dívida (`SEM_SORTEIO_AINDA`) morde dos dois lados: quem está nela tem de **continuar** sem
 produzir caractere.
 
+### ⚠️ Medir por FONTE, e nunca só pelo resultado
+
+A v0.7 gastou uma investigação inteira procurando o multiplicador no lugar errado. Os
+upgrades eram o suspeito óbvio — 38 multiplicadores que compõem, mais de 10^13 juntos.
+Separar todos eles moveu o primeiro Teorema de 04:22 para **04:01**.
+
+O número estava nas **descobertas**: ×10^41, vinte e oito ordens de grandeza acima.
+
+A régua dizia `producao = 8,4e17`, e isso **não permite perguntar de onde veio.**
+
+> **Toda mudança de balanceamento é medida por fonte, não apenas pelo resultado final.**
+
+E fonte nova entra na decomposição **junto do sistema** — fonte que multiplica produção sem
+aparecer na árvore reprova. *Item que fica fora da lista some da conta.*
+
+### ⚠️ Formato humano é terminal, nunca fonte de dados
+
+O script de análise da v0.7 lia `"64 bilhões"` como `64`. Isso fez dois instrumentos
+**parecerem discordar em oito ordens de grandeza**, e quase virou uma investigação sobre
+qual dos dois estava mentindo. Nenhum estava.
+
+**Ferramenta de análise nunca lê número a partir de texto formatado para humano.** Quando a
+saída serve aos dois públicos, ela traz os dois:
+
+```json
+{ "valor": 64000000000, "texto": "64 bilhões" }
+```
+
+A análise usa `valor`. A interface usa `texto`.
+
+⚠️ E note onde este defeito morava: **não estava no jogo nem nas ferramentas do jogo**, e sim
+na análise feita por cima delas. É a camada que ninguém versiona e ninguém testa.
+
+### ⚠️ Objeto antes de fórmula
+
+Dois erros da v0.7, a mesma causa: **regra geral aplicada sem olhar o que a peça é.**
+
+| peça | o que aconteceu |
+|---|---|
+| `mesas_empilhadas` | virou parcela de velocidade. O texto dele fala de empilhar mesas — ou seja, **vaga** |
+| `instinto_digitador` | recebeu requisito como qualquer outro da fila. Ele é o **interruptor** que liga a produção automática (GDD §3) |
+
+Nos dois casos a semântica existia **só no texto da descrição**, que nenhuma ferramenta lê —
+e nos dois casos quem acusou foi um número colateral, não um portão.
+
+**O papel da peça vira dado, e o dado impõe invariante**: `INTERRUPTOR` exige `requisito 0`,
+`CAPACIDADE` exige efeito de capacidade. É a invariante que pega o erro, não o rótulo.
+
 ### A régua roda o jogo inteiro, e o jogador simulado é uma TABELA
 
 ⚠️ **Régua que não executa um sistema mede um jogo que ninguém joga.** Até a issue #59 a

@@ -256,7 +256,7 @@ economicamente e péssimo como conteúdo. A descrição é o produto.
 
 ---
 
-## v0.7 — A campanha da primeira hora
+## v0.7 — A campanha da primeira hora  ✅ **entregue**
 
 **A regra desta versão:** a v0.6 mediu a primeira hora pela primeira vez, e o resultado foi
 **quatro minutos de acontecimento seguidos de cinquenta e seis de silêncio**. A v0.7 não
@@ -304,6 +304,43 @@ A pergunta deixa de ser *"quanto tempo até prestigiar?"* e passa a ser:
   se mistura trilha nova, economia nova e campanha nova no mesmo ciclo
 - **não mantém duas réguas.** O instrumento muda, e o histórico fica no `TUNING.md` com o
   aviso de que as tabelas não se comparam — como já se fez na issue #42
+
+---
+
+## v0.7.1 — O jogador enxerga o que acontece
+
+**A regra desta versão:** a v0.7 consertou a economia. Esta não mexe nela.
+
+> **A interface está escondendo ou desvalorizando o que a economia produz.**
+
+O caso decisivo: **20% dos avisos somem antes do tempo mínimo de leitura**. Conteúdo que
+existe no banco de dados e o jogador não consegue consumir **não é polimento — é conteúdo
+inexistente**.
+
+Decisão em `docs/decisoes/0010-o-jogador-enxerga-o-que-acontece.md`.
+
+| # | Issue | Prova |
+|---|---|---|
+| 69 | notificações com fila e prioridade | a proporção de avisos ilegíveis cai (hoje 20%) |
+| 67 | três estados visuais na loja | captura nos minutos 1, 20 e 30 |
+| 68 | `DIGITAR` perde protagonismo | captura do minuto 1 e do 30, lado a lado |
+| 66 | formatação discreta × contínua | grandeza contável nunca sai com vírgula |
+| 73 | o combo de volta para 12–18% | um parâmetro, antes e depois |
+| 74 | 30–40 min sem tocar na economia | CPS idêntico antes e depois |
+| 71 | a régua decompõe por fonte | fonte fora da árvore reprova |
+| 72 | papel do upgrade com invariante | a suíte vista reprovando cada uma |
+
+E antes de tudo: **a #70**, que é do autor e não tem substituto.
+
+### O que esta versão deliberadamente NÃO faz
+
+- **não mexe na economia.** A arquitetura de bônus está **congelada** até o midgame existir:
+  27 parcelas que não compõem, 5 multiplicadores globais, 4 de velocidade, 5 de capacidade,
+  2 descontos e 1 interruptor
+- **não cria marco.** O requisito é um fato sobre o mundo (decisão `0003`)
+- **não cria upgrade, moeda nem era.** O congelamento da decisão `0008` continua
+- **não começa o midgame.** Ele é a v0.8, e começa depois que o jogador conseguir ler o que
+  já acontece
 
 ---
 
