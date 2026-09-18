@@ -40,7 +40,21 @@ const CLIQUES_POR_SEGUNDO: float = 4.0
 const LIMITE_SEGUNDOS: float = 24.0 * 3600.0
 
 
+## ⚠️ O CONTROLE DA ISSUE #54. `-- sem_combo=1` zera o combo depois de cada clique, o que
+## simula um jogador que digita sem nenhuma cadencia -- e da a MESMA medicao sem o efeito.
+##
+## Piso escrito a mao inventa a propria escala: "o combo acelera" so quer dizer alguma
+## coisa contra a mesma corrida sem ele.
+##
+## E ele nao precisa de porta de tras no Combo: zerar e a operacao que ja existe para o
+## prestigio, e o que muda aqui e o JOGADOR simulado, nao o sistema medido.
+var _sem_combo: bool = false
+
+
 func _ready() -> void:
+	for argumento in OS.get_cmdline_user_args():
+		if argumento == "sem_combo=1":
+			_sem_combo = true
 	_zerar_a_partida()
 
 	var tempos := {}
@@ -55,6 +69,8 @@ func _ready() -> void:
 	while relogio < LIMITE_SEGUNDOS and Marcos.proximo() != null:
 		if not Economia.producao_automatica():
 			Economia.digitar(int(CLIQUES_POR_SEGUNDO * PASSO))
+			if _sem_combo:
+				Combo._zerar()
 		Economia.acumular(PASSO)
 		Marcos.verificar()
 
@@ -120,6 +136,11 @@ func _imprimir(tempos: Dictionary, producoes: Dictionary, relogio: float) -> voi
 		PASSO, INTERVALO_DE_COMPRA, CLIQUES_POR_SEGUNDO,
 	])
 	print("jogador simulado: compra otima ingenua (upgrade assim que da, depois macaco maximo)")
+	print("combo de digitacao: %s" % ("DESLIGADO (sem_combo=1)" if _sem_combo else "ligado"))
+	# ⚠️ E ELE PARA DE DIGITAR quando a producao automatica acende, que sao os primeiros
+	# dez caracteres. O resto da campanha inteira roda sem um clique -- o que e, por si
+	# so, a prova de que a progressao nao depende do combo.
+	print("⚠️ o jogador simulado nao digita depois do Instinto Digitador")
 	print("")
 	print("%-22s %-12s %-14s %s" % ["marco", "tempo", "requisito", "cps no momento"])
 	print("%-22s %-12s %-14s %s" % ["-".repeat(22), "-".repeat(12), "-".repeat(14), "-".repeat(14)])

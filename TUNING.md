@@ -304,6 +304,46 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### O combo com e sem (issue #54), e o que ele revelou sobre a própria régua
+
+`godot --headless --path . tools/medir_ritmo.tscn -- sem_combo=1` zera o combo depois de
+cada clique: mesma corrida, mesmo jogador, sem o efeito.
+
+| marco | sem combo | com combo |
+|---|---|---|
+| `seu_nome` | 00:07 | **00:06** |
+| `um_soneto` | 01:18 | **01:17** |
+| `uma_pagina` | **01:51** | 01:56 |
+| `um_livro` | **03:30** | 04:06 |
+| `voce_nao_produz_mais_texto` | **4h18** | 4h19 |
+| fim de 24 h | 7,56e68 | 7,55e68 |
+
+**Os dois terminam no mesmo lugar.** Os mesmos 80 marcos caem nas duas corridas, e a
+diferença ao fim de 24 horas é de 0,1% — o que prova, com número, a exigência da issue: o
+combo **acelera**, e não é via nenhuma. Quem não puder digitar chega exatamente aonde
+chega quem digita.
+
+⚠️ **Mas o sinal inverte em 1 min 30, e o motivo não é o combo — é o jogador simulado.**
+Ele para de digitar no instante em que a produção automática acende, e o combo faz esse
+instante chegar **um segundo antes**. Nos primeiros minutos, clicar a 4/s rende mais que a
+produção automática recém-ligada: desistir um segundo mais cedo custa um segundo de
+clique, e reaver isso leva 37 segundos de juros compostos.
+
+Ou seja: **os +37 s não medem o combo, medem a ingenuidade do modelo.** Um humano continua
+digitando depois da primeira compra — é justamente para isso que o combo existe.
+
+⚠️ **Nenhuma régua acusa isso sozinha.** Ela devolveu uma tabela perfeitamente consistente
+nas duas corridas; o que não batia era a HISTÓRIA que a tabela contava. Só a leitura pega
+"este número está certo e mesmo assim não quer dizer o que parece".
+
+O modelo do jogador simulado é assunto da issue #56, que precisa dele correto para medir a
+primeira hora. Enquanto isso, as duas linhas ficam escritas na saída da régua:
+
+```
+jogador simulado: compra otima ingenua (upgrade assim que da, depois macaco maximo)
+⚠️ o jogador simulado nao digita depois do Instinto Digitador
+```
+
 A primeira régua a escrever é sempre a que sustenta a **decisão de design mais cara ainda
 não medida**. Num projeto anterior isso apagou uma suposição inteira: o custo de uma
 máscara pintável não estava no upload de textura (0.079 ms, irrelevante) mas no laço por

@@ -190,6 +190,14 @@ layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
+[node name="Combo" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+visible = false
+layout_mode = 2
+text = ""
+horizontal_alignment = 1
+
 [node name="DicaDigitar" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
 unique_name_in_owner = true
 layout_mode = 2

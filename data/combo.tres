@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="DadosCombo" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/producao/dados_combo.gd" id="1_dados_combo"]
+
+[resource]
+script = ExtResource("1_dados_combo")
+teto = 1.5
+ganho_por_tecla = 0.05
+decaimento_por_segundo = 0.4
+segundos_de_graca = 1.0
