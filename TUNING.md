@@ -126,6 +126,31 @@ o quadro dura menos de dois milissegundos, e a piscina de letras nasce por **tem
 240 quadros passa menos tempo do que passava a 60 fps. A linha `SATURADO` existe justamente
 para o teto continuar sendo medido em vez de suposto.
 
+### O menu parado, e o menu vivo (issue #48)
+
+O menu é a tela que fica aberta atrás de outra coisa por mais tempo que qualquer outra, e é
+ali que "animação a 60 fps num menu parado" vira bateria queimada à toa. A régua mede a
+**mesma** tela com `reduzir movimento` ligado (nada se mexe) e desligado (gestos, poeira e
+estrelas piscando):
+
+```text
+                                 quadro    p95       p99       perdidos
+MENU PARADO                      0,636 ms  1,313 ms  2,141 ms  0 de 240
+MENU VIVO                        0,629 ms  1,368 ms  3,243 ms  0 de 240
+```
+
+**O menu vivo custa 0,007 ms de média — ou seja, nada mensurável.** A diferença entre os
+dois é menor que a diferença entre duas medições do mesmo estado, exatamente como no áudio.
+O p99 sobe um milissegundo, e essa é a linha a olhar se um dia entrar um gesto mais caro.
+
+E o menu inteiro custa **um terço** do que a partida mais barata custa (0,63 ms contra
+1,88 ms), o que é esperado: ele não tem produção, nem letras nascendo, nem marcos a
+verificar. O que a tabela garante é que os gestos não mudaram isso.
+
+⚠️ **O modo econômico é o outro lado desta conta, e ele não aparece aqui.** Com a janela em
+segundo plano, `Config.fps_efetivo()` desce para 10 quadros por segundo — a régua mede com
+a janela na frente, de propósito, porque é ali que o custo existe.
+
 ### Áudio antes e depois, na mesma era (issue #42)
 
 O som de digitação é uma piscina fixa de tocadores em rodízio e as formas de onda são

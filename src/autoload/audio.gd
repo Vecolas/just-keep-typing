@@ -48,7 +48,11 @@ const BARRAMENTOS: Array[Dictionary] = [
 ## controla-la.
 ##
 ##   Musica    entra com a trilha do menu
-##   Ambiente  entra com o menu vivo (issue #48): poeira, estrelas, o zumbido da sala
+##   Ambiente  ⚠️ CONTINUA NA DIVIDA DEPOIS DA ISSUE #48, e isso e decisao. O menu vivo
+##             entregou poeira e estrelas -- que sao VISUAIS. Um zumbido de sala continuo
+##             num jogo que fica aberto atras de outra coisa e som que a pessoa desliga uma
+##             vez e nunca mais liga; ele entra quando houver um som de ambiente que alguem
+##             queira ouvir, e nao para justificar uma barra de volume.
 const SEM_FONTE_AINDA: Array[StringName] = [&"Musica", &"Ambiente"]
 
 ## ⚠️ O TETO, e ele e CONSTANTE. Dez CLACKs por segundo e o limite de design do ouvido --

@@ -122,6 +122,26 @@ func _ready() -> void:
 		_falhar("a segunda abertura montou a cena so para desmonta-la")
 		return
 
+	# 0.05. o menu vivo: os gestos existem, sao sorteados, e reduzir movimento para TUDO
+	#       (issue #48). O relogio e adiantado, e nao esperado.
+	if GestosDoMenu.GESTOS.is_empty():
+		_falhar("nao ha gesto declarado para o menu vivo")
+		return
+	var gestos := GestosDoMenu.new()
+	if not gestos.ligado():
+		_falhar("com reduzir movimento desligado, os gestos deviam estar ligados")
+		return
+	var pegou_algum := false
+	for i in 400:
+		var estado := gestos.tique(0.05)
+		if estado["macaco"]["desloca"] != Vector2.ZERO or estado["macaco"]["gira"] != 0.0:
+			pegou_algum = true
+		if estado["maquina"]["desloca"] != Vector2.ZERO:
+			pegou_algum = true
+	if not pegou_algum:
+		_falhar("vinte segundos de menu e nenhum gesto aconteceu")
+		return
+
 	# 0.1. e com reduzir movimento ligado ela continua levando ao menu (issue #43)
 	var movimento_antes := Config.indice_de("reduzir_movimento")
 	Config.escolher("reduzir_movimento", 1)
@@ -135,6 +155,17 @@ func _ready() -> void:
 	if sem_movimento.call("revelando"):
 		_falhar("reduzir movimento nao desligou a revelacao de camera")
 		return
+	# ⚠️ E NADA SE MEXE NO MENU VIVO. O controle da afirmacao acima: sem esta linha, um
+	# `ligado()` que devolvesse sempre verdadeiro passaria em tudo.
+	var parados := GestosDoMenu.new()
+	if parados.ligado():
+		_falhar("reduzir movimento nao desligou os gestos do menu")
+		return
+	for i in 200:
+		var quieto := parados.tique(0.05)
+		if quieto["macaco"]["desloca"] != Vector2.ZERO or quieto["maquina"]["desloca"] != Vector2.ZERO:
+			_falhar("com reduzir movimento ligado, um gesto ainda aconteceu")
+			return
 	_apertar(&"ui_down")
 	await get_tree().process_frame
 	if Cenas.atual() != "menu":
@@ -235,6 +266,13 @@ func _ready() -> void:
 	campo.text = NOME_DO_MANUSCRITO
 	(arquivos.find_child("BotaoCriar1", true, false) as Button).pressed.emit()
 	await get_tree().process_frame
+
+	# ⚠️ ENTRAR PELOS ARQUIVOS NAO TEM APROXIMACAO, e isso e de proposito (issue #48): nao
+	# ha mesa na tela de onde a camera possa partir, e inventar uma maquina saindo do nada
+	# seria uma transicao que nao costura coisa nenhuma.
+	if Cenas.aproximando():
+		_falhar("a tela de Arquivos disparou a aproximacao da maquina")
+		return
 
 	if Cenas.atual() != "partida":
 		_falhar("criar o Manuscrito 1 nao abriu a partida, e sim %s" % Cenas.atual())
@@ -890,6 +928,14 @@ func _ready() -> void:
 
 	Jogo.total_caracteres = Grande.zero()
 	continuar_de_volta.pressed.emit()
+
+	# ⚠️ A TRANSICAO ROLA SEM A FUMACA ESPERAR POR ELA (issue #48). Ela e decoracao por cima
+	# de uma partida que JA comecou: se ela exigisse await antes de montar, haveria uma
+	# janela em que um segundo clique comecaria uma segunda partida -- que e exatamente a
+	# janela que a issue #38 fechou escolhendo o clarao em vez da travessia.
+	if not Cenas.aproximando():
+		_falhar("vindo do menu, a aproximacao da maquina nao comecou")
+		return
 
 	# ⚠️ SEM await ANTES DE COMPARAR. Montar a partida e sincrono, mas o primeiro _process
 	# dela ja produz: um quadro de espera aqui somaria producao ao total recem-carregado, e

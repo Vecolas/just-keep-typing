@@ -61,6 +61,12 @@ func _ready() -> void:
 	var raiz := empacotada.instantiate()
 	add_child(raiz)
 	await get_tree().process_frame
+
+	# ⚠️ O MENU PARADO E MEDIDO PRIMEIRO (issue #48), e antes de qualquer partida existir.
+	# Ele e a tela que fica aberta atras de outra coisa por mais tempo do que qualquer
+	# outra, e e ali que "animacao a 60 fps num menu parado" vira bateria queimada a toa.
+	await _medir_o_menu(raiz)
+
 	Cenas.comecar_partida(1)
 	await get_tree().process_frame
 
@@ -106,6 +112,56 @@ func _ready() -> void:
 		await _medir_som(letras, "desligado", volta + 1)
 		await _medir_som(letras, "normal", volta + 1)
 	get_tree().quit(0)
+
+
+## O menu, com o menu vivo ligado e desligado. As duas linhas medem a MESMA tela: a
+## diferenca entre elas e o preco dos gestos, da poeira e das estrelas piscando.
+func _medir_o_menu(raiz: Node) -> void:
+	# o Boot pode ter pulado a abertura ou nao; o que se mede e o menu, entao vai-se a ele
+	Config._opcoes["ja_viu_abertura"] = true
+	Cenas.ir_para_menu()
+	await get_tree().process_frame
+
+	print("")
+	print("menu parado:")
+	var movimento_antes := Config.indice_de("reduzir_movimento")
+	for ligado in [1, 0]:
+		Config.escolher("reduzir_movimento", ligado)
+		await get_tree().process_frame
+		await _medir_tela("MENU %s" % ("PARADO" if ligado == 1 else "VIVO"))
+	Config.escolher("reduzir_movimento", movimento_antes)
+	print("")
+
+
+## Mede a tela que estiver montada agora, sem mexer em producao nenhuma. Serve para o menu,
+## onde nao ha Letras nem Eras para contar.
+func _medir_tela(rotulo: String) -> void:
+	for i in AQUECIMENTO:
+		await get_tree().process_frame
+
+	var amostras: PackedFloat64Array = PackedFloat64Array()
+	var anterior := Time.get_ticks_usec()
+	for i in QUADROS:
+		await get_tree().process_frame
+		var agora := Time.get_ticks_usec()
+		amostras.append(float(agora - anterior) / 1000.0)
+		anterior = agora
+
+	var ordenadas := amostras.duplicate()
+	ordenadas.sort()
+	var soma := 0.0
+	var perdidos := 0
+	for valor in amostras:
+		soma += valor
+		if valor > ORCAMENTO_MS:
+			perdidos += 1
+	print("%-16s %-8s %-8s %-9s %-9s %-9s %d de %d" % [
+		rotulo, "-", "-",
+		"%.3f ms" % (soma / float(amostras.size())),
+		"%.3f ms" % ordenadas[int(float(ordenadas.size()) * 0.95)],
+		"%.3f ms" % ordenadas[mini(int(float(ordenadas.size()) * 0.99), ordenadas.size() - 1)],
+		perdidos, QUADROS,
+	])
 
 
 ## Tira o teto de quadros e o vsync desta medicao, pelos dois caminhos que os controlam.
