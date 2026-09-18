@@ -11,18 +11,22 @@
 ## atravessar cada faixa de escala (decisao 0003), e ate esta regua existir esse numero
 ## nunca tinha sido olhado.
 ##
-## ⚠️ O QUE ESTA REGUA NAO MEDE, declarado para ninguem supor que ela mede:
+## ⚠️ A REGUA DE CAMPANHA (issue #59). Ate a v0.6 esta regua NAO executava eventos nem
+## automacao, e o jogador simulado nunca prestigiava. Ela media um pedaco do jogo e o
+## chamava de campanha.
 ##
-##   EVENTOS. Ela nunca chama Eventos.tique -- so a cena da partida chama. A campanha
-##   medida aqui nao tem nenhum acontecimento aleatorio, nem os bons nem os ruins.
+## Agora ela roda a partida inteira: Eventos.tique, Automacao.tique e a decisao de
+## prestigiar. As tres coisas que faltavam sao justamente as que mudam o RITMO -- um evento
+## dobra a producao por trinta segundos, uma automacao compra macaco enquanto o jogador
+## olha para outro lado, e o prestigio reinicia a run com multiplicador.
 ##
-##   AUTOMACAO. Mesma coisa: Automacao.tique nao roda. Gerente Macaco e os outros nao
-##   compram macaco sozinhos durante a medicao, e o jogador simulado faz esse trabalho na
-##   mao a cada INTERVALO_DE_COMPRA.
+## ⚠️ TABELA MEDIDA ANTES DESTA ISSUE NAO SE COMPARA COM AS NOVAS. O instrumento mudou
+## pela segunda vez (a primeira foi o jogador que passou a digitar). Ver TUNING.md.
 ##
-## Os dois sao ponto cego DECLARADO e nao esquecimento: liga-los mudaria o instrumento mais
-## uma vez, e tabela medida com instrumento diferente nao se compara. Entram na issue que
-## for rebalancear a curva, junto com a medicao nova que ela vai precisar de qualquer jeito.
+## ⚠️ E NAO EXISTE UMA `medir_ritmo_v1` GUARDADA AO LADO. Duas fontes para a mesma verdade
+## divergem, e a versao velha voltaria a rodar no dia em que alguem a chamasse -- medindo
+## um jogo que ja nao existe. O historico mora no TUNING.md, que e onde ele nao pode ser
+## executado por engano. Ver CONVENCOES.md, "Uma regua por assunto".
 ##
 ## ⚠️ E O SORTEIO DE DESCOBERTAS E SEMEADO -- ver SEMENTE_DO_SORTEIO. Sem isso a promessa
 ## do paragrafo abaixo e falsa, e foi falsa ate a issue #56.
@@ -45,11 +49,53 @@ const PASSO: float = 0.5
 ## a curva e triplicaria o custo da medicao.
 const INTERVALO_DE_COMPRA: float = 1.0
 
-## Cliques por segundo enquanto o macaco ainda nao digita sozinho (GDD §3). Sem isto a
-## partida nunca sai do zero: a producao automatica custa caracteres, e antes dela o
-## clique e a unica fonte. Quatro por segundo e um dedilhado tranquilo, e ele para no
-## instante em que o Instinto Digitador entra.
-const CLIQUES_POR_SEGUNDO: float = 4.0
+## OS TRES PERFIS DE JOGADOR (issue #63). ⚠️ NAO EXISTE "JOGADOR MATEMATICO PERFEITO"
+## REAL, e a pergunta que tres perfis respondem -- e que um so nunca responde -- e:
+##
+##     a campanha funciona apenas se a pessoa jogar de uma maneira especifica?
+##
+## ⚠️ E ELES SAO DADOS, e nao tres copias do laco. Tres funcoes parecidas divergem na
+## primeira mudanca; o que muda entre eles cabe em cinco numeros.
+##
+## ⚠️ OS TRES USAM A MESMA SEMENTE. Semente por perfil misturaria comportamento com
+## sorteio, e a diferenca entre as tabelas deixaria de querer dizer alguma coisa.
+##
+##   cliques_por_segundo   cadencia enquanto ele esta digitando
+##   digita_depois_da_automacao  se ele continua digitando depois que a producao acende
+##   atraso_de_compra      segundos ALEM do INTERVALO_DE_COMPRA ate ele ir a loja
+##   resolve_eventos       se ele clica para encerrar o evento ruim
+##
+## ⚠️ O PERFIL "normal" E O QUE MANDA no criterio de aceite (issue #62). Os outros dois
+## existem para achar o caso em que a campanha so fecha num extremo -- e o PASSIVO e quem
+## nao pode digitar rapido: se a campanha so fechar para o ativo, a issue #54 foi violada,
+## porque "atividade acelera, nunca obriga".
+const PERFIS: Dictionary = {
+	"ativo": {
+		"cliques_por_segundo": 6.0,
+		"digita_depois_da_automacao": true,
+		"atraso_de_compra": 0.0,
+		"resolve_eventos": true,
+	},
+	"normal": {
+		"cliques_por_segundo": 3.0,
+		"digita_depois_da_automacao": true,
+		"atraso_de_compra": 5.0,
+		"resolve_eventos": true,
+	},
+	# ⚠️ ele AINDA digita antes da automacao acender, e nao por escolha: a producao
+	# automatica custa caracteres, e antes dela o clique e a unica fonte (GDD §3). Um
+	# perfil que nao clicasse nada nunca sairia do zero, e mediria uma tela parada.
+	"passivo": {
+		"cliques_por_segundo": 2.0,
+		"digita_depois_da_automacao": false,
+		"atraso_de_compra": 15.0,
+		"resolve_eventos": false,
+	},
+}
+
+## O perfil histórico das medicoes anteriores a issue #63, para as tabelas antigas
+## continuarem tendo um nome. Ver TUNING.md.
+const PERFIL_PADRAO := "normal"
 
 ## Ate onde a medicao vai. Marco que nao cai em um dia de jogo aparece como NAO ALCANCADO,
 ## que e um resultado tao util quanto um tempo.
@@ -65,6 +111,13 @@ const LIMITE_SEGUNDOS: float = 24.0 * 3600.0
 ## E ele nao precisa de porta de tras no Combo: zerar e a operacao que ja existe para o
 ## prestigio, e o que muda aqui e o JOGADOR simulado, nao o sistema medido.
 var _sem_combo: bool = false
+
+## Os instantes em que o jogador simulado prestigiou. Guardado para o _imprimir.
+var _prestigios: Array[float] = []
+
+## O perfil em uso, lido de "-- perfil=<nome>". Cai no padrao quando nao pedido.
+var _perfil: Dictionary = {}
+var _nome_do_perfil: String = PERFIL_PADRAO
 
 
 ## ⚠️ A SEMENTE DO SORTEIO DE DESCOBERTAS. SEM ELA A REGUA NAO E REGUA.
@@ -88,7 +141,25 @@ func _ready() -> void:
 	for argumento in OS.get_cmdline_user_args():
 		if argumento == "sem_combo=1":
 			_sem_combo = true
+		elif argumento.begins_with("perfil="):
+			var pedido := argumento.trim_prefix("perfil=")
+			# ⚠️ perfil desconhecido REPROVA em vez de cair no padrao em silencio: uma
+			# medicao rotulada "ativo" que na verdade rodou "normal" e pior que nenhuma
+			if not PERFIS.has(pedido):
+				printerr("FALHA  perfil desconhecido: %s (ha %s)" % [
+					pedido, ", ".join(PackedStringArray(PERFIS.keys())),
+				])
+				get_tree().quit(1)
+				return
+			_nome_do_perfil = pedido
+	_perfil = PERFIS[_nome_do_perfil]
+	# ⚠️ OS DOIS GERADORES, e nao so um. Eventos tem gerador proprio e tambem chama
+	# randomize() no _ready: semear so Descobertas deixaria metade da aleatoriedade solta,
+	# e a regua voltaria a nao ser deterministica -- so que agora com um motivo a menos
+	# para alguem desconfiar, porque "a semente esta la".
 	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
+	Eventos.gerador.seed = SEMENTE_DO_SORTEIO
+	Eventos.limpar()
 	_zerar_a_partida()
 
 	var tempos := {}
@@ -101,9 +172,16 @@ func _ready() -> void:
 	# ⚠️ OS TRES OUVINTES DA ISSUE #56. A regua media SO marco ate aqui, e a versao se
 	# chama "A primeira hora": sem saber quando o jogador compra e quando ele DESCOBRE,
 	# metade do que acontece na primeira hora era invisivel para quem ajusta os numeros.
+	# ⚠️ A PRIMEIRA COMPRA, e nao a ultima. Desde que o jogador simulado passou a prestigiar
+	# (issue #59), ele REcompra tudo a cada run -- e guardar `upgrades[id] = agora` sem
+	# guarda sobrescreve o instante original pelo da ultima recompra.
+	#
+	# Isso nao da erro: a tabela sai coerente, com 1 upgrade na primeira hora em vez de 44,
+	# e a leitura seria "a curva foi consertada". O defeito era da regua, e nao do jogo.
 	var upgrades := {}
 	var ouvinte_upgrade := func(id: String) -> void:
-		upgrades[id] = Jogo.tempo_jogado
+		if not upgrades.has(id):
+			upgrades[id] = Jogo.tempo_jogado
 	EventBus.upgrade_comprado.connect(ouvinte_upgrade)
 
 	# a PRIMEIRA de cada categoria, e nao todas: o que conta e quando a faixa comeca a
@@ -118,15 +196,26 @@ func _ready() -> void:
 
 	var teorema_disponivel := -1.0
 	var teorema_vale := -1.0
+	var prestigios: Array[float] = []
 
 	var relogio := 0.0
 	var ate_comprar := 0.0
 	while relogio < LIMITE_SEGUNDOS and Marcos.proximo() != null:
 		if _vale_a_pena_digitar():
-			Economia.digitar(int(CLIQUES_POR_SEGUNDO * PASSO))
+			var quantos := int(float(_perfil["cliques_por_segundo"]) * PASSO)
+			if quantos > 0:
+				Economia.digitar(quantos)
 			if _sem_combo:
 				Combo._zerar()
+		if bool(_perfil["resolve_eventos"]):
+			# ele so encerra o que da para encerrar com clique; o resto espera o relogio
+			for id in Eventos.ativos():
+				Eventos.resolver(str(id))
 		Economia.acumular(PASSO)
+		# ⚠️ NA MESMA ORDEM DA PARTIDA (src/cena/partida.gd): eventos antes de automacao.
+		# Ordem diferente aqui mediria um jogo que ninguem joga.
+		Eventos.tique(PASSO)
+		Automacao.tique(PASSO)
 		Marcos.verificar()
 
 		# ⚠️ CURTO-CIRCUITO, e nao uma amostragem mais rala. pode_provar() faz um log10
@@ -146,14 +235,19 @@ func _ready() -> void:
 
 		ate_comprar -= PASSO
 		if ate_comprar <= 0.0:
-			ate_comprar = INTERVALO_DE_COMPRA
+			ate_comprar = INTERVALO_DE_COMPRA + float(_perfil["atraso_de_compra"])
 			_comprar_o_que_der()
+			if _hora_de_prestigiar():
+				prestigios.append(Jogo.tempo_jogado)
+				Teoremas.provar()
+				_gastar_os_pontos()
 		relogio += PASSO
 
 	EventBus.marco_alcancado.disconnect(ouvinte)
 	EventBus.upgrade_comprado.disconnect(ouvinte_upgrade)
 	EventBus.descoberta_encontrada.disconnect(ouvinte_descoberta)
 	_imprimir(tempos, producoes, relogio)
+	_prestigios = prestigios
 	_imprimir_a_primeira_hora(tempos, upgrades, primeira_da_categoria,
 		teorema_disponivel, teorema_vale)
 	get_tree().quit(0)
@@ -176,7 +270,11 @@ func _ready() -> void:
 func _vale_a_pena_digitar() -> bool:
 	if not Economia.producao_automatica():
 		return true
-	var da_mao := Grande.de_float(CLIQUES_POR_SEGUNDO * Combo.multiplicador())
+	if not bool(_perfil["digita_depois_da_automacao"]):
+		return false
+	var da_mao := Grande.de_float(
+		float(_perfil["cliques_por_segundo"]) * Combo.multiplicador()
+	)
 	return da_mao.maior_que(Economia.producao_por_segundo())
 
 
@@ -198,11 +296,51 @@ func _o_teorema_dobra_a_producao() -> bool:
 	return Teoremas.multiplicador_se_provar() / agora >= DOBRO
 
 
+## ⚠️ QUANDO O JOGADOR SIMULADO PRESTIGIA (issue #59). Ate aqui ele NUNCA prestigiava, e
+## isso nao era uma decisao -- era a ausencia de uma. A regua media uma campanha em que o
+## sistema central da progressao de longo prazo simplesmente nao existia.
+##
+## A politica declarada: ele prestigia quando provar DOBRA a producao. E o mesmo criterio
+## de "vale a pena" que a tabela da primeira hora ja reportava -- agora ele tambem AGE.
+##
+## Prestigiar nao apaga marco: total_caracteres nunca desce, e e ele que o Panorama le. O
+## que volta ao comeco e a run -- dinheiro, macacos, upgrades.
+func _hora_de_prestigiar() -> bool:
+	return Teoremas.pode_provar() and _o_teorema_dobra_a_producao()
+
+
+## Depois de prestigiar, gasta o que der na Arvore -- do mais barato para o mais caro.
+##
+## ⚠️ SEM ISTO O PRESTIGIO SERIA SO PERDA. O jogador recebe pontos e nao compra nada com
+## eles: a run nova comeca sem os upgrades, sem os macacos e sem nenhum no da Arvore, e a
+## regua mediria uma jogada que nenhum humano faria duas vezes.
+func _gastar_os_pontos() -> void:
+	var comprou := true
+	while comprou:
+		comprou = false
+		var candidatos: Array[DadosTeorema] = []
+		for no in Teoremas.nos():
+			if Teoremas.pode_comprar(no.id):
+				candidatos.append(no)
+		candidatos.sort_custom(func(a: DadosTeorema, b: DadosTeorema) -> bool:
+			return Teoremas.custo_do_proximo(b.id).maior_que(Teoremas.custo_do_proximo(a.id)))
+		for no in candidatos:
+			if Teoremas.comprar(no.id):
+				comprou = true
+				break
+
+
 ## A compra otima ingenua: upgrade primeiro, porque multiplicador vale para sempre e o
-## macaco seguinte so vale por si; depois, o maximo de macacos que couber.
+## macaco seguinte so vale por si; depois automacao, depois o maximo de macacos que couber.
+##
+## ⚠️ A AUTOMACAO ENTRA NA COMPRA (issue #59). Ela nao e producao bruta, e conveniencia --
+## mas conveniencia que compra macaco sozinha muda o ritmo, e a regua nao pode fingir que
+## o jogador ignora um sistema inteiro que esta na tela dele.
 func _comprar_o_que_der() -> void:
 	for dados in Economia.upgrades():
 		Economia.comprar_upgrade(dados.id)
+	for automacao in Automacao.todas():
+		Automacao.comprar(automacao.id)
 	var proxima := Economia.proxima_maquina()
 	if proxima != null:
 		Economia.comprar_maquina(proxima.id)
@@ -318,6 +456,13 @@ func _imprimir_a_primeira_hora(
 			print("  %-14s NAO SAIU em 24 h" % DescobertasTela.NOMES_DE_CATEGORIA[categoria])
 
 	print("")
+	print("prestigios na medicao: %d" % _prestigios.size())
+	for i in _prestigios.size():
+		print("  %d.  %s" % [i + 1, _como_tempo(_prestigios[i])])
+	if _prestigios.is_empty():
+		print("  NENHUM -- o jogador simulado nunca achou que valia a pena")
+
+	print("")
 	print("o primeiro Teorema:")
 	print("  disponivel      %s" % (
 		"NUNCA" if teorema_disponivel < 0.0 else _como_tempo(teorema_disponivel)))
@@ -354,14 +499,20 @@ func _como_tempo(segundos: float) -> String:
 ## sessoes de tuning -- e diff de texto alinhado se le a olho nu.
 func _imprimir(tempos: Dictionary, producoes: Dictionary, relogio: float) -> void:
 	print("medir_ritmo -- passo %.1fs, compra a cada %.1fs, %.0f cliques/s ate a automacao" % [
-		PASSO, INTERVALO_DE_COMPRA, CLIQUES_POR_SEGUNDO,
+		PASSO, INTERVALO_DE_COMPRA + float(_perfil["atraso_de_compra"]),
+		float(_perfil["cliques_por_segundo"]),
+	])
+	print("perfil: %s  (digita depois da automacao: %s, resolve eventos: %s)" % [
+		_nome_do_perfil,
+		"sim" if bool(_perfil["digita_depois_da_automacao"]) else "NAO",
+		"sim" if bool(_perfil["resolve_eventos"]) else "nao",
 	])
 	print("jogador simulado: compra otima ingenua (upgrade assim que da, depois macaco maximo)")
 	print("combo de digitacao: %s" % ("DESLIGADO (sem_combo=1)" if _sem_combo else "ligado"))
 	# ⚠️ E ELE PARA DE DIGITAR quando a producao automatica acende, que sao os primeiros
 	# dez caracteres. O resto da campanha inteira roda sem um clique -- o que e, por si
 	# so, a prova de que a progressao nao depende do combo.
-	print("⚠️ o jogador simulado nao digita depois do Instinto Digitador")
+	print("o jogador digita enquanto digitar render mais do que esperar")
 	print("")
 	print("%-22s %-12s %-14s %s" % ["marco", "tempo", "requisito", "cps no momento"])
 	print("%-22s %-12s %-14s %s" % ["-".repeat(22), "-".repeat(12), "-".repeat(14), "-".repeat(14)])

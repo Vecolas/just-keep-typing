@@ -50,6 +50,11 @@ const SEMENTE_DO_SORTEIO: int = 1
 
 func _ready() -> void:
 	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
+	# ⚠️ E O SEGUNDO GERADOR (issue #59). A fumaca dispara eventos de proposito, e Eventos
+	# tem gerador PROPRIO que tambem chama randomize() no _ready. O portao novo achou isto
+	# no primeiro laco: a semente das descobertas estava la desde a #56, e a de eventos
+	# nao -- que e exatamente a forma que "metade do conserto" toma.
+	Eventos.gerador.seed = SEMENTE_DO_SORTEIO
 	# fixa a lingua como o runner faz, e pelo mesmo motivo: as opcoes moram em
 	# user://opcoes.json, que e da INSTALACAO. Sem isto a fumaca roda no idioma em que o
 	# jogo foi deixado, e uma volta na tela de opcoes quebraria a run sem nada ter mudado

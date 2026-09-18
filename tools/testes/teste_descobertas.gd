@@ -459,6 +459,18 @@ func _conferir_semente(caminho: String, nome_do_arquivo: String) -> int:
 		texto.contains("Descobertas.gerador.seed"),
 		"o ponto de entrada %s fixa Descobertas.gerador.seed" % nome_do_arquivo,
 	)
+
+	# ⚠️ E O SEGUNDO GERADOR (issue #59). Eventos tambem chama randomize() no _ready, e quem
+	# roda Eventos.tique sem semear volta a ser nao deterministico -- so que agora com um
+	# motivo a MENOS para alguem desconfiar, porque "a semente esta la".
+	#
+	# So cobra de quem de fato roda eventos: exigir a linha de quem nao os executa seria
+	# cerimonia, e portao que reprova codigo certo ensina todo mundo a ignora-lo.
+	if texto.contains("Eventos.tique"):
+		ok(
+			texto.contains("Eventos.gerador.seed"),
+			"%s roda eventos e fixa Eventos.gerador.seed" % nome_do_arquivo,
+		)
 	return 1
 
 

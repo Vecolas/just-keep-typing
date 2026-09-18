@@ -619,6 +619,49 @@ O portão deriva os pontos de entrada da pasta — todo `.gd` com um `.tscn` irm
 dívida (`SEM_SORTEIO_AINDA`) morde dos dois lados: quem está nela tem de **continuar** sem
 produzir caractere.
 
+### A régua roda o jogo inteiro, e o jogador simulado é uma TABELA
+
+⚠️ **Régua que não executa um sistema mede um jogo que ninguém joga.** Até a issue #59 a
+`medir_ritmo` não chamava `Eventos.tique` nem `Automacao.tique`, e o jogador simulado
+**nunca prestigiava** — e as três coisas que faltavam são justamente as que mexem no ritmo.
+
+⚠️ **E "nunca prestigiava" não era uma decisão; era a ausência de uma.** Comportamento do
+jogador simulado que ninguém escreveu é comportamento que ninguém revisa. Hoje a política
+está declarada: ele prestigia quando provar **dobra** a produção.
+
+**Os perfis são dados, e não três cópias do laço:**
+
+| perfil | cliques/s | digita após a automação | atraso de compra | resolve eventos |
+|---|---|---|---|---|
+| ativo | 6 | sim | 0 s | sim |
+| **normal** | 3 | sim | 5 s | sim |
+| passivo | 2 | **não** | 15 s | não |
+
+Três funções parecidas divergem na primeira mudança; o que separa os perfis cabe em quatro
+números.
+
+⚠️ **Os três usam a MESMA semente.** Semente por perfil misturaria comportamento com
+sorteio, e a diferença entre as tabelas deixaria de querer dizer alguma coisa.
+
+⚠️ **O perfil `normal` é o que manda no critério.** O `passivo` é quem não pode digitar
+rápido: se a campanha só fechar para o `ativo`, a issue #54 foi violada — *atividade
+acelera, nunca obriga*.
+
+⚠️ **Perfil desconhecido REPROVA**, e não cai no padrão em silêncio: uma medição rotulada
+"ativo" que na verdade rodou "normal" é pior que nenhuma medição.
+
+### Instrumentação também tem defeito silencioso
+
+O ouvinte de compra guardava `upgrades[id] = agora` sem guarda. Quando o jogador simulado
+passou a prestigiar, ele **recompra tudo a cada run** — e o instante original era
+sobrescrito pelo da última recompra.
+
+A tabela saía **coerente**: `1 upgrade na primeira hora` em vez de 44. A leitura natural
+seria *"a curva foi consertada"*. **O defeito era da régua.**
+
+Mede-se a **primeira** ocorrência, e não a última, sempre que a coisa medida pode acontecer
+de novo.
+
 ### Uma régua por assunto — nunca uma v1 e uma v2 lado a lado
 
 Quando um instrumento precisa mudar, a tentação é guardar o antigo "como histórico". **Não

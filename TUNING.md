@@ -304,6 +304,62 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### A linha de base dos três perfis (issues #59 e #63)
+
+Régua de campanha — com eventos, automação e prestígio —, mesma semente nos três:
+
+| perfil | marcos em 10 min | upgrades | 1º Teorema | prestígios na 1ª h |
+|---|---|---|---|---|
+| ativo | 76 | 44 | 00:03:47 | 3 |
+| **normal** | 76 | 44 | **00:04:22** | 2 |
+| passivo | 76 | 44 | 00:05:14 | 2 |
+
+**O problema é igual nos três.** A distância entre o ativo e o passivo é de **87 segundos**
+numa campanha de 24 horas — ou seja, **a campanha não depende de jogar de uma maneira
+específica**. O defeito é estrutural, e não comportamental.
+
+⚠️ **E um critério da #65 já passa:** o ativo é **13% mais rápido** que o normal, dentro da
+faixa de 10–20% — digitar ajuda sem definir a run. Isso vale ser re-medido **depois** do
+rebalanceamento, porque é exatamente o tipo de propriedade que uma curva nova pode quebrar.
+
+⚠️ **O prestígio agora acontece, e acontece cedo demais**: três vezes na primeira hora no
+perfil ativo, a primeira aos 3:47. O reset é a virada da campanha, e ele está virando antes
+de haver campanha.
+
+### ⚠️ O INSTRUMENTO MUDOU NA ISSUE #59 (3) — a régua virou campanha
+
+Até a v0.6 a `medir_ritmo` **não executava eventos nem automação**, e o jogador simulado
+**nunca prestigiava**. Ela media um pedaço do jogo e chamava aquilo de campanha.
+
+| | antes | agora |
+|---|---|---|
+| `Eventos.tique` | ❌ não rodava | ✅ |
+| `Automacao.tique` | ❌ não rodava | ✅ |
+| compra de automação | ❌ | ✅ |
+| prestigiar | ❌ **nunca** | ✅ quando dobra a produção |
+| seed de `Eventos.gerador` | — | ✅ |
+
+As três coisas que faltavam são justamente as que mexem no **ritmo**: um evento dobra a
+produção por trinta segundos, uma automação compra macaco enquanto o jogador olha para
+outro lado, e o prestígio reinicia a run com multiplicador.
+
+⚠️ **Tabela medida antes desta issue não se compara com as novas.** É a terceira mudança de
+instrumento do projeto (as outras: `medir_quadro` na #42, o jogador que passou a digitar na
+#56).
+
+⚠️ **E não existe uma `medir_ritmo_v1` guardada ao lado.** Ver `CONVENCOES.md`, *"Uma régua
+por assunto"*: o histórico mora aqui, que é onde ele não pode ser executado por engano.
+
+#### O que o portão novo achou junto
+
+A regra "todo ponto de entrada semeia" passou a cobrar **os dois** geradores. No primeiro
+laço ela reprovou a **fumaça**: a semente das descobertas estava lá desde a #56, a de
+eventos não.
+
+**É exatamente a forma que "metade do conserto" toma** — e ela é pior que nenhum conserto,
+porque agora existe uma linha de semente no arquivo dando a impressão de que o assunto foi
+resolvido.
+
 ### ⚠️ A RÉGUA NÃO ERA DETERMINÍSTICA, e o cabeçalho dela afirmava que era
 
 `Descobertas.gerador` chama `randomize()` no `_ready`, e **descoberta dá bônus de
