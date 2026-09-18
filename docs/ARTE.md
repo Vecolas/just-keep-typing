@@ -209,15 +209,42 @@ luz azul vindo do cosmos é a assinatura visual da franquia**.
 **Sombras** macias, profundas, levemente cinematográficas. Nada de iluminação chapada; os
 objetos têm bastante sensação de volume.
 
-**Estilo de renderização:** entre ilustração 3D estilizada e pintura digital polida.
-Volumes arredondados, texturas suaves, materiais legíveis, luz cinematográfica, personagens
-fofos, objetos um pouco exagerados.
+**Estilo de renderização — e ele é DOIS, de propósito** (issue #44, decisão
+[0006](decisoes/0006-pixel-art-no-menu-tipografia-na-partida.md)):
 
-Não é: realista, anime, pixel art, nem cartoon 2D simplório.
+| Onde | Como |
+|---|---|
+| Menu, Arquivos, Créditos | **pixel art**, com UI tipográfica por cima |
+| Partida | tipografia, arte ASCII e `Theme` montado em código |
 
-> Consequência prática para as opções de vídeo: como a arte **não** é pixel art de escala
-> inteira, a ressalva de "só a resolução nativa é exata" do `CONVENCOES.md` não se aplica
-> aqui — escalar não quebra a leitura.
+A partida não tem sprite nenhum, e isso não é uma etapa provisória: é o que permite
+atravessar catorze eras e 10^50 caracteres por segundo sem um asset por era (issue #26). O
+menu é uma cena **parada, de tamanho conhecido**, e é ali que o macaco, a máquina e a
+janela estrelada existem como objetos em vez de aproximações tipográficas.
+
+O que amarra as duas metades é a §15: *nunca deixa de parecer Just Keep Typing*. A cola é a
+**paleta** da seção 6 — que não muda —, o dourado, o `∞` e a máquina de escrever. Não é a
+técnica de renderização.
+
+**A pixel art é:** paleta fixa da seção 6, formas legíveis em tamanho pequeno, contorno
+escuro quando o objeto precisa se separar do fundo, sombra chapada em vez de gradiente.
+
+**Não é:** realista, anime, cartoon 2D simplório, nem pixel art "moderna" com centenas de
+cores e anti-aliasing manual.
+
+> ⚠️ **Consequência prática para as opções de vídeo, e ela VOLTOU A VALER com a issue
+> #44.** Pixel art é de escala inteira: a ressalva de "só a escala inteira é exata" do
+> `CONVENCOES.md` se aplica aqui.
+>
+> - a arte do menu é desenhada com filtro **nearest**, nunca linear — pixel art com
+>   interpolação vira borrão, e borrão é a única coisa que pixel art não pode ser
+> - a exatidão é garantida quando a janela tem o tamanho da tela lógica (1920×1080); em
+>   qualquer outro tamanho o canvas inteiro é reamostrado, como **já acontece** com toda a
+>   tipografia do jogo
+> - ⚠️ **a escala de interface (issue #43) move a UI, e não o cenário.** 125% em cima de
+>   sprite de escala inteira faria o pixel quadrado ter larguras diferentes na mesma
+>   imagem. O painel, os botões e o texto crescem; a mesa, o macaco e a janela ficam onde
+>   estão — que é o híbrido do plano §6, cenário físico com UI estilizada
 
 ---
 
@@ -468,22 +495,28 @@ sentado diante de uma máquina de escrever.
 respondem melhor. Cole isto e acrescente o objeto desejado no fim:
 
 ```text
-Visual asset for the indie incremental game "Just Keep Typing". Maintain the established
-Just Keep Typing visual identity: stylized polished 3D cartoon illustration, charming and
-intelligent tone, warm mechanical-literary aesthetic mixed with whimsical cosmic science.
-Use dark navy backgrounds, warm wood, aged cream paper, dark metal, brass and golden
-highlights. Main palette: #F6C74F banana gold, #E8B12E amber gold, #8B5E34 warm brown,
-#2B1E14 dark ink brown, #F4E9D8 paper cream, #0E1B2E cosmic navy and #00E5FF infinity
-cyan. Shapes should be chunky, rounded and highly readable. Mechanical objects should
-resemble vintage typewriters and retro scientific machinery, with subtle rivets, gears and
-brass details. Advanced technology may introduce cyan and violet glow, galaxies, stars and
-infinity symbols, but should preserve the original typewriter/literary DNA. Cozy
-cinematic lighting, warm golden key light mixed with subtle cool cosmic rim light, soft
-volumetric shadows, polished indie game art, expressive and playful rather than realistic.
+Pixel art asset for the indie incremental game "Just Keep Typing". Cozy mechanical-literary
+aesthetic: vintage typewriters, aged cream paper, warm wood, dark metal and brass, with a
+quiet cosmic undertone. Limited palette, use only these colours: #F6C74F banana gold,
+#E8B12E amber gold, #8B5E34 warm brown, #2B1E14 dark ink brown, #F4E9D8 paper cream,
+#0E1B2E cosmic navy, #00E5FF infinity cyan, #663399 deep violet, #B14CFF cosmic magenta.
+Readable chunky silhouettes, flat shading with a single warm light source from the left,
+dark outline where the object must separate from the background, no anti-aliasing, no
+gradients, no dithering noise. Warm golden lighting for early-game objects; cyan and violet
+only for advanced technology. No text, no letters, no numbers anywhere in the image.
 ```
 
-Depois: `Create an upgrade icon representing faster typing...`, `Create a laboratory room
-for the midgame...`, `Create a prestige button...` — mantendo todo o resto do prompt.
+Depois: `A wooden desk seen from the front...`, `A small brown monkey with round
+glasses...`, `A brass gear icon...` — mantendo todo o resto do prompt.
+
+⚠️ **O prompt-base antigo — "stylized polished 3D cartoon illustration" — SAIU, e isso é
+decisão** (issue #44). Deixar os dois é garantir que metade dos assets saia no estilo
+errado, e gerador de imagem não avisa que escolheu o parágrafo errado: ele só devolve a
+peça.
+
+⚠️ **`No text, no letters, no numbers` não é preciosismo.** Todo texto do jogo é renderizado
+pelo Godot — senão não traduz, não escala, a acessibilidade não alcança e o portão de i18n
+não enxerga. Vale em dobro para gerador de imagem, que erra letra.
 
 ---
 
@@ -499,3 +532,18 @@ Mexeu em arte, UI, shader, ícone ou partícula? Responda:
 6. Se tem texto: entrou no `i18n/textos.csv` nesta mesma mudança?
 7. A galeria de `docs/capturas/` foi regerada? O diff das imagens é o que prova que o
    ajuste não estragou a leitura da tela.
+
+Mais quatro, desde a issue #44 — as quatro são sobre pixel art, e as quatro pegam coisa que
+o olho deixa passar:
+
+8. ⚠️ **O asset tem texto dentro dele?** Nem `CONTINUAR`, nem `JOGAR`, nem o logo escrito.
+   Todo texto é renderizado pelo Godot. Gerador de imagem erra letra, e letra dentro do PNG
+   não traduz, não escala e a acessibilidade não alcança.
+9. ⚠️ **A paleta é só a da seção 6?** Gerador que escolhe a própria paleta devolve um jogo
+   diferente a cada asset. Conte as cores: se apareceu uma que não está na lista, ela vai
+   brigar com todas as outras telas.
+10. ⚠️ **O tamanho foi decidido ANTES de gerar?** Sprite em tamanho errado é sprite que vai
+    ser escalado, e escala não inteira em pixel art é borrão. Recortar depois não conserta
+    — só esconde.
+11. ⚠️ **A peça pertence à família?** Nenhuma medição pega "isso não parece do mesmo jogo".
+    Olhe a peça ao lado das vizinhas dela, e não sozinha.

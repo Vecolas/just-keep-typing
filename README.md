@@ -17,6 +17,7 @@ sair de 1 caractere para números que já não cabem em nenhuma comparação hum
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | Autoloads, pastas e fluxo de comunicação. |
 | [`TUNING.md`](TUNING.md) | Como ajustar balanceamento sem abrir um `.gd`. |
 | [`docs/decisoes/`](docs/decisoes/) | Uma decisão de design por arquivo. |
+| [`docs/ASSETS.md`](docs/ASSETS.md) | O briefing de cada asset do menu, e o tamanho de cada um. |
 
 ## Testes
 
