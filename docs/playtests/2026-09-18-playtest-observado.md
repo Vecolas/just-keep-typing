@@ -102,11 +102,42 @@ lê como um minuto saudável.
 
 ---
 
+---
+
+## ⚠️ "Quando você parou de ler os textos?" — a metade medível
+
+A pergunta tem duas metades, e uma delas **não depende de sentir**:
+
+> **quantos textos o jogo apaga antes de dar tempo de ler?**
+
+A HUD tem **um slot de aviso** (`hud.gd::_avisar`): marco, descoberta e autosave escrevem
+por cima do anterior e reiniciam o relógio de `AVISO_VISIVEL` (1,6 s). Dois avisos dentro
+dessa janela significam que o primeiro sumiu antes de ser lido.
+
+Medido nos trinta minutos:
+
+```
+⚠️ avisos que a HUD mostrou:                 82
+⚠️ apagados antes dos 1.6 s de leitura:      16  (20%)
+```
+
+**Um em cada cinco textos que o jogo escreve é fisicamente ilegível.** Não é opinião — é
+aritmética sobre os instantes em que os eventos caem.
+
+⚠️ **E o autosave disputa o mesmo slot.** *"Salvando..."* apaga uma descoberta com a mesma
+prioridade que um marco raro.
+
+Isso não responde se o jogador **quis** ler. Responde que, em 20% das vezes, ele **não
+teve como** — e essa metade agora está na issue **#69** com número em cima.
+
+---
+
 ## O que continua sendo do autor
 
-- [ ] **Quando você parou de ler os textos?**
-- [ ] **Em que minuto teria fechado o jogo?**
-- [ ] Foi divertido?
+As duas perguntas que sobraram **não têm metade medível**:
+
+- [ ] **Em que minuto você teria fechado o jogo?**
+- [ ] **Foi divertido?**
 
 `MODELO.md`, ao lado, tem o formulário. Uma máquina que enxerga chegou até aqui; o resto
 precisa de alguém que queira continuar jogando.
