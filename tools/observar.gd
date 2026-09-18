@@ -1,0 +1,268 @@
+## A SESSAO OBSERVADA (issue #64): o que esta NA TELA, minuto a minuto.
+##
+##   godot --path . tools/observar.tscn
+##   godot --path . tools/observar.tscn -- perfil=passivo minutos=30
+##
+## ⚠️ ISTO NAO E O PLAYTEST, E NAO O SUBSTITUI. O playtest da issue #64 responde "o que
+## confundiu", "quando parou de ler os textos", "quando ficou sem objetivo" -- e nenhuma
+## maquina responde isso. O que ESTA ferramenta faz e a outra metade, a que nenhum humano
+## consegue fazer bem: olhar a tela a cada minuto durante trinta minutos sem piscar, e
+## anotar o que mudou nela.
+##
+## A diferenca para medir_ritmo importa:
+##
+##   medir_ritmo   QUANDO cada coisa acontece. Nao monta cena nenhuma.
+##   observar      O QUE ESTA NA TELA enquanto acontece -- quantos botoes a loja oferece,
+##                 se algum deles esta comprável, o que o jogador teria para fazer.
+##
+## A pergunta que ela responde, e que a regua nao responde: **em que minutos o jogador nao
+## tem nada para fazer?** Um bloco de dez minutos pode estar "cheio" na tabela da regua --
+## marcos caindo -- e mesmo assim nao oferecer NENHUMA decisao ao jogador.
+##
+## SEM --headless de proposito: ela monta a partida de verdade, com a HUD, e conta os
+## botoes que a loja mostra. Headless nao monta layout.
+extends Node
+
+## De quanto em quanto tempo simulado ela olha para a tela.
+const PASSO: float = 0.5
+const INTERVALO_DE_COMPRA: float = 1.0
+
+## ⚠️ O MESMO DA REGUA E DA SUITE. Semente diferente daria uma sessao que nao se compara
+## com a tabela de medir_ritmo, e as duas existem para serem lidas lado a lado.
+const SEMENTE_DO_SORTEIO: int = 1
+
+const MINUTOS_PADRAO: int = 30
+
+var _perfil: Dictionary = {}
+var _nome_do_perfil: String = "normal"
+var _minutos: int = MINUTOS_PADRAO
+
+
+func _ready() -> void:
+	if DisplayServer.get_name() == "headless":
+		printerr("FALHA  a sessao observada monta a HUD; rode sem --headless")
+		get_tree().quit(1)
+		return
+
+	for argumento in OS.get_cmdline_user_args():
+		if argumento.begins_with("perfil="):
+			_nome_do_perfil = argumento.trim_prefix("perfil=")
+		elif argumento.begins_with("minutos="):
+			_minutos = maxi(1, int(argumento.trim_prefix("minutos=").to_int()))
+
+	var perfis: Dictionary = preload("res://tools/medir_ritmo.gd").PERFIS
+	if not perfis.has(_nome_do_perfil):
+		printerr("FALHA  perfil desconhecido: %s" % _nome_do_perfil)
+		get_tree().quit(1)
+		return
+	_perfil = perfis[_nome_do_perfil]
+
+	# nunca encosta no save de quem joga
+	#
+	# ⚠️ A PASTA TEM QUE EXISTIR ANTES. Sem isto o autosave falha a cada gravacao e enche a
+	# saida de backtrace -- e pior, a sessao roda mesmo assim, entao o erro passa por ruido
+	# em vez de por defeito.
+	DirAccess.make_dir_recursive_absolute("user://observar")
+	Save.caminho = "user://observar/save.json"
+	Config.caminho = "user://observar/opcoes.json"
+	Config.modelo_de_slot = "user://observar/slot_%d.json"
+
+	# ⚠️ APAGA A PASTA INTEIRA, e nao so Save.caminho. comecar_partida(1) troca o caminho do
+	# save para o do SLOT, e o arquivo do slot sobrevive entre execucoes da ferramenta --
+	# entao a segunda sessao em diante RETOMAVA a partida da anterior.
+	#
+	# O sintoma nao parecia defeito: a tabela saia coerente, so comecando com producao de
+	# 13,9 milhoes no minuto 1. Uma sessao observada que comeca no meio da campanha mede
+	# outro jogo, e a leitura dela vale zero.
+	_limpar_a_pasta("user://observar")
+
+	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
+	Eventos.gerador.seed = SEMENTE_DO_SORTEIO
+	Eventos.limpar()
+
+	var caminho: String = ProjectSettings.get_setting("application/run/main_scene", "")
+	var empacotada := load(caminho) as PackedScene
+	if empacotada == null:
+		printerr("FALHA  cena principal %s nao carregou" % caminho)
+		get_tree().quit(1)
+		return
+	add_child(empacotada.instantiate())
+	await get_tree().process_frame
+	Cenas.comecar_partida(1)
+	Cenas.concluir_transicao()
+	for i in 10:
+		await get_tree().process_frame
+
+	# ⚠️ UM RELOGIO SO. partida.gd::_process tica Eventos, Automacao, Economia.acumular E
+	# Marcos.verificar -- exatamente as quatro coisas que o laco abaixo tica. Com a cena
+	# ligada, o tempo andava DUAS vezes.
+	#
+	# O sintoma foi os dois instrumentos discordarem em oito ordens de grandeza: a regua
+	# dizia total 750 aos 60 minutos e esta sessao dizia 35 bilhoes aos 30, com o mesmo
+	# perfil e a mesma semente. Numero de medidor que discorda do outro medidor nao e
+	# "ruido": e um dos dois mentindo, e tuning feito em cima de qualquer um dos dois nao
+	# vale nada ate a discordancia ser explicada.
+	var partida := get_tree().root.find_child("Partida", true, false)
+	if partida == null:
+		printerr("FALHA  a cena da partida nao foi encontrada para desligar o _process")
+		get_tree().quit(1)
+		return
+	partida.set_process(false)
+
+	await _observar()
+	get_tree().quit(0)
+
+
+func _observar() -> void:
+	print("sessao observada -- perfil %s, %d minutos" % [_nome_do_perfil, _minutos])
+	print("⚠️ isto NAO e o playtest da issue #64: ele responde o que confundiu e quando o")
+	print("   jogador parou de ler. Isto responde o que estava na tela.")
+	print("")
+	print("%-6s %-12s %-12s %7s %7s %9s" % [
+		"min", "producao/s", "total", "na loja", "compras", "acontecimentos",
+	])
+	print("%-6s %-12s %-12s %7s %7s %9s" % [
+		"-".repeat(6), "-".repeat(12), "-".repeat(12), "-".repeat(7), "-".repeat(7),
+		"-".repeat(14),
+	])
+
+	var relogio := 0.0
+	var ate_comprar := 0.0
+	var proximo_minuto := 60.0
+	var mudou_no_minuto := 0
+	var marcos_antes := Jogo.marcos_alcancados.size()
+	var descobertas_antes := Jogo.descobertas.size()
+	# ⚠️ minutos sem NADA para fazer, que e a pergunta desta ferramenta
+	var minutos_sem_escolha := 0
+	var minutos_sem_acontecimento := 0
+	var minutos_sem_oferta := 0
+
+	var compras := [0]
+	var ouvinte_upgrade := func(_id: String) -> void: compras[0] += 1
+	var ouvinte_macaco := func(_quantos: int) -> void: compras[0] += 1
+	EventBus.upgrade_comprado.connect(ouvinte_upgrade)
+	EventBus.macacos_comprados.connect(ouvinte_macaco)
+
+	while relogio < float(_minutos) * 60.0:
+		if _vale_a_pena_digitar():
+			var quantos := int(float(_perfil["cliques_por_segundo"]) * PASSO)
+			if quantos > 0:
+				Economia.digitar(quantos)
+		Economia.acumular(PASSO)
+		Eventos.tique(PASSO)
+		Automacao.tique(PASSO)
+		Marcos.verificar()
+
+		ate_comprar -= PASSO
+		if ate_comprar <= 0.0:
+			ate_comprar = INTERVALO_DE_COMPRA + float(_perfil["atraso_de_compra"])
+			_comprar_o_que_der()
+
+		relogio += PASSO
+		if relogio >= proximo_minuto:
+			var na_loja := _quantos_na_loja()
+			var compraveis: int = compras[0]
+			compras[0] = 0
+			var acontecimentos := (
+				(Jogo.marcos_alcancados.size() - marcos_antes)
+				+ (Jogo.descobertas.size() - descobertas_antes)
+			)
+			if compraveis == 0:
+				minutos_sem_escolha += 1
+			if na_loja == 0:
+				minutos_sem_oferta += 1
+			if acontecimentos == 0:
+				minutos_sem_acontecimento += 1
+			print("%-6d %-12s %-12s %7d %7d %9d" % [
+				int(proximo_minuto / 60.0),
+				Formatador.formatar(Jogo.caracteres_por_segundo),
+				Formatador.formatar(Jogo.total_caracteres),
+				na_loja, compraveis, acontecimentos,
+			])
+			marcos_antes = Jogo.marcos_alcancados.size()
+			descobertas_antes = Jogo.descobertas.size()
+			proximo_minuto += 60.0
+			mudou_no_minuto += 1
+			await get_tree().process_frame
+
+	print("")
+	EventBus.upgrade_comprado.disconnect(ouvinte_upgrade)
+	EventBus.macacos_comprados.disconnect(ouvinte_macaco)
+	print("⚠️ minutos SEM NENHUMA COMPRA:               %d de %d" % [
+		minutos_sem_escolha, _minutos,
+	])
+	print("⚠️ minutos com a LOJA VAZIA (nada a mirar):  %d de %d" % [
+		minutos_sem_oferta, _minutos,
+	])
+	print("⚠️ minutos SEM MARCO NEM DESCOBERTA:         %d de %d" % [
+		minutos_sem_acontecimento, _minutos,
+	])
+	print("")
+	print("um minuto sem compra possivel E sem acontecimento e um minuto em que a tela nao")
+	print("muda e o jogador nao tem o que decidir. A regua nao ve isso.")
+
+
+## Apaga tudo que sobrou de uma execucao anterior. Partida nova quer dizer partida nova.
+func _limpar_a_pasta(pasta: String) -> void:
+	var dir := DirAccess.open(pasta)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var item := dir.get_next()
+	while item != "":
+		if not dir.current_is_dir():
+			DirAccess.remove_absolute(pasta + "/" + item)
+		item = dir.get_next()
+	dir.list_dir_end()
+
+
+## Quantos upgrades a loja esta mostrando -- ja desbloqueados e ainda nao comprados.
+func _quantos_na_loja() -> int:
+	var quantos := 0
+	for dados in Economia.upgrades():
+		if Jogo.upgrades_comprados.has(dados.id):
+			continue
+		if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
+			continue
+		quantos += 1
+	return quantos
+
+
+## ⚠️ A PRIMEIRA VERSAO DESTA FERRAMENTA MEDIA A COISA ERRADA, e vale registrar porque o
+## numero era convincente.
+##
+## Ela contava quantos upgrades estavam COMPRAVEIS no instante da medicao, e reportava "27
+## de 30 minutos sem nenhuma compra possivel". O numero era real e a leitura era falsa: o
+## jogador simulado varre a loja a cada ciclo de compra, entao no instante em que a medicao
+## acontece tudo que dava para comprar ACABOU DE SER COMPRADO. Ela media a politica do
+## jogador, e nao a oferta do jogo.
+##
+## O que substituiu: quantas compras de fato ACONTECERAM no minuto. Compra que aconteceu e
+## um fato sobre o jogo; saldo no instante errado e um fato sobre o medidor.
+
+
+func _vale_a_pena_digitar() -> bool:
+	if not Economia.producao_automatica():
+		return true
+	if not bool(_perfil["digita_depois_da_automacao"]):
+		return false
+	var da_mao := Grande.de_float(
+		float(_perfil["cliques_por_segundo"]) * Combo.multiplicador()
+	)
+	return da_mao.maior_que(Economia.producao_por_segundo())
+
+
+func _comprar_o_que_der() -> void:
+	for dados in Economia.upgrades():
+		Economia.comprar_upgrade(dados.id)
+	for automacao in Automacao.todas():
+		Automacao.comprar(automacao.id)
+	var proxima := Economia.proxima_maquina()
+	if proxima != null:
+		Economia.comprar_maquina(proxima.id)
+	var sala := Economia.proxima_sala()
+	if sala != null:
+		Economia.expandir_sala(sala.id)
+	var cabem := Economia.macacos_que_cabem()
+	if cabem > 0:
+		Economia.comprar_macacos(cabem)

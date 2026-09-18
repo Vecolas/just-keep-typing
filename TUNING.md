@@ -304,6 +304,52 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### ⚠️ A SESSÃO OBSERVADA VIU O QUE A RÉGUA NÃO VÊ (issue #64)
+
+`tools/observar.tscn` monta a partida de verdade e conta os botões da loja a cada minuto.
+A régua diz **quando** as coisas acontecem; ela diz **o que está na tela**.
+
+Na primeira execução:
+
+```
+⚠️ minutos SEM NENHUMA COMPRA POSSIVEL:   24 de 30
+```
+
+**A tabela da régua dizia "4 de 6 blocos com conteúdo". A tela dizia que dos minutos 8 ao 26
+o jogador não tinha o que decidir.** Marcos caindo não é a mesma coisa que haver algo a
+fazer.
+
+#### A faixa estreita entre loja vazia e vitrine
+
+| custo | resultado observado |
+|---|---|
+| requisito × 0,12 | **loja vazia** — compra-se no instante em que aparece, 24/30 min sem nada |
+| requisito × 16,7 | **vitrine** — 4 a 6 itens visíveis, zero alcançáveis em 27/30 min |
+| **requisito × 2,5** | aparece caro, fica comprável em um ou dois minutos |
+
+**Botão apagado com preço visível é uma meta; botão nenhum é tela vazia; botão que nunca
+acende é uma promessa que a economia não cumpre.** São três coisas diferentes, e nenhuma
+régua distingue as três.
+
+Depois do ajuste:
+
+| | |
+|---|---|
+| minutos com a loja vazia | **0 de 30** ✅ |
+| minutos sem nenhuma compra | 5 de 30 |
+| minutos sem marco nem descoberta | **11 de 30** ⚠️ |
+
+Registro completo em `docs/playtests/2026-09-18-sessao-observada.md`.
+
+### O estado final da v0.7
+
+| | v0.6 | v0.7 |
+|---|---|---|
+| distribuição 0–60 min | **76/0/0/1/0/0** | **34/3/7/0/1/6** |
+| blocos com conteúdo | **1 de 6** | **5 de 6** |
+| 1º Teorema vale a pena | 00:04:22 | **00:32:55** |
+| loja vazia | *não era medido* | **0 de 30 min** |
+
 ### O resultado da v0.7 até aqui (issues #60, #61 e #62)
 
 Perfil **normal**, régua de campanha, mesma semente:

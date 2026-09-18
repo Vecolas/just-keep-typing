@@ -27,10 +27,27 @@ QUEBRA = chr(10)
 EXPOENTE_INICIAL = 1.3   # ~20 caracteres, o primeiro upgrade de hoje
 EXPOENTE_FINAL = 18.0
 
-## Quanto do requisito o upgrade custa. Abaixo de 1 para ele ser COMPRAVEL pouco depois de
-## aparecer -- upgrade que aparece na loja e fica inalcancavel por dez minutos e uma
-## promessa que a interface faz e a economia nao cumpre.
-FATOR_DE_CUSTO = 0.12
+## ⚠️ O REQUISITO APARECE MUITO ANTES DO CUSTO, E ISSO E DE PROPOSITO.
+##
+## A sessao observada (issue #64) mostrou o defeito que a regua nao via: 24 dos 30 minutos
+## com a loja VAZIA. Com requisito e custo proximos, o jogador compra o upgrade no instante
+## em que ele aparece -- e passa o resto do tempo olhando para uma coluna sem nada.
+##
+## Separando os dois, o upgrade entra na loja cedo e caro: o jogador PASSA A TER UM ALVO.
+## Botao apagado com preco visivel nao e tela vazia, e uma meta; botao nenhum e tela vazia.
+##
+## ⚠️ E O QUANTO ANTES E UMA FAIXA ESTREITA, medida em tres iteracoes:
+##
+##   custo = requisito x 0,12  ->  loja VAZIA. O jogador compra no instante em que o item
+##                                 aparece, e passa 24 de 30 minutos sem nada na coluna.
+##   custo = requisito x 16,7  ->  loja cheia e INALCANCAVEL: 4 a 6 itens visiveis e ZERO
+##                                 compraveis em 27 de 30 minutos. Vitrine, nao loja.
+##   custo = requisito x 2,5   ->  aparece caro e fica comprável em um ou dois minutos.
+##
+## Botao apagado com preco visivel e uma meta; botao nenhum e tela vazia; botao que nunca
+## acende e uma promessa que a economia nao cumpre. As tres coisas sao diferentes, e so a
+## sessao observada (issue #64) enxerga a diferenca -- a regua nao ve nenhuma delas.
+VEZES_O_REQUISITO = 2.5
 
 ## ⚠️ O UPGRADE QUE LIGA O JOGO NAO SE ESPALHA. `instinto_digitador` e o interruptor da
 ## producao automatica: ate ele, o macaco nao digita sozinho (GDD §3) e o clique e a unica
@@ -102,7 +119,7 @@ def espalhar(pasta):
         fatia = float(i) / float(quantos - 1)
         expoente = EXPOENTE_INICIAL + (EXPOENTE_FINAL - EXPOENTE_INICIAL) * fatia
         requisito = 10.0 ** expoente
-        custo = requisito * FATOR_DE_CUSTO
+        custo = requisito * VEZES_O_REQUISITO
 
         antes = s
         s = _trocar(s, "requisito", _numero(requisito))

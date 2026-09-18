@@ -11,12 +11,12 @@ Perfil **normal**, régua de campanha, mesma semente:
 
 | | antes (v0.6) | depois |
 |---|---|---|
-| marcos em 0–10 min | **76** | **38** |
-| upgrades em 0–10 min | **44** | **22** |
-| blocos de 10 min com conteúdo | **1 de 6** | **4 de 6** |
-| 1º Teorema disponível | 00:03:43 | **00:27:54** |
-| 1º Teorema vale a pena | 00:04:22 | **00:37:39** |
-| prestígios na 1ª hora | 2 | **1** |
+| marcos em 0–10 min | **76** | **34** |
+| upgrades em 0–10 min | **44** | **17** |
+| distribuição 0–60 | 76/0/0/1/0/0 | **34/3/7/0/1/6** |
+| blocos de 10 min com conteúdo | **1 de 6** | **5 de 6** |
+| 1º Teorema vale a pena | 00:04:22 | **00:32:55** |
+| minutos com a loja vazia | *não era medido* | **0 de 30** |
 
 **O primeiro Teorema caiu dentro da faixa de 35 a 50 minutos**, que era o alvo da decisão
 0008. A primeira run passou a ter um arco: quase meia hora antes de o prestígio sequer
@@ -55,10 +55,17 @@ moldada.
 
 ## O que NÃO convergiu
 
-### O bloco de 40 a 60 minutos continua vazio
+### Onze de trinta minutos sem nenhum acontecimento
 
-A distribuição final é **38 / 8 / 22 / 1 / 0 / 0**, contra o alvo **25 / 18 / 15 / 13 / 11 /
-9**.
+A distribuição final é **34 / 3 / 7 / 0 / 1 / 6**, contra o alvo **25 / 18 / 15 / 13 / 11 /
+9**. Cinco dos seis blocos têm conteúdo — mas a sessão observada mostra o que a tabela
+esconde: **onze dos trinta minutos sem nenhum marco e nenhuma descoberta**, concentrados em
+dois vales (12–15 e 19–25).
+
+⚠️ **E a sessão observada é o instrumento que achou isso.** A régua nunca monta a HUD; a
+primeira execução da sessão reportou **24 de 30 minutos sem nenhuma compra possível** num
+estado em que a tabela da régua dizia "4 de 6 blocos com conteúdo". *Marcos caindo não é a
+mesma coisa que haver algo a fazer.*
 
 O motivo é estrutural e tem nome: **acima de 10^25 os marcos ficam espaçados por ordens de
 grandeza inteiras**, e a economia — depois de todos os 44 upgrades comprados — só cresce
@@ -121,10 +128,28 @@ Mesma família do `mesas_empilhadas` na issue #60, que virou parcela de velocida
 texto dele fala de empilhar mesas — ou seja, de **vaga**. **Regra geral aplicada sem olhar o
 que a peça é.** Aconteceu duas vezes nesta versão.
 
+## Três defeitos da própria instrumentação, e os três davam números convincentes
+
+1. **A sessão media a política do jogador, não a oferta do jogo.** Contava upgrades
+   *compráveis no instante da medição* — e o jogador simulado varre a loja a cada ciclo,
+   então tudo que dava para comprar acabara de ser comprado. Trocado por *compras que de
+   fato aconteceram*.
+2. **A sessão retomava a partida anterior.** `Save.apagar()` limpa `Save.caminho`, mas
+   `comecar_partida(1)` troca para o arquivo do **slot**, que sobrevive entre execuções. A
+   tabela saía coerente, começando com produção de 13,9 milhões no minuto 1.
+3. **Meu script de análise lia `"64 bilhões"` como `64`.** Isso fez os dois instrumentos
+   parecerem discordar em **oito ordens de grandeza**, e quase virou uma investigação sobre
+   qual dos dois estava mentindo. Conferidos no mesmo instante, eles concordam: régua aos
+   56 s marca 500, sessão ao 1 min marca 603.
+
+O terceiro é o mais barato de cometer e o mais caro de acreditar: **ele não estava no jogo
+nem nas ferramentas do jogo, e sim na análise que eu fiz por cima delas.**
+
 ## O que falta, em ordem
 
 1. **O playtest** (issue #64) — do autor, e o de *antes* já não é mais possível: a curva
-   mudou. Faça o de agora.
+   mudou. Faça o de agora. `docs/playtests/MODELO.md` tem o formulário; a sessão observada
+   já cobriu a metade que a máquina consegue.
 2. **Decidir o que ocupa de 40 a 60 minutos**, entre as três saídas acima.
 3. **Revisar a voz** — ~70 peças de texto autoral, mais duas descrições que esta versão
    reescreveu (os dois descontos, que falavam de produção e precisavam falar de custo).
