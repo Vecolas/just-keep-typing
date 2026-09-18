@@ -4,10 +4,11 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 1
 id = "cafe_para_o_macaco"
 nome = "Café para o Macaco"
 descricao = "Ele não pediu. Ele também não devolveu a xícara."
 custo = 1.62778e+06
 tipo_de_efeito = 0
-valor = 1.4
+valor = 1.7
 requisito = 40000.0

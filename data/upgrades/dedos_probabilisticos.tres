@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 4
 id = "dedos_probabilisticos"
 nome = "Dedos Probabilísticos"
 descricao = "Ele acerta a tecla certa antes de decidir qual era."

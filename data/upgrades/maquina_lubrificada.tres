@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 2
 id = "maquina_lubrificada"
 nome = "Máquina Lubrificada"
 descricao = "Menos tempo entre uma tecla e a seguinte. Muito menos rangido."

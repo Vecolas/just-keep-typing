@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 3
 id = "arquivo_vertical"
 nome = "Arquivo Vertical"
 descricao = "O andar de cima também era espaço. Ninguém tinha reparado."

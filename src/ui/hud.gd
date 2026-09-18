@@ -96,10 +96,14 @@ func _pintar() -> void:
 	_pintar_relogio_dos_eventos()
 	%BotaoTeoremas.visible = Teoremas.pode_provar() or Jogo.prestigios > 0
 
-	for botao in %ListaUpgrades.get_children():
-		var dados: DadosUpgrade = Economia.upgrade_de(botao.get_meta("id"))
+	for filho in %ListaUpgrades.get_children():
+		# cabecalho de familia nao tem id e nao e botao: perguntar a meta dele derrubaria
+		# o laco inteiro, e com ele o resto do quadro
+		if not filho.has_meta("id"):
+			continue
+		var dados: DadosUpgrade = Economia.upgrade_de(filho.get_meta("id"))
 		if dados != null:
-			botao.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
+			filho.disabled = Grande.de_float(dados.custo).maior_que(Jogo.dinheiro)
 
 	for botao in %ListaAutomacao.get_children():
 		var id: String = botao.get_meta("id")
@@ -259,27 +263,66 @@ func _ao_comprar_automacao(id: String) -> void:
 	Automacao.comprar(id)
 
 
-## Um botao por upgrade ainda nao comprado e ja desbloqueado. Limpa antes de montar.
+## Um botao por upgrade ainda nao comprado e ja desbloqueado, AGRUPADO POR FAMILIA
+## (issue #53). Limpa antes de montar.
+##
+## ⚠️ O CABECALHO SO SAI SE A FAMILIA TIVER ALGUEM EMBAIXO DELE. Emitir o titulo antes de
+## saber se sobrou upgrade produziria "A MAQUINA" seguido de nada assim que o jogador
+## comprasse o ultimo da familia -- uma secao vazia le como tela quebrada, e nao como
+## "voce ja comprou tudo daqui".
+##
+## Economia.upgrades() ja vem do mais barato para o mais caro, entao percorrer uma vez e
+## separar por familia preserva a escada dentro de cada secao sem ordenar de novo.
+##
+## ⚠️ A FAMILIA NAO ESCOLHE COMPORTAMENTO NENHUM AQUI -- so o cabecalho embaixo do qual o
+## botao cai. O que o clique faz continua vindo do tipo de efeito, la na Economia.
 func _montar_upgrades() -> void:
 	for antigo in %ListaUpgrades.get_children():
 		%ListaUpgrades.remove_child(antigo)
 		antigo.queue_free()
 
+	var por_familia := {}
 	for dados in Economia.upgrades():
 		if Jogo.upgrades_comprados.has(dados.id):
 			continue
 		if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
 			continue
+		if not por_familia.has(dados.familia):
+			por_familia[dados.familia] = []
+		por_familia[dados.familia].append(dados)
 
-		var botao := Button.new()
-		# "%s — %s" e marca de formato, nao texto: nao passa por traducao. O que traduz e
-		# o nome, e o tr() vem ANTES da substituicao (CONVENCOES.md, regra 2 de idioma)
-		botao.text = "%s — %s" % [tr(dados.nome), Formatador.formatar(Grande.de_float(dados.custo))]
-		botao.tooltip_text = tr(dados.descricao)
-		botao.focus_mode = Control.FOCUS_NONE
-		botao.set_meta("id", dados.id)
-		botao.pressed.connect(_ao_comprar.bind(dados.id))
-		%ListaUpgrades.add_child(botao)
+	# a ordem das secoes e a do enum, e nao a de quem apareceu primeiro: assim a loja nao
+	# se reorganiza sozinha a cada compra
+	for familia in DadosUpgrade.Familia.values():
+		var disponiveis: Array = por_familia.get(familia, [])
+		if disponiveis.is_empty():
+			continue
+
+		%ListaUpgrades.add_child(_cabecalho_de_familia(familia))
+		for dados in disponiveis:
+			var botao := Button.new()
+			# "%s — %s" e marca de formato, nao texto: nao passa por traducao. O que
+			# traduz e o nome, e o tr() vem ANTES da substituicao (CONVENCOES.md, idioma)
+			botao.text = "%s — %s" % [
+				tr(dados.nome), Formatador.formatar(Grande.de_float(dados.custo)),
+			]
+			botao.tooltip_text = tr(dados.descricao)
+			botao.focus_mode = Control.FOCUS_NONE
+			botao.set_meta("id", dados.id)
+			botao.pressed.connect(_ao_comprar.bind(dados.id))
+			%ListaUpgrades.add_child(botao)
+
+
+## ⚠️ O cabecalho NAO pode entrar no laco que pinta os botoes: _pintar() percorre os
+## filhos de %ListaUpgrades chamando Economia.upgrade_de(get_meta("id")). Um Label sem a
+## meta "id" derrubaria aquele laco, entao o filtro la embaixo pergunta por `has_meta`.
+func _cabecalho_de_familia(familia: int) -> Label:
+	var titulo := Label.new()
+	titulo.text = tr(DadosUpgrade.NOMES_DE_FAMILIA[familia]).to_upper()
+	titulo.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
+	titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
+	titulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return titulo
 
 
 # --- reacoes --------------------------------------------------------------------------

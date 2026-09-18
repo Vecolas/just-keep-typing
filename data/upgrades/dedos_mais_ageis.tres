@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 1
 id = "dedos_mais_ageis"
 nome = "Dedos Mais Ágeis"
 descricao = "O macaco passa a errar as teclas 50% mais rápido."

@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 4
 id = "o_macaco_percebe"
 nome = "O Macaco Percebe"
 descricao = "Por um instante ele olha para o papel e entende o que está fazendo. Depois volta."

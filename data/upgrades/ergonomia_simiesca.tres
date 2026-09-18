@@ -4,10 +4,11 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 1
 id = "ergonomia_simiesca"
 nome = "Ergonomia Simiesca"
 descricao = "A cadeira finalmente foi projetada para quem senta nela."
 custo = 5.01187e+11
 tipo_de_efeito = 0
-valor = 1.8
+valor = 2.2
 requisito = 800000000.0

@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_dados_upgrade")
 familia = 4
-id = "teoria_da_informacao"
-nome = "Teoria da Informação"
-descricao = "Cada tecla carrega mais do que uma letra. Ninguém explicou isso ao macaco."
-custo = 1.99526e+14
+id = "um_dicionario"
+nome = "Dicionário de Bolso"
+descricao = "Aberto na mesa, numa página qualquer. Nenhum macaco consultou — e a taxa de palavras subiu."
+custo = 8000.0
 tipo_de_efeito = 1
-valor = 3.0
-requisito = 80000000000.0
+valor = 1.5
+requisito = 2500.0

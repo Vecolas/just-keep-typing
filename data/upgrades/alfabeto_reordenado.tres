@@ -4,11 +4,11 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
-familia = 1
-id = "metodo_de_datilografia"
-nome = "Método de Datilografia"
-descricao = "Existe um jeito certo de apertar tecla. O macaco aprendeu por eliminação."
-custo = 1.02014e+10
+familia = 4
+id = "alfabeto_reordenado"
+nome = "Alfabeto Reordenado"
+descricao = "As letras mais prováveis ficam sob os dedos. O acaso continua acaso, só que mais bem servido."
+custo = 55000.0
 tipo_de_efeito = 0
-valor = 2.0
-requisito = 40000000.0
+valor = 1.5
+requisito = 18000.0

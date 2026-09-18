@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+familia = 4
 id = "estatistica_aplicada"
 nome = "Estatística Aplicada"
 descricao = "Agora dá para prever quantas letras saem por minuto. E está sempre certo."

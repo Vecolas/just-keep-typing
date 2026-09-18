@@ -266,6 +266,44 @@ Marco tão perto do anterior que passa despercebido virou regra de suíte
 (`DISTANCIA_MINIMA`, 1,15×), mas a avalanche do meio da curva é assunto de economia, e
 espera decisão de design.
 
+### ⚠️ A segunda sessão (issue #53): a primeira hora não existe
+
+Medição antes e depois de acrescentar 24 upgrades em quatro famílias, mesmo jogador
+simulado, mesmo passo:
+
+| marco | antes (20 upgrades) | depois (44) |
+|---|---|---|
+| `uma_pagina` | 02:27 | 01:46 |
+| `um_livro` | 09:01 | 03:55 |
+| `a_biblia` | 10:06 | 03:59 |
+| `mil_anos_de_humanidade` | 11:07 | 04:07 |
+| `todas_as_palavras_possiveis` | 1h26 | 04:38 |
+
+**Os 73 primeiros marcos do Panorama — de 91 — caem em 4 minutos e 7 segundos.**
+
+A caixa da issue pedia que a curva *"não piorasse"*. Ela não piorou: ela **acelerou 2,7×**,
+e isso é um problema diferente e maior. A v0.6 se chama *"A primeira hora"* e, medida, a
+primeira hora consome três quartos da campanha inteira nos primeiros quatro minutos.
+
+⚠️ **E o defeito não é dos upgrades novos — eles só tornaram visível o que já estava lá.**
+Antes de #53 os mesmos 73 marcos caíam em 11 minutos. Onze minutos para três quartos do
+Panorama já era a mesma doença; 24 multiplicadores a mais só encurtaram o prazo o
+suficiente para ninguém conseguir mais olhar para o outro lado.
+
+⚠️ **Não se conserta mexendo nos upgrades novos.** Tirá-los devolveria os onze minutos, que
+também estão errados. O que corre demais é a produção contra a escada de requisitos — o
+mesmo diagnóstico da primeira sessão (*"a distância entre eles em magnitude está certa; o
+que corre demais é a produção"*), agora com número em cima. É o assunto inteiro da issue
+#56, e o número acima é a entrada dela.
+
+⚠️ **E o jogador simulado não é o jogador real** — ele compra no instante exato em que o
+saldo fecha. Um humano é mais lento, então 4:07 é o **piso**, não a experiência. O que a
+régua prova é a razão entre duas medições, e a razão é 2,7×.
+
+Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55 s para
+2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
+60–70 upgrades da v1.0 isso passa de três minutos.
+
 A primeira régua a escrever é sempre a que sustenta a **decisão de design mais cara ainda
 não medida**. Num projeto anterior isso apagou uma suposição inteira: o custo de uma
 máscara pintável não estava no upload de textura (0.079 ms, irrelevante) mas no laço por
