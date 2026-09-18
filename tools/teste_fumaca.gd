@@ -601,9 +601,15 @@ func _ready() -> void:
 		_falhar("a tela de Estatisticas nao abriu com o pedido do EventBus")
 		return
 	var linhas := estatisticas.find_child("Lista", true, false) as Control
+	# ⚠️ E DESDE A ISSUE #69 ELA TEM O REGISTRO RECENTE, que so aparece se houver o que
+	# registrar -- secao vazia le como tela quebrada. A conta continua DERIVADA: a mesma
+	# regra que ja valia para as tres secoes de estatistica.
+	var do_registro := 0
+	if not Avisos.registro().is_empty():
+		do_registro = Avisos.registro().size() + 1
 	var esperadas := (
 		Estatisticas.uteis().size() + Estatisticas.tempos().size()
-		+ Estatisticas.inuteis().size() + 1
+		+ Estatisticas.inuteis().size() + 1 + do_registro
 	)
 	if linhas == null or linhas.get_child_count() != esperadas:
 		_falhar("a tela de Estatisticas listou %d linhas em vez de %d" % [
@@ -709,13 +715,15 @@ func _ready() -> void:
 	# ⚠️ o prestigio GRAVA (issue #37). Perder um prestigio por um desligamento trinta
 	# segundos depois dele nao e perder trinta segundos: e desfazer a decisao mais cara da
 	# run. E grava UMA vez -- o cronometro reinicia junto com o gatilho.
-	var aviso := hud.find_child("Aviso", true, false) as Label
+	# ⚠️ DESDE A ISSUE #69 QUEM CONFIRMA A GRAVACAO E O ICONE, e nao o aviso do rodape.
+	# O autosave saiu da fila de avisos: ele nao e um acontecimento do jogo, e apagava uma
+	# descoberta Lendaria com a mesma prioridade. Esta fumaca esperava o rodape sumir e
+	# passou a esperar para sempre -- o rodape agora tem uma FILA, que numa run que
+	# atravessou eras pode levar mais que o teto de oito segundos.
+	var aviso := hud.find_child("IconeGravando", true, false) as Label
 	if aviso == null:
-		_falhar("a HUD nao tem o aviso discreto do rodape")
+		_falhar("a HUD nao tem o icone discreto de gravacao")
 		return
-	# a run ja atravessou era ate aqui, e trocar de era e gatilho de gravacao: espera o
-	# aviso anterior sumir para que o que se mede a seguir seja o do prestigio. Que ele
-	# suma sozinho tambem e afirmacao -- aviso que fica e popup sem moldura.
 	if not await _esperar_o_aviso_sumir(aviso):
 		return
 	# ⚠️ conta numa lista, e nao num int: lambda de GDScript captura por VALOR, e um
@@ -1414,8 +1422,9 @@ func _dentro_de_rolagem(controle: Control) -> bool:
 	return false
 
 
-## Espera o aviso de gravacao sumir sozinho. Devolve se ele sumiu -- aviso que fica na tela
-## para sempre e popup sem moldura, e o teto existe para a fumaca falhar em vez de travar.
+## Espera o icone de gravacao sumir sozinho. Devolve se ele sumiu -- confirmacao que fica
+## na tela para sempre e popup sem moldura, e o teto existe para a fumaca falhar em vez de
+## travar.
 func _esperar_o_aviso_sumir(aviso: Label) -> bool:
 	var ate := Time.get_ticks_msec() + 8000
 	while aviso.visible and Time.get_ticks_msec() < ate:

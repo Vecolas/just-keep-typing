@@ -160,15 +160,28 @@ func _observar() -> void:
 	# ler -- e isso nao e opiniao, e aritmetica.
 	#
 	# A outra metade -- se o jogador QUIS ler -- continua sendo dele.
-	var instantes: Array[float] = []
-	var anotar := func(_ignorado: Variant = null) -> void:
-		instantes.append(Jogo.tempo_jogado)
-	var anotar_marco := func(_m: DadosMarco) -> void: anotar.call()
-	var anotar_descoberta := func(_d: DadosDescoberta) -> void: anotar.call()
-	var anotar_gravacao := func() -> void: anotar.call()
+	# ⚠️ GUARDA O INSTANTE E A PRIORIDADE. A primeira versao guardava so o instante e
+	# contava quantos pares caiam a menos de 1,6 s um do outro -- e isso mede QUANDO OS
+	# EVENTOS CAEM, que a issue #69 nao muda. O que ela muda e o que a fila FAZ com eles.
+	#
+	# E o terceiro defeito desta familia nesta sessao: medir a entrada em vez do resultado.
+	var avisos: Array[Dictionary] = []
+	var anotar := func(prioridade: int) -> void:
+		avisos.append({"instante": Jogo.tempo_jogado, "prioridade": prioridade})
+	var anotar_marco := func(m: DadosMarco) -> void:
+		anotar.call(
+			FilaDeAvisos.Prioridade.ALTA
+			if m.tipo == DadosMarco.Tipo.CONCEITUAL
+			else FilaDeAvisos.Prioridade.NORMAL
+		)
+	var anotar_descoberta := func(d: DadosDescoberta) -> void:
+		anotar.call(
+			FilaDeAvisos.Prioridade.CRITICA
+			if d.categoria >= DadosDescoberta.Categoria.LENDARIO
+			else FilaDeAvisos.Prioridade.ALTA
+		)
 	EventBus.marco_alcancado.connect(anotar_marco)
 	EventBus.descoberta_encontrada.connect(anotar_descoberta)
-	EventBus.jogo_gravado.connect(anotar_gravacao)
 
 	var compras := [0]
 	var ouvinte_upgrade := func(_id: String) -> void: compras[0] += 1
@@ -235,8 +248,7 @@ func _observar() -> void:
 	])
 	EventBus.marco_alcancado.disconnect(anotar_marco)
 	EventBus.descoberta_encontrada.disconnect(anotar_descoberta)
-	EventBus.jogo_gravado.disconnect(anotar_gravacao)
-	_contar_o_que_nao_deu_para_ler(instantes)
+	_contar_o_que_nao_deu_para_ler(avisos)
 
 	print("")
 	print("um minuto sem compra possivel E sem acontecimento e um minuto em que a tela nao")
@@ -248,25 +260,55 @@ func _observar() -> void:
 ## ⚠️ O NUMERO SAI DA CONSTANTE DA HUD, e nao de um 1,6 digitado aqui. Ela e um limite de
 ## design e pode mudar; copia-la criaria a segunda fonte, e a copia e sempre a que
 ## envelhece.
-func _contar_o_que_nao_deu_para_ler(instantes: Array[float]) -> void:
-	var janela: float = preload("res://src/ui/hud.gd").AVISO_VISIVEL
-	instantes.sort()
-	var apagados := 0
-	for i in range(instantes.size() - 1):
-		if instantes[i + 1] - instantes[i] < janela:
-			apagados += 1
+## Quantos avisos NAO chegaram a ficar o tempo minimo na tela.
+##
+## ⚠️ RODA A FILA DE VERDADE, com os instantes e as prioridades reais da partida. Medir
+## "quantos eventos caem a menos de 1,6 s um do outro" mediria a ENTRADA -- e a entrada nao
+## muda com a issue #69. O que muda e o que a fila faz com eles.
+##
+## O piso e AVISO_VISIVEL, e nao a duracao de cada prioridade: interessa quantos nao
+## alcancaram nem o minimo. Medir cada um contra a propria duracao daria um numero melhor e
+## menos honesto.
+func _contar_o_que_nao_deu_para_ler(avisos: Array[Dictionary]) -> void:
+	var piso: float = preload("res://src/ui/hud.gd").AVISO_VISIVEL
+	avisos.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return float(a["instante"]) < float(b["instante"]))
+
+	var fila := FilaDeAvisos.new()
+	var relogio := 0.0
+	var visto := {}
+	var curtos := 0
+	var mostrados := 0
+
+	for aviso in avisos:
+		# anda o relogio da fila ate o instante deste aviso, contando quanto tempo o que
+		# estava na tela ficou la
+		var ate: float = float(aviso["instante"])
+		while relogio < ate:
+			var passo := minf(0.05, ate - relogio)
+			var antes := fila.texto_atual()
+			# ⚠️ ACUMULA ANTES DE TICAR. Somando depois, o ultimo passo do aviso se perde:
+			# um aviso de exatamente 1,6 s contava 1,55 e entrava como curto. Isso sozinho
+			# inflava o resultado de 15% para 40% -- erro DA MEDICAO, e o quarto desta
+			# familia nesta sessao.
+			if not antes.is_empty():
+				visto[antes] = float(visto.get(antes, 0.0)) + passo
+			if fila.tique(passo) and not antes.is_empty():
+				mostrados += 1
+				# a tolerancia e do float, e nao folga de design: 1,6 acumulado em passos
+				# de 0,05 nao da exatamente 1,6
+				if float(visto[antes]) < piso - 0.001:
+					curtos += 1
+			relogio += passo
+		fila.acrescentar("aviso %d" % mostrados, int(aviso["prioridade"]), ate)
 
 	print("")
-	print("⚠️ avisos que a HUD mostrou:                 %d" % instantes.size())
-	print("⚠️ apagados antes dos %.1f s de leitura:      %d  (%.0f%%)" % [
-		janela, apagados,
-		0.0 if instantes.is_empty() else 100.0 * float(apagados) / float(instantes.size()),
+	print("⚠️ avisos que a fila entregou:               %d de %d" % [mostrados, avisos.size()])
+	print("⚠️ que nao ficaram os %.1f s minimos:         %d  (%.0f%%)" % [
+		piso, curtos, 0.0 if mostrados == 0 else 100.0 * float(curtos) / float(mostrados),
 	])
-	if not instantes.is_empty() and apagados > 0:
-		print("")
-		print("   a HUD tem UM slot de aviso: marco, descoberta e autosave escrevem por cima")
-		print("   do anterior. Cada linha acima e um texto que o jogo escreveu e ninguem")
-		print("   teve como ler.")
+	print("   medido rodando FilaDeAvisos com os instantes e prioridades reais da partida.")
+	print("   o autosave nao entra: desde a issue #69 ele e um icone, e nao apaga texto.")
 
 
 ## Guarda a tela do minuto. ⚠️ ESPERA DOIS QUADROS ANTES: a HUD repinta no _process, e

@@ -30,6 +30,7 @@ const SUITES: Array = [
 	preload("res://tools/testes/teste_automacao.gd"),
 	preload("res://tools/testes/teste_fragmentos.gd"),
 	preload("res://tools/testes/teste_audio.gd"),
+	preload("res://tools/testes/teste_fila_de_avisos.gd"),
 	preload("res://tools/testes/teste_acessibilidade.gd"),
 	preload("res://tools/testes/teste_assets.gd"),
 	preload("res://tools/testes/teste_config.gd"),

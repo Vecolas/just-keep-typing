@@ -74,6 +74,33 @@ func _montar() -> void:
 	for linha in Estatisticas.inuteis():
 		%Lista.add_child(_linha(linha["rotulo"], Formatador.formatar(linha["valor"])))
 
+	_montar_o_registro()
+
+
+## O REGISTRO RECENTE (issue #69).
+##
+## ⚠️ ELE EXISTE PARA A MENSAGEM NAO SUMIR DO UNIVERSO. Antes desta issue, um aviso perdido
+## era um aviso perdido para sempre -- e era isso que obrigava o aviso a ser grande e
+## demorado, porque ele era a unica chance. Com o registro, ele pode ser discreto.
+##
+## ⚠️ E ELE MORA AQUI, e nao na partida. A issue pede que ele nao seja protagonista: quem
+## perdeu um aviso vem procurar; quem nao perdeu nunca abre esta tela. Dar espaco
+## permanente na HUD a uma lista que o jogador consulta uma vez por sessao seria gastar a
+## area mais cara da tela com a informacao menos urgente.
+##
+## Vazio nao ganha secao: cabecalho com nada embaixo le como tela quebrada.
+func _montar_o_registro() -> void:
+	var registro := Avisos.registro()
+	if registro.is_empty():
+		return
+	%Lista.add_child(_secao("REGISTRO RECENTE"))
+	for aviso in registro:
+		# o instante e tempo de JOGO e nao relogio de parede: "aos 12 min" diz mais que
+		# "12:42" para quem quer saber em que ponto da partida aquilo aconteceu
+		%Lista.add_child(_linha(
+			str(aviso["texto"]), Relogio.duracao(float(aviso["instante"]))
+		))
+
 
 ## Rotulo a esquerda, numero a direita. Duas colunas e nao uma frase montada: numero
 ## alinhado se compara com o olho, e comparar duas leituras da mesma estatistica e a unica
