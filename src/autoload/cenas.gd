@@ -128,6 +128,34 @@ func _andar_a_aproximacao(delta: float) -> void:
 		_maquina.visible = false
 
 
+## Corta a transicao para o fim, agora. Existe para a FERRAMENTA DE CAPTURA (issue #50), e
+## nao para o jogo -- ninguem no jogo chama isto.
+##
+## ⚠️ ELA EXISTE PORQUE QUADRO NAO E TEMPO. A captura esperava dez QUADROS antes de tirar a
+## foto, e a transicao dura 0,45 SEGUNDOS. Numa maquina rapida dez quadros sao 0,17 s: a
+## foto de `principal` saia com a maquina de escrever em pleno voo por cima do botao
+## DIGITAR. No runner do CI, mais lento, os mesmos dez quadros passavam de 0,45 s e a foto
+## saia limpa.
+##
+## Ou seja: a mesma ferramenta, no mesmo commit, produzia imagens diferentes conforme a
+## velocidade de quem a rodava -- e a galeria nao tem como distinguir isso de uma
+## regressao. Esperar "ate acabar" e a unica forma deterministica; esperar mais quadros so
+## moveria a fronteira.
+func concluir_transicao() -> void:
+	if _ate_chegar > 0.0:
+		_ate_chegar = 0.0
+		_maquina.visible = false
+	if _ate_clarear > 0.0:
+		_ate_clarear = 0.0
+		_fade.modulate.a = 0.0
+		_fade.visible = false
+
+
+## Verdadeiro enquanto a maquina ou o clarao ainda estao na tela.
+func transicao_em_andamento() -> bool:
+	return _ate_chegar > 0.0 or _ate_clarear > 0.0
+
+
 ## Comeca a aproximacao a partir do retangulo onde a maquina estava no menu.
 ##
 ## ⚠️ SEM RETANGULO NAO HA TRANSICAO, e isso e legitimo: entrar numa partida pela tela de

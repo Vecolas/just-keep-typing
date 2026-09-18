@@ -49,6 +49,7 @@ func executar() -> void:
 	_nunca_duas_montadas()
 	_voltar_ao_menu_grava()
 	_offline_uma_vez_por_sessao()
+	_a_transicao_tem_fim()
 
 	# a ultima montada sai da arvore junto com a raiz: cena viva depois da suite
 	# continuaria escutando o EventBus enquanto as outras suites rodam
@@ -132,6 +133,35 @@ func _offline_uma_vez_por_sessao() -> void:
 	igual(
 		Jogo.total_caracteres.para_texto(), antes.para_texto(),
 		"e por isso o total nao ganhou nada por ler o menu",
+	)
+
+
+## ⚠️ A CAPTURA DEPENDIA DA VELOCIDADE DA MAQUINA. Ela esperava dez QUADROS antes da foto,
+## e a transicao dura 0,45 SEGUNDOS: numa maquina rapida dez quadros sao 0,17 s e a foto de
+## `principal` saia com a maquina de escrever em voo por cima do botao DIGITAR; no runner
+## do CI, mais lento, os mesmos dez quadros passavam de 0,45 s e a foto saia limpa. A MESMA
+## ferramenta, no MESMO commit, com imagens diferentes -- e a galeria nao tem como
+## distinguir isso de uma regressao.
+##
+## concluir_transicao() corta para o fim. Estas afirmacoes existem para que ela continue
+## sendo um FIM: se algum dia a transicao ganhar uma terceira etapa e concluir_transicao
+## esquecer dela, a foto volta a ser nao deterministica em silencio.
+func _a_transicao_tem_fim() -> void:
+	# o retangulo vem do menu montado; sem menu nao ha transicao, que e o caso legitimo de
+	# entrar pela tela de Arquivos
+	Cenas.ir_para_menu()
+	Cenas.comecar_partida(1)
+	# nao afirma que ELA COMECOU: reduzir_movimento desliga a transicao de proposito
+	# (issue #43), e cravar "comecou" faria esta suite reprovar com a opcao ligada
+	Cenas.concluir_transicao()
+	ok(
+		not Cenas.transicao_em_andamento(),
+		"depois de concluir_transicao nao sobra nada em voo",
+	)
+	Cenas.concluir_transicao()
+	ok(
+		not Cenas.transicao_em_andamento(),
+		"e concluir de novo continua sendo idempotente",
 	)
 
 
