@@ -377,6 +377,35 @@ opção de interface que mexesse em progressão seria dificuldade disfarçada de
 
 ---
 
+## O menu vivo
+
+- ⚠️ **Gestos independentes e sorteados, nunca um vídeo único.** Um vídeo de dez segundos é
+  reconhecível na terceira vez e irritante na décima — e este é um menu que fica aberto
+  atrás de outra coisa. Gesto novo é **uma linha** em `GestosDoMenu.GESTOS`
+- ⚠️ **Nada excessivamente movimentado.** Os deslocamentos são de um ou dois **pixels de
+  arte**, e entre um gesto e outro o menu fica parado por segundos
+- ⚠️ **Um gesto por vez.** Dois somam deslocamento e o macaco sai do lugar. "Independentes"
+  quer dizer que eles não formam sequência, não que se empilham
+- ⚠️ **O mesmo gesto não sai duas vezes seguidas.** Sorteio com peso entrega "pisca, pisca,
+  pisca" com frequência perfeitamente normal para um sorteio e perfeitamente errada para um
+  olho — o jogador não vê probabilidade, vê um tique
+- ⚠️ **O gesto volta ao zero.** O envelope é 0 → 1 → 0: sem a volta, cada gesto termina
+  deslocado e a peça vai andando para o lado a cada sorteio
+- ⚠️ **`reduzir_movimento` para o `_process` inteiro**, e não só o gesto. Menu parado que
+  continua redesenhando poeira e estrelas é bateria queimada à toa
+- **Quem decide o gesto não mexe em nó nenhum.** `GestosDoMenu` devolve o **estado**; quem
+  desenha é o cenário. Espalhar o conhecimento da árvore por dois lugares é garantir que o
+  segundo esqueça de desfazer alguma coisa
+
+**A transição para a partida é decoração por cima de um jogo que já começou.** A partida é
+montada primeiro; a máquina crescendo vem depois, num `CanvasLayer` do `Cenas` que sobrevive
+à troca. ⚠️ Uma transição que exigisse `await` **antes** de montar abriria a janela em que um
+segundo clique começa uma segunda partida — que é exatamente a janela que a issue #38 fechou
+escolhendo o clarão em vez da travessia. É por isso que a fumaça atravessa a transição sem
+esperar tempo real nenhum.
+
+---
+
 ## Pixel art na interface
 
 A arte do menu é pixel art de **escala inteira** (decisão

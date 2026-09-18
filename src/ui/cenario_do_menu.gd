@@ -60,12 +60,40 @@ const INFINITO_ESTRELAS: int = 11
 ## discreto e ter que olhar, nao ser invisivel (ARTE.md §12).
 const INFINITO_LADO: float = 2.0
 
+## Quantas motas de poeira ficam no facho do abajur. Dez: o bastante para o ar parecer
+## habitado, pouco o bastante para ninguem contar.
+const MOTAS: int = 10
+
+## A caixa do facho do abajur, em coordenadas de ARTE. A poeira so existe onde ha luz --
+## poeira no escuro e ruido branco.
+const FACHO_EM_ARTE := Rect2(22.0, 96.0, 74.0, 80.0)
+
+## Quanto uma mota sobe por segundo, em pixels de arte. Devagar: o ar do quarto nao tem
+## vento, so a conveccao do abajur.
+const SUBIDA_DA_POEIRA: float = 2.2
+
+## O periodo do piscar das estrelas do ∞, em segundos. Cada uma tem a propria fase, senao
+## as onze piscam juntas e a constelacao vira um pisca-pisca.
+const PERIODO_DA_PISCADA: float = 2.6
+
 var _fundo: TextureRect = null
 var _maquina: TextureRect = null
 var _macaco: TextureRect = null
 var _constelacao: Control = null
+var _poeira: Control = null
 
 var _escala: int = 1
+
+## Onde cada peca pousa quando nenhum gesto esta acontecendo. O gesto SOMA a isto -- sem a
+## base, cada gesto partiria de onde o anterior parou e o macaco iria andando para o lado.
+var _base_maquina := Vector2.ZERO
+var _base_macaco := Vector2.ZERO
+
+var _gestos := GestosDoMenu.new()
+var _relogio: float = 0.0
+
+## A altura de cada mota, de 0 a 1. Sorteada uma vez; o que anda e a fase.
+var _motas: PackedFloat32Array = PackedFloat32Array()
 
 
 func _ready() -> void:
@@ -102,6 +130,18 @@ func _ready() -> void:
 	_macaco = _peca("macaco")
 	_maquina = _peca("maquina")
 
+	# a poeira fica POR CIMA da mesa e por baixo da UI: ela e ar, e ar fica na frente do
+	# movel e atras de tudo que se le
+	_poeira = Control.new()
+	_poeira.name = "PoeiraNaLuz"
+	_poeira.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_poeira.draw.connect(_desenhar_poeira)
+	add_child(_poeira)
+	var sorteio := RandomNumberGenerator.new()
+	sorteio.randomize()
+	for i in MOTAS:
+		_motas.append(sorteio.randf())
+
 	resized.connect(_posicionar)
 	EventBus.interface_mudou.connect(_posicionar)
 	# ⚠️ ADIADO, e nao so no _ready. Quando este no entra na arvore, o PAI ainda nao foi
@@ -110,6 +150,39 @@ func _ready() -> void:
 	# captura do menu com arte saiu exatamente assim.
 	call_deferred("_posicionar")
 	_posicionar()
+
+
+## ⚠️ O QUADRO DO MENU VIVO (issue #48), e ele para inteiro com reduzir movimento ligado.
+## Nao e so o gesto que para: o _process sai do ar, e com ele o redesenho da poeira e das
+## estrelas. Menu parado que continua redesenhando e bateria queimada a toa.
+func _process(delta: float) -> void:
+	var estado := _gestos.tique(delta)
+	_aplicar_gesto(estado)
+	if not _gestos.ligado():
+		return
+	_relogio += delta
+	for i in _motas.size():
+		_motas[i] = fposmod(
+			_motas[i] + delta * SUBIDA_DA_POEIRA / maxf(FACHO_EM_ARTE.size.y, 1.0), 1.0
+		)
+	_poeira.queue_redraw()
+	_constelacao.queue_redraw()
+
+
+## Poe o gesto em cima da posicao base. Giro em torno do RODAPE da peca: girar pelo centro
+## faz o macaco flutuar meio pixel, e girar pelo topo o faz varrer a mesa.
+func _aplicar_gesto(estado: Dictionary) -> void:
+	_assentar_com_gesto(_macaco, _base_macaco, estado.get("macaco", {}))
+	_assentar_com_gesto(_maquina, _base_maquina, estado.get("maquina", {}))
+
+
+func _assentar_com_gesto(no: TextureRect, base: Vector2, gesto: Dictionary) -> void:
+	if no == null or no.texture == null:
+		return
+	var desloca: Vector2 = gesto.get("desloca", Vector2.ZERO)
+	no.position = base + desloca * float(_escala)
+	no.pivot_offset = Vector2(no.size.x * 0.5, no.size.y)
+	no.rotation = float(gesto.get("gira", 0.0))
 
 
 ## A escala inteira em uso agora. A issue #48 le isto para a camera da transicao andar em
@@ -161,24 +234,31 @@ func _posicionar() -> void:
 		_fundo.position = canto
 		_fundo.size = tamanho
 
-	_assentar(_macaco, "macaco", canto, MACACO_EM_ARTE)
-	_assentar(_maquina, "maquina", canto, MAQUINA_EM_ARTE)
+	_base_macaco = _assentar(_macaco, "macaco", canto, MACACO_EM_ARTE)
+	_base_maquina = _assentar(_maquina, "maquina", canto, MAQUINA_EM_ARTE)
 	if _constelacao != null:
 		_constelacao.position = canto
 		_constelacao.size = tamanho
 		_constelacao.queue_redraw()
+	if _poeira != null:
+		_poeira.position = canto
+		_poeira.size = tamanho
+		_poeira.queue_redraw()
 
 
 ## Poe uma peca no lugar dela. A posicao e o RODAPE CENTRAL da peca em coordenadas de arte:
 ## a maquina e o macaco pousam sobre a mesa, e ancorar pelo canto superior faria os dois
 ## flutuarem quando o tamanho da arte mudasse.
-func _assentar(no: TextureRect, id: String, canto: Vector2, base: Vector2i) -> void:
+## Devolve a posicao BASE -- e dela que os gestos partem.
+func _assentar(no: TextureRect, id: String, canto: Vector2, base: Vector2i) -> Vector2:
 	if no == null or no.texture == null:
-		return
+		return Vector2.ZERO
 	var arte := Vector2(AssetsDoMenu.peca(id)["tamanho"])
 	var tamanho := arte * float(_escala)
 	no.size = tamanho
-	no.position = canto + Vector2(base) * float(_escala) - Vector2(tamanho.x * 0.5, tamanho.y)
+	var onde := canto + Vector2(base) * float(_escala) - Vector2(tamanho.x * 0.5, tamanho.y)
+	no.position = onde
+	return onde
 
 
 # --------------------------------------------------------------------------- o infinito
@@ -201,4 +281,32 @@ func _desenhar_infinito() -> void:
 			INFINITO_RAIO * sin(t) * cos(t) / divisor,
 		)
 		var canto := (ponto * float(_escala)).floor()
-		_constelacao.draw_rect(Rect2(canto, Vector2(lado, lado)), Tema.cor(Paleta.PAPER_CREAM))
+		# ⚠️ CADA ESTRELA COM A PROPRIA FASE. Com fase igual as onze piscam juntas, e a
+		# constelacao deixa de ser um ceu e vira um pisca-pisca de arvore de Natal.
+		var brilho := 0.75 + 0.25 * sin(
+			TAU * (_relogio / PERIODO_DA_PISCADA + float(i) / float(INFINITO_ESTRELAS))
+		)
+		var cor := Tema.cor(Paleta.PAPER_CREAM)
+		cor.a = brilho
+		_constelacao.draw_rect(Rect2(canto, Vector2(lado, lado)), cor)
+
+
+## A poeira subindo no facho do abajur. Desenhada, e nao instanciada: dez motas sao dez
+## retangulos por quadro, e um sistema de particulas aqui alocaria por mota (issue #42
+## aprendeu isso no audio, e a conta e a mesma).
+func _desenhar_poeira() -> void:
+	if _poeira == null or _escala <= 0 or not _gestos.ligado():
+		return
+	var lado := float(_escala)
+	for i in _motas.size():
+		# x fixo por mota, y subindo: poeira em coluna, e nao em enxame
+		var x := FACHO_EM_ARTE.position.x + FACHO_EM_ARTE.size.x * fmod(
+			float(i) * 0.37 + 0.11, 1.0
+		)
+		var y := FACHO_EM_ARTE.position.y + FACHO_EM_ARTE.size.y * (1.0 - _motas[i])
+		# some nas pontas do percurso: mota que aparece e desaparece de uma vez pisca
+		var cor := Tema.cor(Paleta.BANANA_GOLD)
+		cor.a = 0.30 * sin(PI * _motas[i])
+		_poeira.draw_rect(
+			Rect2((Vector2(x, y) * float(_escala)).floor(), Vector2(lado, lado)), cor
+		)
