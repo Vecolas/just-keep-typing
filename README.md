@@ -45,9 +45,13 @@ godot --headless --path . tools/medir_economia.tscn               # quando prest
 ## Galeria versionada
 
 Uma captura por era mais o menu e os Arquivos, em `docs/capturas/`. As imagens estão no
-git de propósito: o diff mostra o que mudou na tela — e `menu_rascunho.png` e
-`arquivos_rascunho.png` existem para registrar que a interface do caminho nasceu feia de
-propósito (issue #38), até a arte chegar na #46.
+git de propósito: **o diff mostra o que mudou na tela**, e é o jeito mais barato de
+perceber que um ajuste estragou a leitura de uma era que ninguém estava olhando.
+
+As duas primeiras entraram como `menu_rascunho.png` e `arquivos_rascunho.png` na issue #38,
+quando a interface do caminho era feia de propósito. A issue #46 trouxe a mesa e elas
+passaram a se chamar `menu.png` e `arquivos.png` — o "rascunho" descrevia um estado, e o
+estado passou. O antes continua no histórico.
 
 ```bash
 godot --path . tools/gerar_galeria.tscn --resolution 1920x1080

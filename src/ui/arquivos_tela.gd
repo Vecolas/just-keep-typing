@@ -94,6 +94,7 @@ func _ready() -> void:
 	_voltar.custom_minimum_size = Vector2(LARGURA_DA_ACAO, 0)
 	_voltar.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_voltar.focus_mode = Control.FOCUS_ALL
+	Tema.vestir_de_placa(_voltar)
 	_voltar.pressed.connect(_ao_voltar)
 	centro.add_child(_voltar)
 
@@ -135,9 +136,17 @@ func _cartao(numero: int, manuscrito: Manuscrito) -> Control:
 	# o cartao em acao se destaca dos outros dois: sem isso, o campo de nome aberto num
 	# cartao parece um campo solto no meio da tela
 	var em_acao := numero == _slot_em_acao and _modo != Modo.NORMAL
-	cartao.add_theme_stylebox_override("panel", Tema.painel(
-		Paleta.BANANA_GOLD if em_acao else Paleta.MECHANICAL_GOLD.darkened(0.35), em_acao
-	))
+	# a moldura de Manuscrito da issue #45, quando ela existe. Ela e a MESMA familia de
+	# componentes do menu -- meia familia de pixel art e meia de StyleBox le como defeito,
+	# e nao como incompleto (docs/ASSETS.md)
+	var moldura := Tema.moldura("moldura_manuscrito", Tema.BRILHO_HOVER if em_acao else Tema.BRILHO_NORMAL)
+	if moldura != null:
+		AssetsDoMenu.aplicar_filtro(cartao)
+		cartao.add_theme_stylebox_override("panel", moldura)
+	else:
+		cartao.add_theme_stylebox_override("panel", Tema.painel(
+			Paleta.BANANA_GOLD if em_acao else Paleta.MECHANICAL_GOLD.darkened(0.35), em_acao
+		))
 	cartao.custom_minimum_size = Vector2(LARGURA_DO_CARTAO, 0)
 
 	var margem := MarginContainer.new()
@@ -285,6 +294,7 @@ func _montar_excluindo(
 	segurar.text = tr("SEGURE PARA EXCLUIR")
 	segurar.custom_minimum_size = Vector2(LARGURA_DA_ACAO, 0)
 	segurar.focus_mode = Control.FOCUS_ALL
+	Tema.vestir_de_placa(segurar)
 	segurar.segurado.connect(_ao_excluir.bind(numero))
 	acoes.add_child(segurar)
 
@@ -356,6 +366,7 @@ func _acao(pai: Node, nome_do_no: String, texto: String) -> Button:
 	botao.text = texto
 	botao.custom_minimum_size = Vector2(LARGURA_DA_ACAO, 0)
 	botao.focus_mode = Control.FOCUS_ALL
+	Tema.vestir_de_placa(botao)
 	pai.add_child(botao)
 	return botao
 

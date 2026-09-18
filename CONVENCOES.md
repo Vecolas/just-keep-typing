@@ -377,6 +377,34 @@ opção de interface que mexesse em progressão seria dificuldade disfarçada de
 
 ---
 
+## Pixel art na interface
+
+A arte do menu é pixel art de **escala inteira** (decisão
+[0006](docs/decisoes/0006-pixel-art-no-menu-tipografia-na-partida.md)). Três armadilhas, e
+as três já custaram uma captura:
+
+- ⚠️ **`patch_margin` e `texture_margin` são medidos em pixels da TEXTURA**, não da tela.
+  Uma placa de 48×24 com borda 8 desenha uma borda de 8 px — minúscula em 1920 lógicos. E
+  pedir 32 numa textura de 48 faz as duas margens somarem 64 e se **sobreporem**: o Godot
+  não reclama, ele desenha a peça repetida para fora do painel. O que resolve é **ampliar a
+  textura antes**, por vizinho mais próximo (`AssetsDoMenu.textura_ampliada`)
+- ⚠️ **As duas bordas do 9-slice não esticam.** Controle mais baixo que a soma delas sai com
+  o rótulo cortado. A altura mínima sai da **peça**, e não de um palpite de layout
+- ⚠️ **`set_anchors_preset` num nó que JÁ ESTÁ na árvore preserva o retângulo atual** — e o
+  atual, dentro do `_ready`, é zero. O resultado são âncoras perfeitas sobre um retângulo de
+  tamanho zero, com `clip_contents` cortando a cena inteira: nenhum erro, nenhum aviso, a
+  tela abre vazia. Quem zera os offsets é `set_anchors_and_offsets_preset`
+
+**Escala inteira, sempre, e calculada — nunca cravada.** A escala do cenário é o menor
+inteiro que ainda **cobre** a área; o que sobrar sai pelas bordas, centralizado. Sobra
+cortada é melhor que pixel torto, e infinitamente melhor que tarja preta.
+
+**Asset é opcional em tempo de execução.** `textura_de` devolve `null` quando o arquivo não
+existe, e toda tela cai no desenho tipográfico — menu que não abre porque um PNG não veio é
+pior que menu sem arte.
+
+---
+
 ## Áudio
 
 Cinco barramentos — Geral (`Master`), Música, Efeitos, Interface e Ambiente —, criados em

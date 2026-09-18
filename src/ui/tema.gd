@@ -21,6 +21,15 @@ const FONTES: PackedStringArray = [
 	"Consolas", "Courier New", "DejaVu Sans Mono", "Liberation Mono", "monospace",
 ]
 
+## Fontes SERIFADAS do sistema, na ordem de preferencia. O docs/ARTE.md §8 pede titulo
+## serifado pesado e interface monoespacada -- sao DUAS tipografias, e ate a issue #46 o
+## jogo usava a monoespacada para as duas coisas por omissao.
+##
+## ⚠️ E SAO DUAS, E NUNCA TRES. O logo nao inventa uma terceira fonte (§8): ele usa esta.
+const FONTES_DE_TITULO: PackedStringArray = [
+	"Georgia", "Times New Roman", "DejaVu Serif", "Liberation Serif", "serif",
+]
+
 const CORPO: int = 18
 const TITULO: int = 15
 const CONTADOR: int = 44
@@ -32,6 +41,19 @@ const BOTAO_GRANDE: int = 34
 ## ser outro jogo em vez de ser o mesmo jogo mais legivel.
 const REFORCO_DE_CONTRASTE: float = 0.45
 const RECUO_DE_CONTRASTE: float = 0.55
+
+## Os tres degraus de luminancia da placa (issue #46). Escolhidos separados o bastante para
+## serem lidos sem matiz: 1,00 -> 1,35 -> 0,55 nao e uma variacao sutil, e nao pode ser.
+const BRILHO_NORMAL: float = 1.0
+const BRILHO_HOVER: float = 1.35
+const BRILHO_DESABILITADO: float = 0.55
+
+## Respiro entre o texto e as bordas da placa, somado em cima das duas bordas do 9-slice.
+const FOLGA_DA_PLACA: int = 12
+
+## Quantos pixels o rotulo desce quando o botao e apertado. Limite de design: seis e o que
+## se ve sem parecer que o texto escorregou.
+const DESLOCAMENTO_AO_APERTAR: int = 6
 
 
 ## O TAMANHO DE FONTE QUE VALE AGORA, e nunca o numero cru da constante.
@@ -64,6 +86,96 @@ static func fundo(base: Color = Paleta.INK_BROWN.darkened(0.4)) -> Color:
 	if not Config.ligado("alto_contraste"):
 		return base
 	return base.darkened(RECUO_DE_CONTRASTE)
+
+
+## A fonte serifada de titulo, criada POR CHAMADA.
+##
+## ⚠️ Recurso declarado uma vez e usado por varias instancias e estado global disfarcado
+## (CONVENCOES.md): duas telas compartilhando o mesmo SystemFont e uma tela mexendo no
+## tamanho da outra.
+static func fonte_de_titulo() -> SystemFont:
+	var fonte := SystemFont.new()
+	fonte.font_names = FONTES_DE_TITULO
+	return fonte
+
+
+## O estilo de um botao de PLACA de maquina (issue #46), ou null quando o asset nao existe
+## -- e ai quem manda e o StyleBoxFlat do tema, e o menu continua utilizavel.
+##
+## ⚠️ OS QUATRO ESTADOS PRECISAM SER DISTINGUIVEIS SEM COR. Aqui eles sao:
+##
+##   normal        a placa, como ela e
+##   hover         a MESMA placa, claramente mais clara
+##   pressionado   a placa AFUNDADA -- outro desenho, com a sombra em cima em vez de
+##                 embaixo. Este difere por FORMA, e nao por valor
+##   desabilitado  a placa, claramente mais escura
+##
+## Tres degraus de luminancia mais uma diferenca de forma: quem nao distingue matiz
+## continua lendo os quatro. Matiz nenhuma carrega informacao aqui.
+static func placa(id: String, brilho: float, desce: int = 0) -> StyleBoxTexture:
+	# ⚠️ A TEXTURA AMPLIADA, e nao a original: texture_margin e medido em pixels da TEXTURA.
+	# Ver o aviso em AssetsDoMenu.textura_ampliada.
+	var textura := AssetsDoMenu.textura_ampliada(id)
+	if textura == null:
+		return null
+	var estilo := StyleBoxTexture.new()
+	estilo.texture = textura
+	# a borda nao estica; o miolo sim. Sem isto a placa inteira deforma e os rebites viram
+	# ovais no botao largo
+	estilo.set_texture_margin_all(float(AssetsDoMenu.borda_ampliada(id)))
+	estilo.set_expand_margin_all(0.0)
+	estilo.modulate_color = Color(brilho, brilho, brilho, 1.0)
+	estilo.content_margin_left = 16.0
+	estilo.content_margin_right = 16.0
+	# ⚠️ `desce` E O ESTADO PRESSIONADO SE VENDO SEM COR. A placa afundada ja e outro
+	# desenho, mas o que o olho pega primeiro e o RÓTULO DESCENDO junto com ela -- e
+	# movimento nao tem matiz. Sem isto, quem nao distingue os dois marrons vê dois botões
+	# iguais.
+	estilo.content_margin_top = 10.0 + float(desce)
+	estilo.content_margin_bottom = maxf(10.0 - float(desce), 2.0)
+	return estilo
+
+
+## Poe os quatro estados de placa num botao, e liga o filtro de pixel art. Devolve se a
+## placa foi aplicada -- false significa "nao ha asset", e nao "deu erro".
+##
+## ⚠️ O FILTRO E DO NO QUE DESENHA, e nao da textura. Botao com placa e sem nearest e um
+## botao borrado no meio de um menu nitido, e nada no console diz isso.
+## Uma moldura 9-slice de pixel art como StyleBox, ou null quando o asset nao existe.
+##
+## ⚠️ MOLDURA E OCA. Ao contrario da placa, ela NAO desenha o miolo -- quem desenha o fundo
+## do cartao e o cartao. Por isso ela nao ganha content_margin proprio: o conteudo respira
+## pela margem que o cartao ja tem, e somar as duas empurraria o texto para o meio da folha.
+static func moldura(id: String, brilho: float) -> StyleBoxTexture:
+	var textura := AssetsDoMenu.textura_ampliada(id)
+	if textura == null:
+		return null
+	var estilo := StyleBoxTexture.new()
+	estilo.texture = textura
+	estilo.set_texture_margin_all(float(AssetsDoMenu.borda_ampliada(id)))
+	estilo.modulate_color = Color(brilho, brilho, brilho, 1.0)
+	return estilo
+
+
+## ⚠️ E ELE DITA A ALTURA MINIMA DO BOTAO. As duas bordas do 9-slice nao esticam: num botao
+## mais baixo que a soma delas, o Godot desenha a borda de cima por cima da de baixo e o
+## rotulo sai cortado -- foi assim que a captura dos quatro estados mostrou "CRÉDITOS" pela
+## metade. O numero sai da PECA, e nao de um palpite de layout.
+static func vestir_de_placa(botao: Button) -> bool:
+	var normal := placa("placa", BRILHO_NORMAL)
+	if normal == null:
+		return false
+	var altura := float(AssetsDoMenu.borda_ampliada("placa") * 2 + fonte(CORPO) + FOLGA_DA_PLACA)
+	botao.custom_minimum_size.y = maxf(botao.custom_minimum_size.y, altura)
+	AssetsDoMenu.aplicar_filtro(botao)
+	botao.add_theme_stylebox_override("normal", normal)
+	botao.add_theme_stylebox_override("hover", placa("placa", BRILHO_HOVER))
+	botao.add_theme_stylebox_override(
+		"pressed", placa("placa_afundada", BRILHO_NORMAL, DESLOCAMENTO_AO_APERTAR)
+	)
+	botao.add_theme_stylebox_override("disabled", placa("placa", BRILHO_DESABILITADO))
+	botao.add_theme_stylebox_override("focus", foco())
+	return true
 
 
 static func montar() -> Theme:

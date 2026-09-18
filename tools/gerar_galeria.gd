@@ -48,13 +48,13 @@ func _ready() -> void:
 	# ⚠️ O main.tscn ABRE NO MENU desde a issue #38, e as duas telas do caminho entram na
 	# galeria ANTES de a partida abrir -- e o unico momento em que elas estao no ar.
 	#
-	# Elas sao feias de proposito (issue #38 e a Fase 2 do plano: fluxo solido com interface
-	# temporaria), e e exatamente por isso que valem uma imagem versionada: quando a arte
-	# chegar na issue #46, o diff destes dois arquivos vai mostrar o antes e o depois.
-	if not await _fotografar("menu_rascunho"):
+	# Elas entraram como `menu_rascunho` e `arquivos_rascunho` na issue #38, quando eram
+	# feias de proposito. A issue #46 trouxe a mesa, e os arquivos mudaram de nome junto: o
+	# "rascunho" era a descricao de um estado, e o estado passou. O antes continua no git.
+	if not await _fotografar("menu"):
 		return
 	Cenas.ir_para_arquivos()
-	if not await _fotografar("arquivos_rascunho"):
+	if not await _fotografar("arquivos"):
 		return
 
 	Cenas.comecar_partida(1)

@@ -159,6 +159,11 @@ crescer.
 uma em cada canto. A `afundada` é a mesma placa recuada para dentro, com a sombra por cima
 em vez de por baixo.
 
+⚠️ **A `afundada` foi gerada A PARTIR da `normal`** (img2img), e não do zero. A primeira
+tentativa gerou uma placa independente: interior claro, moldura diferente, e o rótulo creme
+em cima dela ficava ilegível. Peça de uma família que nasce sozinha não pertence à família
+— e "duas placas parecidas" é pior que uma placa só.
+
 ⚠️ **São DUAS peças para QUATRO estados, e isso é decisão.** Gerar quatro placas
 independentes daria quatro placas diferentes — a família se entrega inteira ou lê como
 defeito. Os quatro estados saem assim:
@@ -166,9 +171,14 @@ defeito. Os quatro estados saem assim:
 | Estado | Como |
 |---|---|
 | normal | `placa_normal` |
-| hover | `placa_normal` + moldura de foco dourada (desenhada pelo `Tema`) |
-| pressionado | `placa_afundada` — a placa **se move**, e isso se vê sem cor |
-| desabilitado | `placa_normal` esmaecida, sem moldura |
+| hover | `placa_normal` claramente **mais clara** |
+| pressionado | `placa_afundada` **e o rótulo desce 6 px** — movimento não tem matiz |
+| desabilitado | `placa_normal` claramente **mais escura** |
+
+⚠️ **A altura mínima do botão sai da PEÇA, e não de um palpite de layout.** As duas bordas
+do 9-slice não esticam: num botão mais baixo que a soma delas, o Godot desenha a borda de
+cima por cima da de baixo e o rótulo sai cortado. A primeira captura dos quatro estados
+mostrou "CRÉDITOS" pela metade.
 
 ⚠️ **Os quatro têm que ser distinguíveis sem cor** (issue #46): dois deles diferem por
 **forma** (a placa afunda) e um por **presença** (a moldura de foco existe ou não). Só o
@@ -181,6 +191,16 @@ uma etiqueta de arquivo. Miolo vazio e transparente.
 
 **Separa das vizinhas:** é a única moldura **sem preenchimento** — o cartão do Manuscrito
 desenha o próprio fundo por baixo dela.
+
+⚠️ **O miolo foi VAZADO por código depois de gerado.** Duas gerações pediram o centro
+transparente ("picture frame with no picture") e as duas devolveram a moldura **preenchida**
+— a primeira versão da tela de Arquivos ficou com três lajes de bronze e o texto secundário
+ilegível por cima delas. O recorte é determinístico (alfa zero dentro da borda declarada) e
+é legítimo exatamente porque a ficha já dizia que a peça é oca: não se inventou nada, se
+cumpriu o pedido que o gerador não cumpriu.
+
+Isto é a diferença entre corrigir e improvisar: o que foi feito à mão está **escrito na
+ficha antes**, e por isso dá para conferir.
 
 ---
 
