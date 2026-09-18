@@ -3,9 +3,9 @@
 O GDD (`GDD.md`) diz o que o jogo é. Este documento diz em que ordem ele é construído e
 onde cada pedaço vira issue.
 
-Cinco versões. As quatro primeiras espelham §39–§42 do GDD; a v0.5 vem de um plano próprio
-de menu e saves, e não do GDD. Cada versão é uma tag jogável do início ao fim
-— o ponto para onde voltar quando um refactor descarrilar.
+Seis versões. As quatro primeiras espelham §39–§42 do GDD; a v0.5 vem de um plano próprio
+de menu e saves; a v0.6 vem de um plano próprio de **conteúdo**. Cada versão é uma tag
+jogável do início ao fim — o ponto para onde voltar quando um refactor descarrilar.
 
 | Versão | Milestone | Alvo | Issues |
 |---|---|---|---|
@@ -14,6 +14,7 @@ de menu e saves, e não do GDD. Cada versão é uma tag jogável do início ao f
 | v0.3 | Prestígio e eras | Teoremas, árvore, eras 1–7, eventos, automação | #24–#29 |
 | v0.4 | Endgame | eras 8–14, Fragmentos do Infinito, O MACACO INFINITO | #30–#34 |
 | v0.5 | Menu principal e arquivos | boot, menu, Manuscritos, configurações em abas, áudio | #35–#49 |
+| v0.6 | A primeira hora | **densidade de conteúdo**, sem sistema novo | #50–#56 |
 
 Regra de fechamento: **nenhuma issue fecha sem `runner.tscn` e `teste_fumaca.tscn`
 imprimindo `PASSOU`.** Issue que cria lógica pura nova traz a suite junto; issue que mexe
@@ -168,6 +169,90 @@ A issue #44 existe porque o `ARTE.md` §7 exclui **pixel art por nome**, e o ger
 escolhido para os assets do menu é o PixelLab. Cânone que contradiz a ferramenta tem que
 mudar antes do primeiro sprite, não depois do lote inteiro — e mudar cânone é decisão do
 autor, registrada em `docs/decisoes/`.
+
+---
+
+## v0.6 — A primeira hora
+
+**A regra desta versão, e ela vale mais que qualquer item da lista: não se aumenta o número
+de sistemas. Aumenta-se, violentamente, a densidade de acontecimentos nos sistemas que já
+existem.**
+
+A v0.5 entregou o começo do jogo. A v0.6 é a versão em que ele deixa de apenas funcionar
+muito bem e passa a ter muito o que descobrir. O diferencial que se persegue é o jogador
+pensar, o tempo todo:
+
+> *quero chegar ao próximo número só para ver o que ele significa.*
+
+### O que já está pronto, e por isso NÃO é trabalho desta versão
+
+| Sistema | Estado | Meta do plano |
+|---|---|---|
+| Marcos do Panorama | **91** | 70–90 ✅ |
+| Eras | **14** | 14 ✅ |
+| Teoremas | 7 | 8–12 (v0.9) |
+| Eventos | 5 | 10–15 (v0.8) |
+| Automações | 4 | evolui na v0.8 |
+
+⚠️ **O Panorama já tem os 91 marcos e uma suíte de 1.310 afirmações.** O trabalho da v0.6
+nele não é *criar marcos* — é dar a eles um **eixo de leitura** que hoje não existe, e
+proteger a redação que já está lá.
+
+### As lacunas reais
+
+| Conteúdo | Hoje | Meta v0.6 | Gap |
+|---|---|---|---|
+| Descobertas | 16 | ~60 | **+44** |
+| Upgrades temáticos | 20 sem família | 50–70 em 4 famílias | **+30 e a reorganização** |
+
+### Antes de construir: resolver o que a v0.5 não provou
+
+A `ENTREGA-v0.5.md` §9 é explícita — coerência artística, qualidade de áudio e ritmo não são
+cobertos por teste, e **não existe CI**: as 3.967 afirmações dependem de alguém lembrar de
+rodá-las. Isso vem primeiro, e é mais importante agora do que raspar mais 0,1 ms: nenhuma
+das medições chega perto do orçamento de 16,67 ms, e o menu vivo e o áudio estão **abaixo da
+própria variância da medição**.
+
+| # | Issue | Fonte | Prova |
+|---|---|---|---|
+| 50 | CI obrigatório e capturas automáticas | v0.6 "antes de construir" | o próprio CI, verde e vermelho |
+
+### O conteúdo
+
+| # | Issue | Fonte | Prova |
+|---|---|---|---|
+| 51 | O Panorama ganha três tipos de marco | v0.6 §1–§2 | suíte: todo marco tem tipo, e nenhum texto diz "você escreveu" |
+| 52 | Descobertas: de 16 para ~60, em treze degraus | v0.6 §3–§4 | suíte + captura |
+| 53 | Upgrades em quatro famílias temáticas | v0.6 §5 | suíte + `medir_ritmo` |
+| 54 | Combo de digitação: atividade acelera, nunca obriga | v0.6 §6 | suíte + fumaça |
+| 55 | O Arquivo de Descobertas: a tela vira coleção | v0.6 "Arquivo de Descobertas" | captura |
+| 56 | A régua da primeira hora e o primeiro prestígio | v0.6 "prioridade imediata" | `medir_ritmo` + `medir_economia` |
+
+### As três regras de redação desta versão
+
+Elas valem para todo marco e toda descoberta escritos daqui em diante, e **duas delas viram
+portão**:
+
+**1. ⚠️ Equivalência em caracteres ≠ ter escrito a obra.** O texto diz *"você produziu
+caracteres suficientes para preencher…"*, e **nunca** *"você escreveu todos os livros…"*.
+Isso não é preciosismo: é o conceito probabilístico inteiro do jogo. O macaco não escreveu
+Hamlet — ele produziu tanto caractere quanto Hamlet tem. Vira portão.
+
+**2. O jogo nunca gera texto.** Já é regra (GDD §10) e já tem portão. Continua valendo para
+as 44 descobertas novas: o texto é escrito à mão, e a piada é o jogador acreditar que o
+macaco escreveu.
+
+**3. Cada upgrade explica POR QUE a produção aumentou.** "+25%" é necessário
+economicamente e péssimo como conteúdo. A descrição é o produto.
+
+### O que esta versão deliberadamente NÃO faz
+
+- **não adiciona moeda nova.** A v0.7 e a v0.9 também não: o plano inteiro até a v1.0 se
+  apoia em dar consequência ao que existe
+- **não mexe em infraestrutura de menu.** A v0.5 cumpriu esse papel
+- **não persegue milissegundo.** Nenhum cenário medido chega perto do orçamento
+- **não cria a música.** O barramento `Musica` continua em `Audio.SEM_FONTE_AINDA` até
+  existir trilha — a regra de não expor configuração sem consumidor continua valendo
 
 ---
 
