@@ -39,13 +39,16 @@ capturar() {
 }
 
 # ── 1080p, os cenários que contam a campanha ────────────────────────────────────────────
-for cenario in menu_cheio arquivos_cheio principal panorama descobertas estatisticas; do
+# ⚠️ `descobertas_fim` NAO E REDUNDANTE com `descobertas`. A primeira foto mostra a
+# primeira faixa; o que a issue #55 precisa provar mora no FIM da rolagem -- faixas vazias
+# e a paradoxal escondendo o proprio total com `0/?`.
+for cenario in menu_cheio arquivos_cheio principal panorama descobertas descobertas_fim estatisticas; do
 	capturar "$cenario em 1080p" --resolution 1920x1080 -- "cenario=$cenario"
 done
 
 # ── e em inglês, que é o único jeito de ver texto estourando botão ──────────────────────
 # caractere não é pixel: "CONFIGURAÇÕES" e "SETTINGS" não ocupam a mesma largura
-for cenario in menu_cheio arquivos_cheio; do
+for cenario in menu_cheio arquivos_cheio descobertas descobertas_fim; do
 	capturar "$cenario em inglês" --resolution 1920x1080 -- "cenario=$cenario" "idioma=en"
 done
 

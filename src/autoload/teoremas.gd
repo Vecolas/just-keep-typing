@@ -196,7 +196,7 @@ func provar() -> Grande:
 	Jogo.upgrades_comprados = _upgrades_que_sobrevivem()
 
 	if nivel_de_tipo_zero(DadosTeorema.Efeito.BIBLIOTECA_PERSISTENTE):
-		Jogo.descobertas = [] as Array[String]
+		Jogo.esquecer_descobertas()
 
 	EventBus.teorema_provado.emit(ganhos)
 	return ganhos

@@ -556,8 +556,20 @@ func _ready() -> void:
 		_falhar("a tela de Descobertas nao abriu com o pedido do EventBus")
 		return
 	var catalogo := tela.find_child("Lista", true, false) as Control
-	if catalogo == null or catalogo.get_child_count() != Descobertas.todas().size():
-		_falhar("a tela nao listou o catalogo inteiro, com achadas e buracos")
+	# ⚠️ DESDE A ISSUE #55 A LISTA TEM CABECALHO DE FAIXA, entao o numero de filhos deixou
+	# de ser o tamanho do catalogo. A conta e DERIVADA em vez de cravada: uma descoberta
+	# por linha, mais um cabecalho por faixa que tenha alguem. Cravar "62" aqui faria a
+	# fumaca reprovar o codigo certo na proxima descoberta escrita.
+	var faixas_com_gente := 0
+	for i in DadosDescoberta.FAIXAS.size():
+		if int(Descobertas.contagem_da_faixa(i)[1]) > 0:
+			faixas_com_gente += 1
+	var esperado := Descobertas.todas().size() + faixas_com_gente
+	if catalogo == null or catalogo.get_child_count() != esperado:
+		_falhar("a tela listou %d linhas, e sao %d descobertas mais %d cabecalhos" % [
+			-1 if catalogo == null else catalogo.get_child_count(),
+			Descobertas.todas().size(), faixas_com_gente,
+		])
 		return
 	tela.call("fechar")
 	await get_tree().process_frame

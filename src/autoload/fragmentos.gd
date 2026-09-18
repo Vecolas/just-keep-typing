@@ -101,7 +101,7 @@ func reescrever() -> Grande:
 	Jogo.caracteres_por_segundo = Grande.zero()
 	Jogo.tempo_da_run = 0.0
 	Jogo.upgrades_comprados = [] as Array[String]
-	Jogo.descobertas = [] as Array[String]
+	Jogo.esquecer_descobertas()
 
 	EventBus.universo_reescrito.emit(ganhos)
 	return ganhos

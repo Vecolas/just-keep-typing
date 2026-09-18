@@ -54,6 +54,41 @@ enum Categoria {
 	PARADOXAL,
 }
 
+## AS FAIXAS DO ARQUIVO (issue #55). Cada uma junta uma ou mais raridades sob um nome que
+## o jogador entende: "OBRAS" diz mais do que "Epico e Lendario".
+##
+## ⚠️ A FAIXA E DERIVADA DA RARIDADE, e nao um campo novo no .tres. Guardada, ela seria uma
+## segunda fonte para a mesma verdade -- e a copia clonada de um .tres carregaria a faixa
+## do original, que e o defeito mais chato desta familia porque nao da erro nenhum.
+##
+## ⚠️ E ELA MORA AQUI, e nao na tela nem na suite. A tabela ja existia dentro de
+## teste_descobertas.gd desde a issue #52; no instante em que o Arquivo precisou dela, uma
+## copia na tela seria a segunda tabela -- e a segunda e sempre a que mente. A suite passou
+## a ler DAQUI, o que tambem faz a cobertura dela acompanhar faixa nova sozinha.
+##
+## ⚠️ `oculta` NAO E ENFEITE. A faixa paradoxal mostra `0/?`: saber quantas faltam mata a
+## ultima faixa, porque o `?` E a promessa e a contagem exata a desmonta.
+const FAIXAS: Array[Dictionary] = [
+	{"nome": "PALAVRAS", "de": Categoria.COMUM, "ate": Categoria.COMUM, "oculta": false},
+	{"nome": "FRASES", "de": Categoria.INCOMUM, "ate": Categoria.INCOMUM, "oculta": false},
+	{"nome": "TEXTOS", "de": Categoria.RARO, "ate": Categoria.RARO, "oculta": false},
+	{"nome": "OBRAS", "de": Categoria.EPICO, "ate": Categoria.LENDARIO, "oculta": false},
+	{"nome": "IMPROVÁVEIS", "de": Categoria.IMPOSSIVEL, "ate": Categoria.IMPOSSIVEL,
+	 "oculta": false},
+	{"nome": "PARADOXAIS", "de": Categoria.PARADOXAL, "ate": Categoria.PARADOXAL,
+	 "oculta": true},
+]
+
+
+## Em que faixa uma raridade cai. -1 quando nenhuma a cobre, que a suite reprova: raridade
+## fora de faixa some do Arquivo, e sumir e pior que reprovar.
+static func faixa_de(categoria: int) -> int:
+	for i in FAIXAS.size():
+		if categoria >= int(FAIXAS[i]["de"]) and categoria <= int(FAIXAS[i]["ate"]):
+			return i
+	return -1
+
+
 ## O QUE A DESCOBERTA FAZ ALEM DE APARECER (issue #52).
 ##
 ## Ate a v0.5 toda descoberta dava bonus, e isso fazia o sistema parecer uma segunda loja.

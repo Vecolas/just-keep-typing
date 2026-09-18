@@ -35,6 +35,7 @@ func executar() -> void:
 	_o_backup_carrega_a_partida()
 	_save_corrompido_nao_encosta_no_backup()
 	_sem_backup_nada_e_inventado()
+	_a_colecao_sobrevive_a_migracao()
 
 	Save.apagar()
 	Save.caminho = caminho_original
@@ -148,6 +149,86 @@ func _migracao() -> void:
 	ok(Save.gravar(), "grava por cima do migrado")
 	var relido = JSON.parse_string(FileAccess.open(CAMINHO_DE_TESTE, FileAccess.READ).get_as_text())
 	igual(int(relido["versao"]), Save.VERSAO, "o arquivo regravado esta na versao atual")
+
+
+## ⚠️ A MIGRACAO DA ISSUE #55 NAO PODE APAGAR COLECAO DE QUEM JA JOGA, e nao pode inventar
+## data para o que ela nao sabe.
+##
+## O caso real: um save da versao 10 tem `descobertas` e nao tem os dois carimbos. Se a
+## migracao preenchesse zero -- que e o reflexo natural para "campo numerico ausente" --,
+## toda descoberta antiga passaria a dizer "encontrada em 1 de janeiro de 1970, com 1
+## caractere produzido". Dado inventado que parece dado e pior que dado faltando: ninguem
+## desconfia dele.
+func _a_colecao_sobrevive_a_migracao() -> void:
+	var antigo := {
+		"versao": 10,
+		"total_caracteres": "1e12",
+		"descobertas": ["banana", "eu"],
+	}
+	var arquivo := FileAccess.open(CAMINHO_DE_TESTE, FileAccess.WRITE)
+	arquivo.store_string(JSON.stringify(antigo))
+	arquivo.close()
+
+	Jogo.esquecer_descobertas()
+	Save.carregar()
+
+	ok(Jogo.descobertas.has("banana"), "a descoberta do save antigo sobreviveu")
+	ok(Jogo.descobertas.has("eu"), "e a segunda tambem")
+	ok(
+		Descobertas.detalhe_de("banana").is_empty(),
+		"e ela NAO ganhou data inventada -- o detalhe vem vazio",
+	)
+
+	# ⚠️ E CARIMBO ORFAO NAO PASSA. Um id com data mas sem estar na lista de encontradas e
+	# lixo que o Arquivo leria como verdade -- e ele entra por caminhos que nao sao este
+	# (save editado a mao, migracao futura que mexa na lista).
+	var com_orfao := {
+		"versao": Save.VERSAO,
+		"total_caracteres": "1e12",
+		"descobertas": ["banana"],
+		"descobertas_quando": {"banana": 1700000000.0, "fantasma": 1700000000.0},
+		"descobertas_grandeza": {"banana": 9, "fantasma": 9},
+	}
+	arquivo = FileAccess.open(CAMINHO_DE_TESTE, FileAccess.WRITE)
+	arquivo.store_string(JSON.stringify(com_orfao))
+	arquivo.close()
+
+	Jogo.esquecer_descobertas()
+	Jogo.nome = "nome que tem que sumir"
+	Save.carregar()
+
+	# ⚠️ ESTE ARQUIVO ESTA NA VERSAO ATUAL E LHE FALTAM CAMPOS. Ate a issue #55 o
+	# preenchimento de padrao so rodava dentro de _migrar, entao um save assim caia direto
+	# em _aplicar -- que indexa `dados["nome"]` sem .get e morre ali, com a partida pela
+	# metade. Foi este caso de teste que reprovou primeiro, e o reflexo teria sido
+	# consertar o teste: o arquivo era JSON valido, na versao certa, e nao carregava.
+	igual(Jogo.nome, "", "save da versao atual sem um campo ganha o padrao, e nao trava")
+
+	ok(not Descobertas.detalhe_de("banana").is_empty(), "o carimbo de quem foi achado fica")
+	ok(
+		not Jogo.descobertas_quando.has("fantasma"),
+		"e o carimbo de quem NAO esta na lista e descartado na leitura",
+	)
+	ok(not Jogo.descobertas_grandeza.has("fantasma"), "nos dois dicionarios")
+
+	# ida e volta com os campos novos: gravar e carregar tem que devolver o mesmo
+	Jogo.esquecer_descobertas()
+	Jogo.descobertas.append("banana")
+	Jogo.total_caracteres = Grande.de_float(1.0e15)
+	Descobertas._carimbar("banana")
+	var esperado := Descobertas.detalhe_de("banana")
+	ok(Save.gravar(), "grava a colecao com carimbo")
+	Jogo.esquecer_descobertas()
+	Save.carregar()
+	var obtido := Descobertas.detalhe_de("banana")
+	ok(not obtido.is_empty(), "o carimbo sobreviveu a ida e volta")
+	perto(
+		float(obtido.get("quando", 0.0)), float(esperado["quando"]), 0.0,
+		"e a data voltou EXATA -- e o que o floorf() no carimbo garante",
+	)
+	igual(int(obtido.get("grandeza", -1)), int(esperado["grandeza"]), "e a ordem de grandeza")
+
+	Jogo.esquecer_descobertas()
 
 
 ## Save de um jogo mais NOVO nao pode ser aplicado pela metade: adivinhar o que um campo

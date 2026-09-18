@@ -586,6 +586,71 @@ nenhuma vez.
 
 ---
 
+## O Arquivo de Descobertas é coleção, e coleção tem faixa
+
+Com sessenta e duas descobertas (issue #52) a lista plana deixou de funcionar. A tela
+agrupa por **faixa**, com contagem por faixa.
+
+⚠️ **A faixa é DERIVADA da raridade**, e mora em `DadosDescoberta.FAIXAS`. Não é campo novo
+no `.tres`: guardada, ela seria uma segunda fonte, e a cópia clonada de um `.tres`
+carregaria a faixa do original sem dar erro nenhum. E não mora na tela nem na suíte — a
+tabela já existia dentro de `teste_descobertas.gd` desde a #52, e no instante em que o
+Arquivo precisou dela, uma cópia seria a segunda tabela.
+
+⚠️ **`0/?` não é enfeite.** A faixa paradoxal esconde o total: saber quantas faltam mata a
+última faixa, porque o `?` **é** a promessa e a contagem exata a desmonta. A suíte cobra
+que **exatamente uma** faixa esconda o total — uma segunda transformaria a marca registrada
+em ruído.
+
+### Altura é o problema, e agrupar não o resolve sozinho
+
+Uma descoberta não encontrada ocupava o mesmo card de 120 px que uma encontrada, com
+`? ? ?` e "Ainda não descoberto." gastando três linhas para não dizer nada. Com sessenta e
+duas, a tela virava uma rolagem de silhuetas.
+
+**Não encontrada é UMA LINHA**: símbolo, raridade, silhueta. O buraco continua tendo forma
+reconhecível — que é o que faz o jogador querer continuar — e cabe uma faixa inteira na
+tela. Encontrada mantém o card, porque ela **é** a recompensa.
+
+### "A entrada aberta mostra o resto" — aberta é REVELADA
+
+Não expandida por clique. A issue não pede interação nenhuma, e inventar uma custaria caro:
+esta tela não navega por foco (o próprio botão Fechar é `FOCUS_NONE`), então entrada
+clicável seria conteúdo que só existe para quem usa o mouse.
+
+### Dado que não existe não vira zero
+
+"Primeira vez encontrada" e "ordem de grandeza" entram no save na **versão 11**. Save antigo
+**não ganha valor nenhum**: os dois dicionários entram vazios.
+
+⚠️ **A sentinela é a AUSÊNCIA da chave, e nunca um número.** Ordem de grandeza **zero é
+legítima** (de 1 a 9 caracteres). Com zero como sentinela, a primeira descoberta de uma
+partida nova perderia a linha na tela — e toda descoberta antiga passaria a dizer
+*"encontrada em 1 de janeiro de 1970, com 1 caractere produzido"*. **Dado inventado que
+parece dado é pior que dado faltando: ninguém desconfia dele.**
+
+⚠️ **E a data vai em segundos inteiros**, pelo mesmo motivo de `Save.gravar` — ver "O save é
+texto".
+
+⚠️ **Carimbo órfão não passa.** Um id com data que não está na lista de encontradas é lixo
+que o Arquivo leria como verdade; a leitura filtra contra `Jogo.descobertas`.
+
+⚠️ **E os três campos se apagam JUNTOS.** `Jogo.esquecer_descobertas()` existe porque dois
+lugares zeram a coleção no prestígio (Teoremas e Fragmentos), e "zerar na mão" com três
+campos vira três linhas repetidas em dois arquivos — o quarto lugar que aparecer vai
+esquecer uma. O sintoma seria mudo: a lista volta vazia, os carimbos ficam, e a tela diz
+"encontrada em 3 de setembro" sobre uma descoberta que o jogador não tem mais.
+
+### O padrão vale para todo save, e não só para o migrado
+
+Até esta issue o preenchimento de campo ausente só rodava dentro de `_migrar`. Um arquivo
+**na versão atual** sem algum campo caía direto em `_aplicar`, que indexa `dados["nome"]`
+sem `.get` e morre ali, com a partida pela metade.
+
+Não é hipotético: foi assim que o primeiro caso de teste da coleção reprovou, e o reflexo
+teria sido *"consertar o teste"*. O arquivo era JSON válido, na versão certa, e não
+carregava.
+
 ## O combo de digitação: acelera, nunca obriga
 
 ```

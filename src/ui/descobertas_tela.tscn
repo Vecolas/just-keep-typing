@@ -50,6 +50,7 @@ theme_override_constants/separation = 16
 
 [node name="Cabecalho" type="HBoxContainer" parent="Margem/Painel/MargemPainel/Coluna"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
 [node name="Titulo" type="Label" parent="Margem/Painel/MargemPainel/Coluna/Cabecalho"]
 unique_name_in_owner = true
