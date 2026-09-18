@@ -65,6 +65,7 @@ func executar() -> void:
 	_toda_familia_tem_escada(upgrades)
 	_custo_e_efeito_sobem_juntos(upgrades)
 	_a_familia_nao_decide_nada_no_gameplay()
+	_o_papel_impoe_a_invariante_dele()
 
 
 ## Familia SEM_FAMILIA e o zero do enum, que e o que todo recurso esquecido recebe. Ele
@@ -174,6 +175,66 @@ func _custo_e_efeito_sobem_juntos(upgrades: Array) -> void:
 	ok(degraus_medidos > 0, "mediu %d degraus de escada" % degraus_medidos)
 
 
+## ⚠️ O PAPEL IMPOE INVARIANTE, e e isso que o separa de um rotulo (issue #72).
+##
+## Dois erros da v0.7 vieram de aplicar regra geral sem olhar o que a peca E, e nos dois a
+## semantica vivia so no TEXTO DA DESCRICAO -- que nenhuma ferramenta le:
+##
+##   mesas_empilhadas    virou parcela de velocidade, e o texto dele fala de VAGA
+##   instinto_digitador  recebeu requisito 20, e ele e o INTERRUPTOR do jogo
+##
+## Estas afirmacoes sao as que teriam pego os dois.
+func _o_papel_impoe_a_invariante_dele() -> void:
+	var upgrades := _carregar()
+	var conferidos := 0
+
+	for dados in upgrades:
+		var papel: int = dados.papel_do_upgrade
+		ok(papel != DadosUpgrade.Papel.SEM_PAPEL, "%s declara papel" % dados.id)
+		if papel == DadosUpgrade.Papel.SEM_PAPEL:
+			continue
+
+		# ⚠️ papel sem invariante e um rotulo que nao cobra nada, e a issue existe contra
+		# rotulos que nao cobram
+		ok(
+			DadosUpgrade.EFEITOS_DO_PAPEL.has(papel),
+			"o papel %d tem invariante declarada" % papel,
+		)
+		if not DadosUpgrade.EFEITOS_DO_PAPEL.has(papel):
+			continue
+
+		var aceitos: Array = DadosUpgrade.EFEITOS_DO_PAPEL[papel]
+		ok(
+			dados.tipo_de_efeito in aceitos,
+			"%s tem papel %d e efeito %d, que casam" % [
+				dados.id, papel, dados.tipo_de_efeito,
+			],
+		)
+		conferidos += 1
+
+		# ⚠️ A INVARIANTE QUE TERIA PEGO O SEGUNDO ERRO: o interruptor liga a producao
+		# automatica, e ate ele o clique e a unica fonte (GDD §3). Requisito diferente de
+		# zero adia a IGNICAO do jogo.
+		if papel == DadosUpgrade.Papel.INTERRUPTOR:
+			perto(
+				dados.requisito, 0.0, 0.0,
+				"%s e interruptor e aparece desde o primeiro quadro" % dados.id,
+			)
+
+	ok(conferidos > 0, "conferiu a invariante de %d upgrades" % conferidos)
+
+	# todo papel do enum, menos o neutro, precisa de invariante -- inclusive os que ninguem
+	# usa ainda: papel sem uso que nasce sem regra ganha a regra errada no dia em que alguem
+	# o usar
+	for papel in DadosUpgrade.Papel.values():
+		if papel == DadosUpgrade.Papel.SEM_PAPEL:
+			continue
+		ok(
+			DadosUpgrade.EFEITOS_DO_PAPEL.has(papel),
+			"o papel %d do enum tem invariante, mesmo sem ninguem usar" % papel,
+		)
+
+
 ## ⚠️ A FAMILIA E PARA LEITURA. O gameplay pergunta pelo TIPO de efeito
 ## (Economia.bonus_de) e nunca pela familia -- e o que sustenta "upgrade novo e um .tres,
 ## e mais nada". No dia em que aparecer um `if familia ==` dentro da economia, upgrade
@@ -193,6 +254,11 @@ func _a_familia_nao_decide_nada_no_gameplay() -> void:
 		ok(
 			not texto.contains(".familia"),
 			"%s nao consulta a familia de um upgrade -- ela e para leitura" % caminho,
+		)
+		# ⚠️ o papel e contrato com a SUITE, e nao com o gameplay (issue #72)
+		ok(
+			not texto.contains(".papel_do_upgrade"),
+			"%s nao consulta o papel de um upgrade -- ele e para validar" % caminho,
 		)
 
 

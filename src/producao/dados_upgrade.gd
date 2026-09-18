@@ -116,6 +116,55 @@ const NOMES_DE_FAMILIA: PackedStringArray = [
 
 @export var familia: Familia = Familia.SEM_FAMILIA
 
+## O QUE A PECA E (issue #72). ⚠️ E ELE IMPOE INVARIANTE, senao e so mais um rotulo.
+##
+## Dois erros da v0.7 vieram da mesma causa -- regra geral aplicada sem olhar o que a peca
+## E --, e nos dois a semantica vivia so no TEXTO DA DESCRICAO, que nenhuma ferramenta le:
+##
+##   mesas_empilhadas    virou parcela de VELOCIDADE. O texto dele fala de empilhar mesas,
+##                       ou seja, de VAGA. Quem acusou foi a composicao de capacidade cair
+##                       de x112 para x45 sem ninguem ter tocado em capacidade.
+##
+##   instinto_digitador  recebeu requisito 20 como qualquer outro da fila. Ele e o
+##                       INTERRUPTOR que liga a producao automatica (GDD §3), e tem que
+##                       estar na loja no primeiro quadro. Quem acusou foi a suite de
+##                       Economia reprovando quatro afirmacoes de compra.
+##
+## Com o papel declarado, os dois reprovariam por si: papel CAPACIDADE com efeito de
+## velocidade, e papel INTERRUPTOR com requisito diferente de zero.
+##
+## ⚠️ E ELE NAO E A FAMILIA. Familia e leitura para o jogador ("O Macaco"); papel e contrato
+## com o codigo. E, como a familia, o gameplay NAO o consulta -- ha portao varrendo a
+## economia atras dos dois.
+##
+## SEM_PAPEL e o zero de proposito: e o que todo recurso esquecido recebe, e a suite
+## reprova quem ficar nele.
+enum Papel {
+	SEM_PAPEL,
+	ECONOMICO,
+	CAPACIDADE,
+	VELOCIDADE,
+	AUTOMACAO,
+	INTERRUPTOR,
+	CONVENIENCIA,
+}
+
+@export var papel_do_upgrade: Papel = Papel.SEM_PAPEL
+
+## Que efeitos cada papel aceita. ⚠️ A INVARIANTE E ISTO: papel que nao casa com o efeito
+## reprova, e e o que teria pego os dois erros da v0.7.
+##
+## Papel fora desta tabela reprova tambem -- papel novo sem invariante e um rotulo que nao
+## cobra nada, e a issue existe justamente contra rotulos que nao cobram.
+const EFEITOS_DO_PAPEL: Dictionary = {
+	Papel.ECONOMICO: [Efeito.PRODUCAO_GLOBAL, Efeito.CUSTO_DE_MACACO],
+	Papel.CAPACIDADE: [Efeito.CAPACIDADE],
+	Papel.VELOCIDADE: [Efeito.VELOCIDADE_SOMADA, Efeito.VELOCIDADE_DO_MACACO],
+	Papel.AUTOMACAO: [Efeito.LIGA_PRODUCAO_AUTOMATICA],
+	Papel.INTERRUPTOR: [Efeito.LIGA_PRODUCAO_AUTOMATICA],
+	Papel.CONVENIENCIA: [Efeito.CUSTO_DE_MACACO],
+}
+
 ## snake_case sem acento: vai para o save e para chave de dicionario (decisao 0002).
 @export var id: String = ""
 
