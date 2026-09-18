@@ -307,7 +307,7 @@ A pergunta deixa de ser *"quanto tempo até prestigiar?"* e passa a ser:
 
 ---
 
-## v0.7.1 — O jogador enxerga o que acontece
+## v0.7.1 — O jogador enxerga o que acontece  ✅ **entregue**
 
 **A regra desta versão:** a v0.7 consertou a economia. Esta não mexe nela.
 
