@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_dados_upgrade")
+papel_do_upgrade = 6
 familia = 3
 id = "pausa_para_o_almoco"
 nome = "Pausa para o Almoço"
