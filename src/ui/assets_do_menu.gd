@@ -129,6 +129,53 @@ static func aplicar_filtro(no: CanvasItem) -> void:
 	no.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
+## A textura de uma peca JA AMPLIADA pela escala declarada, com vizinho mais proximo.
+##
+## ⚠️ ISTO EXISTE POR CAUSA DO 9-SLICE, e a razao e cirurgica: patch_margin e texture_margin
+## sao medidos em pixels da TEXTURA, e nao na tela. Uma placa de 48x24 com borda de 8 pede
+## margem 8 -- que desenha uma borda de 8 pixels de tela, minuscula em 1920 logicos. Pedir
+## 32 (8 x 4) numa textura de 48 faz as duas margens somarem 64 e se sobreporem: o Godot
+## nao reclama, ele desenha o papel repetido para fora do painel. Foi exatamente isso que a
+## primeira captura do menu mostrou.
+##
+## Ampliar a textura ANTES resolve os dois lados: a borda vira 32 pixels de verdade e a
+## margem continua sendo 32 na textura ampliada.
+##
+## ⚠️ E A AMPLIACAO E POR VIZINHO MAIS PROXIMO. Qualquer interpolacao aqui e o borrao que a
+## decisao 0006 se compromete a evitar -- e ele entraria no proprio arquivo, e nao no
+## desenho, onde o filtro do no nao alcanca mais.
+##
+## Cache em static var e cache COM MOTIVO: sao catorze pecas ampliadas uma vez, e o menu
+## remonta o tema a cada mudanca de interface (issue #43). Sem ele, cada remontagem
+## reescalaria todas as texturas.
+static var _ampliadas: Dictionary = {}
+
+static func textura_ampliada(id: String) -> Texture2D:
+	if _ampliadas.has(id):
+		return _ampliadas[id]
+	var original := textura_de(id)
+	if original == null:
+		return null
+	var linha := peca(id)
+	var escala := maxi(int(linha["escala"]), 1)
+	var imagem := original.get_image()
+	imagem.resize(
+		imagem.get_width() * escala, imagem.get_height() * escala,
+		Image.INTERPOLATE_NEAREST,
+	)
+	var ampliada := ImageTexture.create_from_image(imagem)
+	_ampliadas[id] = ampliada
+	return ampliada
+
+
+## A borda do 9-slice NA TEXTURA AMPLIADA. Zero quando a peca nao e 9-slice.
+static func borda_ampliada(id: String) -> int:
+	var linha := peca(id)
+	if linha.is_empty():
+		return 0
+	return int(linha["borda"]) * maxi(int(linha["escala"]), 1)
+
+
 ## Quantas pecas ja existem no disco. A suite le isto para nao aprovar uma pasta vazia.
 static func quantas_existem() -> int:
 	var quantas := 0

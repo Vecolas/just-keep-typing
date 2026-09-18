@@ -226,6 +226,31 @@ func _ready() -> void:
 		EventBus.estatisticas_pedidas.emit()
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
+	elif cenario == "menu_estados":
+		# ⚠️ OS QUATRO ESTADOS DE BOTAO NUMA CAPTURA SO (issue #46). Hover e pressionado nao
+		# se forcam por fora -- o Godot os desenha a partir do mouse e do clique --, entao a
+		# foto troca o estilo NORMAL de cada botao pelo estilo do estado que se quer ver. E
+		# uma vitrine dos quatro desenhos, e nao uma simulacao de interacao.
+		#
+		# O que ela existe para provar: os quatro sao distinguiveis SEM COR. Tres degraus de
+		# luminancia mais a placa afundada, que difere por FORMA.
+		var menu := get_tree().root.find_child("MenuTela", true, false)
+		if menu != null:
+			var vitrine := {
+				"BotaoJogar": Tema.placa("placa", Tema.BRILHO_NORMAL),
+				"BotaoConfiguracoes": Tema.placa("placa", Tema.BRILHO_HOVER),
+				"BotaoCreditos": Tema.placa(
+					"placa_afundada", Tema.BRILHO_NORMAL, Tema.DESLOCAMENTO_AO_APERTAR
+				),
+				"BotaoSair": Tema.placa("placa", Tema.BRILHO_DESABILITADO),
+			}
+			for nome_do_botao in vitrine:
+				var botao := menu.find_child(nome_do_botao, true, false) as Button
+				if botao != null and vitrine[nome_do_botao] != null:
+					botao.add_theme_stylebox_override("normal", vitrine[nome_do_botao])
+					botao.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
 	elif cenario == "opcoes":
 		# a captura que as issues #34 e #41 pedem: em ingles, para conferir que nenhum
 		# rotulo estoura o campo. "Frame rate limit" e "Power saving mode" sao bem mais
