@@ -304,6 +304,86 @@ Um efeito colateral que vale anotar: a régua ficou **2,2× mais lenta** (de ~55
 2 min 4 s), porque o jogador simulado percorre o catálogo inteiro a cada compra. Com os
 60–70 upgrades da v1.0 isso passa de três minutos.
 
+### O resultado da v0.7 até aqui (issues #60, #61 e #62)
+
+Perfil **normal**, régua de campanha, mesma semente:
+
+| até | marcos antes | marcos depois | upgrades antes | upgrades depois |
+|---|---|---|---|---|
+| 00:10 | **76** | **38** | **44** | **22** |
+| 00:20 | 0 | 8 | 0 | 6 |
+| 00:30 | 0 | 22 | 0 | 16 |
+| 00:40 | 1 | 1 | 0 | 0 |
+| 00:50 | 0 | 0 | 0 | 0 |
+| 01:00 | 0 | 0 | 0 | 0 |
+
+| | antes | depois |
+|---|---|---|
+| 1º Teorema disponível | 00:03:43 | **00:27:54** |
+| 1º Teorema vale a pena | 00:04:22 | **00:37:39** ✅ dentro de 35–50 |
+| prestígios na 1ª hora | 2 | **1** |
+
+**Quatro dos seis blocos deixaram de estar vazios**, contra um antes.
+
+#### Os três perfis, no fim da v0.7
+
+| perfil | distribuição 0–60 min | 1º disponível | vale a pena |
+|---|---|---|---|
+| ativo | 43 / 7 / 19 / 0 / 0 / 0 | 00:27:06 | **00:27:36** |
+| **normal** | 38 / 8 / 22 / 1 / 0 / 0 | 00:27:54 | **00:37:39** ✅ |
+| passivo | 38 / 10 / 12 / 8 / 1 / 0 | 00:29:49 | **00:41:57** ✅ |
+
+**Os três chegam ao Teorema**, e os dois que definem o critério caem na faixa de 35–50.
+
+⚠️ **O perfil PASSIVO tem a melhor distribuição dos três** — cinco blocos com conteúdo
+contra quatro do normal. Quem joga menos atravessa mais devagar, e por isso encontra mais
+coisa pelo caminho. Não é um defeito; é uma leitura que vale ter antes de mexer de novo.
+
+⚠️ **E um critério REGREDIU.** O ativo passou a ser **27% mais rápido** que o normal
+(27:36 contra 37:39). Na linha de base ele era 13%, dentro da faixa de 10–20% que a decisão
+0008 fixou. A issue #65 avisava que essa propriedade era *"o tipo que uma curva nova quebra
+sem avisar"* — e ela quebrou.
+
+⚠️ **E o que NÃO convergiu: o bloco de 40 a 60 minutos continua vazio.** Ver a decisão
+`0009` — o motivo é estrutural e a correção esbarra no congelamento de conteúdo.
+
+### ⚠️ MARCO NÃO É BOTÃO DE TUNING (issue #61)
+
+A issue pedia para redistribuir marcos, upgrades e descobertas. **Marco não pode ser
+redistribuído.**
+
+O `requisito` de um marco é um **fato sobre o mundo**, e o campo `nota` ao lado existe
+exatamente para documentar a conta:
+
+```
+requisito = "3.5e6"
+titulo    = "A Bíblia"
+nota      = "Biblia completa: 783.000 palavras x 4,5 caracteres."
+```
+
+Mudar aquele `3.5e6` para `1e20` não redistribui nada — **faz o Panorama mentir**, que é o
+contrário do que a decisão 0003 e a issue #51 constroem. Quando cada marco cai é
+**consequência** da velocidade da economia, e não uma escolha.
+
+Então o que a #61 redistribuiu foram os **upgrades**, cujo `requisito` e `custo` são números
+de balanceamento de verdade.
+
+#### Duas iterações, e a primeira foi longe demais
+
+| | expoente final | fator de custo | resultado |
+|---|---|---|---|
+| 1ª | 10^26 | 0,35 | forma **certa** (28/5/5/2/1/1) e escala **colapsada**: 28 caracteres em uma hora |
+| 2ª | 10^18 | 0,12 | 38/8/22/1/0/0, Teorema aos 37:39 |
+
+A primeira iteração é instrutiva: **a distribuição ficou exatamente no alvo e o jogo parou
+de funcionar.** Espalhar upgrades encarece a ignição, e a economia nunca pega. *Forma certa
+com escala errada não é meio-caminho — é outro defeito.*
+
+⚠️ **E o espalhamento cego quebrou o upgrade que LIGA o jogo.** `instinto_digitador` ganhou
+requisito 20 como qualquer outro da fila — e ele é o interruptor da produção automática
+(GDD §3), que tem de estar na loja no primeiro quadro. Mesma família do `mesas_empilhadas`
+na #60: **regra geral aplicada sem olhar o que a peça É.**
+
 ### ⚠️ O MAIOR MULTIPLICADOR DO JOGO ERAM AS DESCOBERTAS (issue #60)
 
 O suspeito óbvio eram os upgrades: 38 dos 44 eram multiplicadores que compõem.
