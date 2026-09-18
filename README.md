@@ -18,6 +18,7 @@ sair de 1 caractere para números que já não cabem em nenhuma comparação hum
 | [`TUNING.md`](TUNING.md) | Como ajustar balanceamento sem abrir um `.gd`. |
 | [`docs/decisoes/`](docs/decisoes/) | Uma decisão de design por arquivo. |
 | [`docs/ASSETS.md`](docs/ASSETS.md) | O briefing de cada asset do menu, e o tamanho de cada um. |
+| [`docs/ENTREGA-v0.5.md`](docs/ENTREGA-v0.5.md) | A devolutiva das issues #39–#49: o que mudou, os doze defeitos silenciosos que viraram portão, e **o que não está provado**. |
 
 ## Testes
 
