@@ -295,9 +295,16 @@ quem joga.
   quem tem 1080p cria uma janela maior que a tela, com a barra de título inalcançável — e a
   pessoa não tem como voltar às opções para desfazer
 - Em tela cheia a lista de resolução fica **apagada**, porque ali ela não faz nada
-- Se a arte for pixel art de escala inteira, **só a resolução nativa é exata**; as outras
-  esticam e um pixel quadrado passa a ter larguras diferentes na mesma imagem. Elas existem
-  porque monitor menor que o canvas é real — diga isso na dica da tela
+- ⚠️ **A arte do menu É pixel art de escala inteira desde a issue #44** (decisão
+  [0006](docs/decisoes/0006-pixel-art-no-menu-tipografia-na-partida.md)), então esta
+  ressalva **vale**: só a escala inteira é exata. As outras esticam e um pixel quadrado
+  passa a ter larguras diferentes na mesma imagem. Elas continuam existindo porque monitor
+  menor que o canvas é real — e é por isso que a dica da tela diz o que diz
+- ⚠️ **Pixel art é desenhada com filtro `nearest`, nunca linear.** Interpolação vira
+  borrão, e borrão é a única coisa que pixel art não pode ser
+- ⚠️ **A escala de interface move a UI, e não o cenário.** 125% em cima de sprite de escala
+  inteira faria o pixel quadrado ter larguras diferentes na mesma imagem. Painel, botões e
+  texto crescem; a mesa, o macaco e a janela ficam onde estão
 
 **Campo é genérico, e a aba é só mais uma coluna.** `Config.CAMPOS` é uma tabela: nome,
 aba, tipo, valores, rótulos e o que aplicar. A tela percorre `Config.ABAS`, pergunta quais
