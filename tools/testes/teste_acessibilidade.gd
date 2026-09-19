@@ -129,8 +129,20 @@ func _os_simbolos_existem_na_fonte() -> void:
 
 
 ## A escala do texto cresce o que se le, e nunca devolve tamanho invalido.
+##
+## ⚠️ A LISTA VEM DE `escalas_do_texto()`, e nao do campo. `escala_do_texto` e um dos tres
+## campos SEM a chave `valores`: a lista dele muda em runtime, porque ele divide o orcamento
+## de espaco com a escala da interface.
+##
+## Ler `campo(...)["valores"]` dava `Invalid access to property or key 'valores'` -- e o erro
+## ABORTAVA esta funcao na primeira linha. Tudo daqui para baixo, inclusive a afirmacao de
+## CONTROLE que prova que a escala cresce de verdade, nunca rodou. A suite imprimia PASSOU
+## com a contagem a menos, e ninguem compara contagem de afirmacoes entre duas corridas.
+##
+## Quem acusou foi o portao de stderr (tools/ci/exigir_passou.sh), que existe por causa disto.
 func _escala_do_texto() -> void:
-	var valores: Array = Config.campo("escala_do_texto")["valores"]
+	var valores: Array[float] = Config.escalas_do_texto()
+	ok(not valores.is_empty(), "ha escala de texto para conferir")
 	var anterior := 0
 	for i in valores.size():
 		Config.escolher("escala_do_texto", i)
