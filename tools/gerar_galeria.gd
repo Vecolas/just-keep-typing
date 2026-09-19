@@ -24,18 +24,34 @@ const PASTA := "res://docs/capturas"
 const TAMANHO := Vector2i(1920, 1080)
 const FRAMES_ATE_ESTABILIZAR := 40
 
+## ⚠️ A SEMENTE DO SORTEIO DE DESCOBERTAS, FIXADA AQUI. A galeria esta no git para o DIFF
+## mostrar o que mudou na tela: com o sorteio solto, duas geracoes do mesmo commit dao
+## descobertas diferentes, e o diff acusa uma mudanca de arte que nunca houve.
+##
+## O numero e o mesmo do runner e das reguas: semente diferente por ferramenta daria imagens
+## que nao se comparam entre si.
+const SEMENTE_DO_SORTEIO: int = 1
+
 func _ready() -> void:
 	if DisplayServer.get_name() == "headless":
 		printerr("FALHA  a galeria precisa de janela; rode sem --headless")
 		get_tree().quit(1)
 		return
 
+	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
 	Save.caminho = "user://galeria_save.json"
 	Save.apagar()
 
 	# a galeria nao usa as opcoes de quem desenvolve, e nem o tamanho que elas pedem
 	Config.caminho = "user://galeria_opcoes.json"
 	Config.modelo_de_slot = "user://galeria_save_%d.json"
+	# ⚠️ OS SLOTS SAO APAGADOS ANTES. comecar_partida(1) CARREGA o slot 1, e um slot deixado por
+	# uma geracao anterior traz o dinheiro, as descobertas e os marcos de outra partida para
+	# dentro da foto: a captura da era 1 saiu com 334 mil no saldo, sete descobertas e o
+	# proximo marco em 10^3000. A galeria esta no git para o diff mostrar o que mudou na TELA,
+	# e nao o que sobrou no disco de quem rodou.
+	for numero in range(1, Config.SLOTS + 1):
+		Save.apagar_arquivos(Config.caminho_do_slot(numero))
 	DisplayServer.window_set_size(TAMANHO)
 	get_window().content_scale_size = TAMANHO
 	var empacotada := load(ProjectSettings.get_setting("application/run/main_scene", "")) as PackedScene
@@ -60,6 +76,28 @@ func _ready() -> void:
 	Cenas.comecar_partida(1)
 	await get_tree().process_frame
 
+	# ⚠️ O BANNER ENTRA NA GALERIA VERSIONADA porque ele e a unica peca desta interface que
+	# so existe por alguns SEGUNDOS: ele nao aparece em nenhuma captura de era, e sem uma foto
+	# propria nenhum diff mostraria que ele parou de caber, de contrastar ou de quebrar linha
+	# na hora em que alguem mexesse num texto de descoberta.
+	#
+	# ⚠️ E O ACONTECIMENTO ENTRA PELO BARRAMENTO, e nao preenchendo o banner na mao: o que a
+	# foto prova e o CAMINHO inteiro -- Avisos classifica, escolhe a faixa e a duracao, e a HUD
+	# desenha. Um banner preenchido na mao provaria so o desenho.
+	Jogo.total_caracteres = Grande.de_float(500000.0)
+	Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+	Jogo.macacos = Grande.de_float(10.0)
+	var rara := _a_mais_rara()
+	if rara == null:
+		printerr("FALHA  nao ha descoberta no catalogo para fotografar o banner")
+		get_tree().quit(1)
+		return
+	# a fila comeca limpa: sem isto a foto sairia com a primeira descoberta que o sorteio deu
+	Avisos.limpar()
+	EventBus.descoberta_encontrada.emit(rara)
+	if not await _fotografar("banner_de_descoberta"):
+		return
+
 	var eras := raiz.find_child("Eras", true, false)
 	if eras == null:
 		printerr("FALHA  a cena principal nao tem o no Eras")
@@ -73,6 +111,14 @@ func _ready() -> void:
 		Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
 		Jogo.macacos = Grande.de_float(10.0)
 		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+
+		# ⚠️ A FOTO DA ERA E SOBRE A ERA. O total escrito acima faz a producao correr de
+		# verdade, e producao sorteia descoberta: sem isto, catorze fotos saem com um banner
+		# por cima do cenario -- e cada regeracao com um banner diferente. O banner tem a foto
+		# PROPRIA, logo acima, que e onde ele deve ser conferido.
+		Avisos.limpar()
+		for i in 2:
 			await get_tree().process_frame
 
 		var imagem := get_viewport().get_texture().get_image()
@@ -100,6 +146,21 @@ func _fotografar(nome_do_arquivo: String) -> bool:
 		return false
 	print("%-30s %s" % [nome_do_arquivo, destino])
 	return true
+
+
+## A descoberta mais RARA do catalogo.
+##
+## ⚠️ ESCOLHIDA PELA CATEGORIA, e nao por um id cravado aqui. Id na ferramenta e uma segunda
+## fonte: no dia em que aquela descoberta for renomeada ou sair do catalogo, a galeria deixaria
+## de fotografar o banner em silencio -- e o arquivo antigo continuaria no git, parecendo atual.
+## A mais rara e escolhida porque e o caso EXTREMO da caixa: o texto mais longo, a cor mais
+## saturada e a duracao maior.
+func _a_mais_rara() -> DadosDescoberta:
+	var rara: DadosDescoberta = null
+	for descoberta in Descobertas.todas():
+		if rara == null or descoberta.categoria > rara.categoria:
+			rara = descoberta
+	return rara
 
 
 func _eras_ordenadas() -> Array[DadosEra]:
