@@ -135,12 +135,38 @@ e duas peças de pixel art no centro. Medido no mesmo instrumento, mesma máquin
 
 ```text
 producao/s       rotulos  maquinas quadro    p95       p99       perdidos
-5                11       1        3,607 ms  4,049 ms  4,710 ms  0 de 240
-500 mil          12       4        4,099 ms  4,247 ms  5,427 ms  2 de 240
-5e17             10       100      3,243 ms  3,645 ms  4,453 ms  0 de 240
-SATURADO         64       100      3,339 ms  3,700 ms  4,172 ms  0 de 240
-ERA 14           7        16       2,722 ms  3,001 ms  3,071 ms  0 de 240
+5                12       1        3,562 ms  4,012 ms  4,360 ms  0 de 240
+500 mil          11       4        3,950 ms  4,319 ms  5,456 ms  1 de 240
+5e17             11       100      3,190 ms  3,532 ms  3,691 ms  0 de 240
+SATURADO         64       100      3,317 ms  3,794 ms  4,725 ms  1 de 240
+ERA 14            8       16       2,722 ms  2,966 ms  3,118 ms  0 de 240
 ```
+
+⚠️ **E esta é a primeira tabela desta régua que se compara consigo mesma.** Duas corridas
+seguidas do mesmo commit deram 3,562 / 3,536 na primeira linha e 2,722 / 2,704 na última — a
+variação que sobrou é relógio de parede, e não sorteio. Ver a seção seguinte.
+
+### ⚠️ Duas réguas produziam caractere sem saber, e a dívida cobria isso
+
+`medir_quadro` e `gerar_galeria` estavam em `SEM_SORTEIO_AINDA`, a lista de quem **não
+precisa** fixar a semente do sorteio de descobertas. A justificativa escrita era *"não
+produzem caractere"*.
+
+**Era falsa.** As duas montam a cena principal, e a Partida tica `Economia.acumular` a cada
+quadro: elas produzem caractere sem escrever uma linha de Economia. O detector do portão
+procurava exatamente a chamada direta — `Economia.digitar` ou `Economia.acumular` no texto do
+arquivo — e por isso **concordou com a justificativa errada por duas versões**.
+
+| régua | o que o sorteio solto causava |
+|---|---|
+| `gerar_galeria` | catorze fotos de era com uma descoberta aleatória por cima, uma diferente a cada geração — numa galeria que está no git para o diff mostrar o que mudou na tela |
+| `medir_quadro` | descoberta muda a produção, produção muda quantas letras nascem, letras mudam o quadro medido |
+
+O conserto foi triplo: as duas semeiam, as duas saíram da lista (que ficou **vazia**, e esse é
+o estado certo), e o detector passou a contar **montar a cena principal** como produzir
+caractere.
+
+> **O detector que mede o lugar errado aprova a própria dívida.**
 
 **O quadro dobrou, e continua com quatro vezes de margem.** De ~1,9 ms para ~3,5 ms num
 orçamento de 16,67 ms. O menu, que não mudou, mediu 0,73 ms contra os 0,64 ms históricos — ou

@@ -33,6 +33,16 @@ const QUADROS: int = 240
 ## grande em todo rotulo -- e o que testa os tres regimes do GDD §26.
 const ESCALAS: Array[float] = [5.0, 5e5, 5e17]
 
+## ⚠️ A SEMENTE DO SORTEIO DE DESCOBERTAS. Esta regua monta a cena principal, e a Partida tica
+## a Economia por quadro: ela PRODUZ caractere, mesmo sem chamar `Economia.acumular` em lugar
+## nenhum deste arquivo. Produzir caractere sorteia descoberta, descoberta muda a producao, e
+## producao muda quantas letras nascem -- ou seja, duas corridas do mesmo commit mediam
+## quadros diferentes.
+##
+## O numero e o mesmo do runner e das outras reguas: semente diferente por ferramenta daria
+## medicoes que nao se comparam entre si.
+const SEMENTE_DO_SORTEIO: int = 1
+
 
 func _ready() -> void:
 	if DisplayServer.get_name() == "headless":
@@ -46,6 +56,7 @@ func _ready() -> void:
 	# esta regua procurava Letras e Eras na cena principal e nao achava nenhum dos dois --
 	# ela parou de rodar naquele merge e ninguem percebeu, porque regua que nao roda nao
 	# reprova nada. Regua que ninguem roda apodrece.
+	Descobertas.gerador.seed = SEMENTE_DO_SORTEIO
 	Config.caminho = "user://medir_quadro_opcoes.json"
 	Config.modelo_de_slot = "user://medir_quadro_slot_%d.json"
 	Save.caminho = Config.caminho_do_slot(1)
