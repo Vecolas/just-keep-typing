@@ -19,6 +19,17 @@
 ##
 ## A era nao muda conta nenhuma. Producao, custo e chance atravessam qualquer uma delas
 ## iguais -- era que mexe em numero virou upgrade disfarcado de cenario.
+##
+## ⚠️ A MAQUINA DA FRENTE E O MACACO SAO PIXEL ART, E A ASCII E O RECURSO (decisao 0011).
+## A decisao 0006 dizia "tipografia na partida", e a razao dela era precisa: catorze eras nao
+## podem custar um asset por era. Ela continua valendo para a GRADE, que e o que escala -- mas
+## a maquina da frente e o macaco NUNCA escalaram: eles sao dois objetos de tamanho fixo no
+## meio da tela, e sao os dois que o docs/ARTE.md §3 e §4 chamam de identidade do jogo. Dois
+## PNGs que JA EXISTEM no menu (macaco.png e maquina.png) atendem as catorze eras.
+##
+## ⚠️ ASSET AUSENTE CAI NA ASCII, e nao quebra: as duas pecas sao tratadas como UMA familia --
+## se qualquer uma faltar, as duas voltam a ser rotulo. Metade em pixel art e metade em ASCII
+## le como defeito, e nao como arte incompleta (CONVENCOES: familia se entrega inteira).
 extends Control
 
 ## O desenho que se repete. Vem do mesmo alfabeto do docs/ARTE.md: maquina de escrever,
@@ -42,6 +53,34 @@ const SIMBOLOS: PackedStringArray = ["∞", "?", "%", "+", "~", "=", "()"]
 const QUADROS_DE_TRANSICAO: float = 1.4
 const AVISO_VISIVEL: float = 3.0
 
+## Quanta altura da area central as duas pecas da frente podem ocupar.
+##
+## ⚠️ Limite de DESIGN: acima disto elas cobrem a grade, e a grade e a unica coisa que conta a
+## historia da progressao. Abaixo, o macaco deixa de ser legivel -- e macaco ilegivel e a piada
+## do Teorema do Macaco Infinito sumindo da tela (docs/ARTE.md §10).
+const FRACAO_DA_ALTURA_DAS_PECAS: float = 0.55
+
+## O teto da escala das pecas. O mesmo do cenario do menu: acima dele o macaco fica maior na
+## partida do que no menu, e as duas telas deixam de parecer a mesma mesa.
+const ESCALA_MAXIMA_DAS_PECAS: int = 5
+
+## Onde a base das duas pecas pousa, em fracao da altura da area. Nao e o centro: a maquina
+## fica na metade de baixo e a grade respira em cima dela, que e a composicao do menu.
+const LINHA_DA_MESA: float = 0.86
+
+## Quanto a base do macaco sobe em relacao a base da maquina, em pixels de ARTE.
+##
+## ⚠️ O NUMERO E O MESMO DO MENU, e isso nao e coincidencia: CenarioDoMenu ancora a maquina em
+## y=150 e o macaco em y=136, ou seja catorze pixels de arte acima. Os dois compartilham o eixo
+## vertical -- o macaco e mais estreito que a maquina e fica ATRAS dela, e o que se ve dele e a
+## cabeca e as maos saindo por cima das teclas. Mudar a composicao aqui faria a mesa da partida
+## deixar de ser a mesa do menu, que e a unica coisa que amarra as duas telas.
+##
+## ⚠️ ELE E MAIS ALTO QUE A DISTANCIA ATE A MESA, e isso e de proposito -- o mesmo aviso do
+## CenarioDoMenu: ancorar os dois pela mesma linha faria o macaco pousar em cima da maquina,
+## flutuando.
+const MACACO_DENTRO_DA_MAQUINA: int = 14
+
 var _eras: Array[DadosEra] = []
 var _atual: DadosEra = null
 var _escala: float = 1.0
@@ -59,8 +98,22 @@ var _abstrata: bool = false
 
 var _grade: Control = null
 var _fundo: Array[Label] = []
+
+## A ASCII da frente. Nulos quando a pixel art existe -- e ai quem desenha sao as duas pecas
+## abaixo. Duas representacoes do mesmo objeto vivas ao mesmo tempo seriam duas fontes para a
+## mesma verdade, e o macaco apareceria duas vezes.
 var _macaco: Label = null
 var _frente: Label = null
+
+## A pixel art da frente, ou nulos quando o asset nao existe no disco.
+var _macaco_em_peca: TextureRect = null
+var _maquina_em_peca: TextureRect = null
+
+## A escala inteira em uso pelas duas pecas. ⚠️ CALCULADA, e nunca cravada: pixel art so e
+## exata em escala inteira (decisao 0006), e a area do centro muda com a escala de interface e
+## com o tamanho da janela.
+var _escala_das_pecas: int = 1
+
 var _aviso: Label = null
 
 
@@ -87,15 +140,29 @@ func _ready() -> void:
 		rotulo.visible = false
 		_fundo.append(rotulo)
 
-	_frente = _rotulo(Paleta.MONKEY_BROWN.lightened(0.15), 18)
-	_frente.text = MAQUINA
-	_macaco = _rotulo(Paleta.BANANA_GOLD, 18)
-	_macaco.text = MACACO
+	# ⚠️ O MACACO ENTRA ANTES DA MAQUINA, e a ordem E o desenho: no Godot, filho posterior
+	# desenha por cima. Com a maquina primeiro, o macaco aparece na frente das teclas -- ele
+	# estaria digitando pelo lado de fora. O mesmo aviso mora no CenarioDoMenu.
+	_macaco_em_peca = _peca("macaco")
+	_maquina_em_peca = _peca("maquina")
+	if _macaco_em_peca == null or _maquina_em_peca == null:
+		# ⚠️ AS DUAS OU NENHUMA. Metade em pixel art e metade em ASCII le como defeito; e se
+		# uma peca faltar, quem sobra e a representacao que nunca depende de disco.
+		_descartar_as_pecas()
+		_frente = _rotulo(Paleta.MONKEY_BROWN.lightened(0.15), 18)
+		_frente.text = MAQUINA
+		_macaco = _rotulo(Paleta.BANANA_GOLD, 18)
+		_macaco.text = MACACO
+
 	_aviso = _rotulo(Paleta.BANANA_GOLD, 24)
 	_aviso.visible = false
 
 	EventBus.idioma_mudou.connect(_ao_mudar_idioma)
 	EventBus.interface_mudou.connect(_ao_mudar_interface)
+	# ⚠️ REPOSICIONA QUANDO A AREA MUDA. A escala das pecas e calculada a partir da altura
+	# disponivel, e essa altura muda com a escala de interface e com o tamanho da janela --
+	# sem isto, mexer na opcao deixaria o macaco na escala da resolucao anterior.
+	resized.connect(_posicionar)
 	_trocar(_da_producao(), true)
 
 
@@ -167,7 +234,7 @@ func _trocar(era: DadosEra, imediato: bool) -> void:
 		_reestilizar()
 
 	# a maquina da frente some quando nao ha mais maquina; o macaco NUNCA some
-	_frente.visible = not era.abstrata
+	_mostrar_a_maquina(not era.abstrata)
 
 	if not primeira:
 		_aviso.visible = true
@@ -231,8 +298,11 @@ func _posicionar() -> void:
 
 	# a maquina da frente e o macaco NAO encolhem: e o que mantem os dois legiveis em
 	# qualquer era, e e o unico jeito de o planeta continuar tendo um macaco visivel
-	_frente.position = Vector2(size.x * 0.5 - 70.0, size.y * 0.5 - 20.0)
-	_macaco.position = Vector2(size.x * 0.5 - 130.0, size.y * 0.5 - 24.0)
+	if _frente != null:
+		_frente.position = Vector2(size.x * 0.5 - 70.0, size.y * 0.5 - 20.0)
+	if _macaco != null:
+		_macaco.position = Vector2(size.x * 0.5 - 130.0, size.y * 0.5 - 24.0)
+	_assentar_as_pecas()
 	_aviso.position = Vector2(size.x * 0.5 - 100.0, size.y * 0.18)
 
 
@@ -245,6 +315,82 @@ func _ajustar_grade() -> void:
 	# canto superior esquerdo -- encolher para o canto le como "sumindo", e nao como
 	# "camera subindo"
 	_grade.position = Vector2(size.x, size.y) * 0.5 * (1.0 - _escala)
+
+
+## Uma peca de pixel art da frente, ou nulo quando o asset nao existe no disco.
+##
+## ⚠️ IGNORE_SIZE + SCALE: o tamanho e ditado por nos e a textura obedece. Com o modo padrao o
+## TextureRect toma o tamanho da textura e a escala vira assunto do container -- que e como se
+## consegue uma escala fracionaria sem pedir nenhuma.
+##
+## ⚠️ E O FILTRO E NEAREST, sempre. Pixel art com interpolacao vira borrao, e borrao e a unica
+## coisa que pixel art nao pode ser (decisao 0006). O filtro e propriedade do NO que desenha.
+func _peca(id: String) -> TextureRect:
+	var textura := AssetsDoMenu.textura_de(id)
+	if textura == null:
+		return null
+	var no := TextureRect.new()
+	no.name = id.capitalize()
+	no.texture = textura
+	no.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	no.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	no.stretch_mode = TextureRect.STRETCH_SCALE
+	AssetsDoMenu.aplicar_filtro(no)
+	add_child(no)
+	return no
+
+
+## Tira da arvore a peca que sobrou quando a familia veio incompleta. ⚠️ LIBERA EM VEZ DE
+## ESCONDER: peca invisivel na arvore e uma peca que o proximo _posicionar vai tentar assentar,
+## e um dia alguem a torna visivel sem descobrir por que o macaco aparece duas vezes.
+func _descartar_as_pecas() -> void:
+	for peca in [_macaco_em_peca, _maquina_em_peca]:
+		if peca != null:
+			remove_child(peca)
+			peca.queue_free()
+	_macaco_em_peca = null
+	_maquina_em_peca = null
+
+
+## Mostra ou esconde a maquina da frente, na representacao que estiver em uso.
+func _mostrar_a_maquina(mostrar: bool) -> void:
+	if _maquina_em_peca != null:
+		_maquina_em_peca.visible = mostrar
+	if _frente != null:
+		_frente.visible = mostrar
+
+
+## Poe as duas pecas sobre a linha da mesa, na maior escala INTEIRA que ainda cabe.
+##
+## ⚠️ A ESCALA E CALCULADA E TEM PISO 1. Numa area muito baixa o floor daria zero, e escala
+## zero e uma peca de largura zero: ela desaparece sem erro nenhum, e a tela fica com uma grade
+## de maquinas e nenhum macaco -- exatamente o que o docs/ARTE.md §10 proibe.
+func _assentar_as_pecas() -> void:
+	if _macaco_em_peca == null or _maquina_em_peca == null or size.y <= 0.0:
+		return
+	var arte_do_macaco := Vector2(AssetsDoMenu.peca("macaco")["tamanho"])
+	var arte_da_maquina := Vector2(AssetsDoMenu.peca("maquina")["tamanho"])
+
+	var altura_em_arte := maxf(arte_do_macaco.y, arte_da_maquina.y)
+	_escala_das_pecas = clampi(
+		int(floor(size.y * FRACAO_DA_ALTURA_DAS_PECAS / altura_em_arte)),
+		1,
+		ESCALA_MAXIMA_DAS_PECAS,
+	)
+	var escala := float(_escala_das_pecas)
+
+	# a base das duas peças pousa na mesma linha; quem sobe é o macaco, e ele sobe o bastante
+	# para a máquina cobri-lo da cintura para baixo
+	var mesa := Vector2(size.x * 0.5, size.y * LINHA_DA_MESA)
+	_maquina_em_peca.size = arte_da_maquina * escala
+	_maquina_em_peca.position = mesa - Vector2(
+		_maquina_em_peca.size.x * 0.5, _maquina_em_peca.size.y
+	)
+	_macaco_em_peca.size = arte_do_macaco * escala
+	_macaco_em_peca.position = Vector2(
+		mesa.x - _macaco_em_peca.size.x * 0.5,
+		mesa.y - float(MACACO_DENTRO_DA_MAQUINA) * escala - _macaco_em_peca.size.y,
+	)
 
 
 func _rotulo(cor: Color, corpo: int, pai: Node = null) -> Label:
