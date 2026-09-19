@@ -1,7 +1,8 @@
-[gd_scene format=3 uid="uid://ck3ttg32a6emh"]
+[gd_scene load_steps=4 format=3 uid="uid://ck3ttg32a6emh"]
 
 [ext_resource type="Script" path="res://src/ui/hud.gd" id="1_hud"]
 [ext_resource type="PackedScene" uid="uid://c3r4sd0j0g000" path="res://src/cena/eras.tscn" id="2_eras"]
+[ext_resource type="Script" path="res://src/ui/banner_de_destaque.gd" id="3_banner"]
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -103,47 +104,149 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "caracteres"
 
-[node name="EspacoUm" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+[node name="EspacoObjetivo" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
-[node name="ValorPorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+[node name="PainelObjetivo" type="PanelContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MargemObjetivo" type="MarginContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelObjetivo"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ListaObjetivo" type="VBoxContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelObjetivo/MargemObjetivo"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TituloObjetivo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelObjetivo/MargemObjetivo/ListaObjetivo"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PRÓXIMO MARCO"
+
+[node name="NomeObjetivo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelObjetivo/MargemObjetivo/ListaObjetivo"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+
+[node name="BarraObjetivo" type="ProgressBar" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelObjetivo/MargemObjetivo/ListaObjetivo"]
+unique_name_in_owner = true
+layout_mode = 2
+show_percentage = false
+
+[node name="FaltaObjetivo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelObjetivo/MargemObjetivo/ListaObjetivo"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
+[node name="EspacoProducao" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="PainelProducao" type="PanelContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MargemProducao" type="MarginContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelProducao"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ListaProducao" type="VBoxContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelProducao/MargemProducao"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TituloProducao" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelProducao/MargemProducao/ListaProducao"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PRODUÇÃO"
+
+[node name="ValorPorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelProducao/MargemProducao/ListaProducao"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="NomePorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+[node name="NomePorSegundo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelProducao/MargemProducao/ListaProducao"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "caracteres por segundo"
 
-[node name="EspacoDois" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
-custom_minimum_size = Vector2(0, 20)
+[node name="EspacoSaldo" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
-[node name="ValorDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+[node name="PainelSaldo" type="PanelContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MargemSaldo" type="MarginContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelSaldo"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ListaSaldo" type="VBoxContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelSaldo/MargemSaldo"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TituloSaldo" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelSaldo/MargemSaldo/ListaSaldo"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "SALDO"
+
+[node name="ValorDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelSaldo/MargemSaldo/ListaSaldo"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="NomeDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+[node name="NomeDinheiro" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelSaldo/MargemSaldo/ListaSaldo"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "para gastar"
 
-[node name="EspacoTres" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
-custom_minimum_size = Vector2(0, 20)
+[node name="EspacoColecao" type="Control" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 
-[node name="ValorDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+[node name="PainelColecao" type="PanelContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="MargemColecao" type="MarginContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelColecao"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="ListaColecao" type="VBoxContainer" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelColecao/MargemColecao"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TituloColecao" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelColecao/MargemColecao/ListaColecao"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "COLEÇÃO"
+
+[node name="ValorDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelColecao/MargemColecao/ListaColecao"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
 
-[node name="NomeDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos"]
+[node name="NomeDescobertas" type="Label" parent="Margem/Colunas/Recursos/MargemRecursos/RolagemRecursos/ListaRecursos/PainelColecao/MargemColecao/ListaColecao"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "descobertas"
@@ -163,12 +266,13 @@ theme_override_constants/margin_bottom = 20
 [node name="ListaCentro" type="VBoxContainer" parent="Margem/Colunas/Centro/MargemCentro"]
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 24
+theme_override_constants/separation = 20
 
 [node name="Eras" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro" instance=ExtResource("2_eras")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 320)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="Eventos" type="VBoxContainer" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
 unique_name_in_owner = true
@@ -182,10 +286,15 @@ layout_mode = 2
 size_flags_horizontal = 4
 text = "DIGITAR"
 
-[node name="AvisoOffline" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+[node name="DicaDigitar" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "+1 caractere por clique ou espaço"
+horizontal_alignment = 1
+
+[node name="LinhaDeProducao" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
 unique_name_in_owner = true
 auto_translate_mode = 2
-visible = false
 layout_mode = 2
 text = ""
 horizontal_alignment = 1
@@ -198,15 +307,17 @@ layout_mode = 2
 text = ""
 horizontal_alignment = 1
 
-[node name="DicaDigitar" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
+[node name="AvisoOffline" type="Label" parent="Margem/Colunas/Centro/MargemCentro/ListaCentro"]
 unique_name_in_owner = true
+auto_translate_mode = 2
+visible = false
 layout_mode = 2
-text = "+1 caractere por clique ou espaço"
+text = ""
 horizontal_alignment = 1
 
 [node name="Loja" type="PanelContainer" parent="Margem/Colunas"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(420, 0)
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 2
 
 [node name="MargemLoja" type="MarginContainer" parent="Margem/Colunas/Loja"]
@@ -237,6 +348,23 @@ auto_translate_mode = 2
 layout_mode = 2
 text = "1"
 
+[node name="ProducaoPorMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
+[node name="NomeSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+
+[node name="BarraOcupacao" type="ProgressBar" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+show_percentage = false
+
 [node name="VagasMacaco" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
@@ -248,6 +376,11 @@ unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = "0"
+
+[node name="BarraMacaco" type="ProgressBar" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+show_percentage = false
 
 [node name="BotoesMacaco" type="GridContainer" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 layout_mode = 2
@@ -288,11 +421,12 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "SALA"
 
-[node name="NomeSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+[node name="BeneficioSala" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
 layout_mode = 2
 text = ""
+autowrap_mode = 3
 
 [node name="BotaoSala" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
@@ -315,6 +449,13 @@ auto_translate_mode = 2
 layout_mode = 2
 text = ""
 
+[node name="BeneficioMaquina" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+text = ""
+autowrap_mode = 3
+
 [node name="BotaoMaquina" type="Button" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
 unique_name_in_owner = true
 auto_translate_mode = 2
@@ -322,6 +463,7 @@ layout_mode = 2
 text = ""
 
 [node name="EspacoAutomacao" type="Control" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 
@@ -348,6 +490,30 @@ text = "UPGRADES"
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="EspacoFuturos" type="Control" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="TituloFuturos" type="Label" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PRÓXIMAS MELHORIAS"
+
+[node name="ListaFuturos" type="VBoxContainer" parent="Margem/Colunas/Loja/MargemLoja/RolagemLoja/ListaLoja"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Banner" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("3_banner")
 
 [node name="Aviso" type="Label" parent="."]
 unique_name_in_owner = true
