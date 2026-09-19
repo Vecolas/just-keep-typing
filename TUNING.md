@@ -45,6 +45,7 @@ nenhum teste é escrito antes de existir lógica para testar.
 | `medir_ritmo` | tempo até cada marco do Panorama, com a produção no momento | **existe** |
 | `medir_quadro` | tempo de quadro por era: média, p95, p99, frames perdidos | **existe** |
 | `medir_economia` | curva do prestígio: quando vale provar o Teorema | **existe** |
+| `observar` | a sessão minuto a minuto: o que a loja oferece e o que o jogador consegue ler | **existe** |
 
 ```bash
 godot --headless --path . tools/medir_ritmo.tscn
@@ -125,6 +126,61 @@ ERA 14           5        16       1,564 ms  1,858 ms  2,462 ms  0 de 240
 o quadro dura menos de dois milissegundos, e a piscina de letras nasce por **tempo**: em
 240 quadros passa menos tempo do que passava a 60 fps. A linha `SATURADO` existe justamente
 para o teto continuar sendo medido em vez de suposto.
+
+### A reforma de interface, e o que ela custou no quadro
+
+A tela da partida passou a ter três painéis na coluna da esquerda, três barras de progresso,
+cartões de upgrade com descrição e efeito, uma seção de próximas melhorias, um banner no topo
+e duas peças de pixel art no centro. Medido no mesmo instrumento, mesma máquina:
+
+```text
+producao/s       rotulos  maquinas quadro    p95       p99       perdidos
+5                11       1        3,607 ms  4,049 ms  4,710 ms  0 de 240
+500 mil          12       4        4,099 ms  4,247 ms  5,427 ms  2 de 240
+5e17             10       100      3,243 ms  3,645 ms  4,453 ms  0 de 240
+SATURADO         64       100      3,339 ms  3,700 ms  4,172 ms  0 de 240
+ERA 14           7        16       2,722 ms  3,001 ms  3,071 ms  0 de 240
+```
+
+**O quadro dobrou, e continua com quatro vezes de margem.** De ~1,9 ms para ~3,5 ms num
+orçamento de 16,67 ms. O menu, que não mudou, mediu 0,73 ms contra os 0,64 ms históricos — ou
+seja, a máquina é comparável e o aumento é da tela nova, e não do ambiente.
+
+⚠️ **E a primeira versão custava 4,0 ms, por um defeito que a régua achou.** Cada cartão
+chamava `add_theme_stylebox_override()` **todo quadro** — cada chamada aloca um `StyleBoxFlat`
+novo e invalida o cache de tema do nó. É o mesmo preço que a cena das eras já tinha pagado com
+675 overrides num quadro (seção "Três custos que esta régua achou"), chegando por outra porta:
+o cartão passou a repintar só quando o **estado** muda.
+
+⚠️ **E um cache que a régua REPROVOU foi desfeito.** A tentativa seguinte guardou o texto de
+três rótulos que quase nunca mudam — o benefício da próxima sala, o da próxima máquina e o
+quanto cada macaco rende. A medição não mudou em nada mensurável, e cache sem motivo medido é
+exatamente o que a `CONVENCOES.md` proíbe. Ele saiu.
+
+### As duas faixas de aviso (a reforma de interface)
+
+A régua `observar` passou a medir **as duas faixas separadas**, porque medir só o rodapé
+deixaria sem régua justamente a faixa que carrega o conteúdo colecionável do jogo. Trinta
+minutos no perfil padrão:
+
+```text
+rodape -- avisos que a fila entregou:         41 de 42
+rodape -- que nao ficaram os 1,6 s minimos:   0  (0%)
+banner -- avisos que a fila entregou:         36 de 37
+banner -- que nao ficaram os 3,5 s minimos:   0  (0%)
+```
+
+**Trinta e sete descobertas couberam no banner a 3,5–7 s cada, sem cortar nenhuma** — e sem
+atrasar um único aviso do rodapé. Esse é o número que justifica a separação: numa fila só, os
+mesmos 37 eventos a 7 s teriam empurrado os 42 avisos operacionais para fora da janela de
+leitura deles.
+
+A referência histórica é a issue #69: antes dela, **16 de 82 avisos (20%)** eram apagados
+antes do tempo mínimo de leitura.
+
+⚠️ **O piso de cada faixa sai de uma constante, e nunca de um número digitado na régua.** O do
+rodapé é `hud.gd::AVISO_VISIVEL`; o do banner é a menor duração da tabela de raridade. Copiar
+qualquer um dos dois criaria a segunda fonte, e a cópia é sempre a que envelhece.
 
 ### O menu parado, e o menu vivo (issue #48)
 

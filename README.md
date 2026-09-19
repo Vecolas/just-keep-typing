@@ -45,7 +45,14 @@ godot --headless --path . tools/medir_economia.tscn               # quando prest
 
 ## Galeria versionada
 
-Uma captura por era mais o menu e os Arquivos, em `docs/capturas/`. As imagens estão no
+Uma captura por era, mais o menu, os Arquivos e o **banner de descoberta**, em
+`docs/capturas/`.
+
+⚠️ **O banner tem foto própria porque ele só existe por alguns segundos.** Ele não aparece em
+nenhuma captura de era — e sem uma foto dele, nenhum diff mostraria que ele parou de caber,
+de contrastar ou de quebrar linha no dia em que alguém mexesse num texto de descoberta. Pelo
+mesmo motivo as capturas de era **limpam a fila de avisos** antes do clique: a foto da era é
+sobre a era. As imagens estão no
 git de propósito: **o diff mostra o que mudou na tela**, e é o jeito mais barato de
 perceber que um ajuste estragou a leitura de uma era que ninguém estava olhando.
 
@@ -79,7 +86,7 @@ Escala acima de 100% na menor resolução é o caso que estoura tudo — e carac
 então só a foto mostra rótulo saindo do botão.
 
 Cenários: `menu`, `menu_cheio`, `arquivos`, `arquivos_cheio`, `principal`, `panorama`,
-`descobertas`, `estatisticas`, `letras`. Os que começam com `menu` e `arquivos` param antes
+`descobertas`, `estatisticas`, `letras`, `banner`. Os que começam com `menu` e `arquivos` param antes
 da partida; todos os outros entram numa. O sufixo `_cheio` **joga um pouco e volta**, para a
 foto ter um Manuscrito no disco — sem save o CONTINUAR sai apagado e o resumo dele não
 existe.

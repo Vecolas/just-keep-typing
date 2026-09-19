@@ -715,7 +715,6 @@ Com 10^%d caracteres produzidos,Com 10^%d caracteres produzidos,At 10^%d charact
 "Agora existe um organograma. Metade das caixas está em branco, e mesmo assim contratar ficou mais barato.","Agora existe um organograma. Metade das caixas está em branco, e mesmo assim contratar ficou mais barato.","There is an org chart now. Half the boxes are empty, and hiring got cheaper anyway."
 Macaco descansado vai embora menos. Contratar o próximo ficou mais barato.,Macaco descansado vai embora menos. Contratar o próximo ficou mais barato.,A rested monkey leaves less often. Hiring the next one got cheaper.
 REGISTRO RECENTE,REGISTRO RECENTE,RECENT LOG
-o macaco produz isto sozinho a cada segundo:,o macaco produz isto sozinho a cada segundo:,the monkey produces this by itself every second:
 As Páginas Não Contam Mais,As Páginas Não Contam Mais,Pages No Longer Count
 Alguém parou de converter em páginas. Não havia mais papel suficiente na metáfora.,Alguém parou de converter em páginas. Não havia mais papel suficiente na metáfora.,Someone stopped converting into pages. There was not enough paper left in the metaphor.
 "Uma página cabe umas duas mil letras. A partir de certo ponto, dizer o número em páginas exige mais dígitos do que dizer o número.","Uma página cabe umas duas mil letras. A partir de certo ponto, dizer o número em páginas exige mais dígitos do que dizer o número.","A page holds some two thousand letters. Past a point, saying the number in pages takes more digits than saying the number."
@@ -730,3 +729,30 @@ Um Silêncio,Um Silêncio,A Silence
 Alguma Coisa Vai Acontecer,Alguma Coisa Vai Acontecer,Something Is About To Happen
 A produção passou de qualquer coisa que se possa querer produzir. E continua subindo.,A produção passou de qualquer coisa que se possa querer produzir. E continua subindo.,Production has passed anything anyone might want produced. And it keeps rising.
 "Quando a quantidade deixa de ser o problema, o que sobra é a pergunta que o Teorema faz.","Quando a quantidade deixa de ser o problema, o que sobra é a pergunta que o Teorema faz.","When quantity stops being the problem, what remains is the question the Theorem asks."
+PRÓXIMO MARCO,PRÓXIMO MARCO,NEXT MILESTONE
+PRODUÇÃO,PRODUÇÃO,PRODUCTION
+SALDO,SALDO,BALANCE
+COLEÇÃO,COLEÇÃO,COLLECTION
+PRÓXIMAS MELHORIAS,PRÓXIMAS MELHORIAS,COMING UP
+faltam %s caracteres,faltam %s caracteres,%s characters to go
+%s por segundo em cada macaco,%s por segundo em cada macaco,%s per second on each monkey
++%s por clique ou espaço,+%s por clique ou espaço,+%s per click or space
+o macaco produz %s por segundo sozinho,o macaco produz %s por segundo sozinho,the monkey produces %s per second on its own
+cabem %s macacos,cabem %s macacos,room for %s monkeys
+×%s em toda a produção,×%s em toda a produção,×%s on all production
+Comprar,Comprar,Buy
+NOVA DESCOBERTA,NOVA DESCOBERTA,NEW DISCOVERY
+MARCO,MARCO,MILESTONE
+TEOREMA PROVADO,TEOREMA PROVADO,THEOREM PROVED
+UNIVERSO REESCRITO,UNIVERSO REESCRITO,UNIVERSE REWRITTEN
+Teorema provado,Teorema provado,Theorem proved
+Universo reescrito,Universo reescrito,Universe rewritten
++%s em pontos de Teorema,+%s em pontos de Teorema,+%s in Theorem points
++%s em Fragmentos,+%s em Fragmentos,+%s in Fragments
+×%s na velocidade de cada macaco,×%s na velocidade de cada macaco,×%s on each monkey's speed
+o macaco passa a digitar sozinho,o macaco passa a digitar sozinho,the monkey starts typing on its own
+×%s na capacidade da sala,×%s na capacidade da sala,×%s on room capacity
++%s por segundo em cada macaco,+%s por segundo em cada macaco,+%s per second on each monkey
+custo do macaco ×%s,custo do macaco ×%s,monkey cost ×%s
+efeito sem descrição,efeito sem descrição,effect without a description
+macacos,macacos,monkeys

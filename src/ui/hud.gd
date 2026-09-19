@@ -1,17 +1,21 @@
 ## A interface principal: recursos a esquerda, cena no centro, loja a direita (GDD §25).
 ##
-## Versao minima de proposito -- so os botoes que existem. Panorama, Descobertas e
-## Prestigio entram com os sistemas deles, e botao que abre tela vazia ensina o jogador a
-## ignorar a barra de cima.
-##
 ## ⚠️ ESCUTA EventBus.idioma_mudou, e tem que escutar: o Godot retraduz sozinho apenas o
-## text que veio da CENA. Os botoes de upgrade sao montados em codigo, com tr(), e sem
-## isto o nome do upgrade ficaria em portugues no meio de uma interface ja em ingles --
-## sem quebrar nada, sem imprimir erro, sumindo sozinho na proxima vez que alguem mexesse
-## naquele rotulo. Ver CONVENCOES.md.
+## text que veio da CENA. Os rotulos montados em codigo nao se retraduzem, e sem isto o nome
+## de uma sala ficaria em portugues no meio de uma interface ja em ingles -- sem quebrar nada,
+## sem imprimir erro, sumindo sozinho na proxima vez que alguem mexesse naquele rotulo.
 ##
-## _montar_upgrades() limpa antes de montar: repintar nao e reexecutar, e chamar de novo
-## nao pode empilhar dez copias do mesmo botao so porque a pessoa mexeu nas opcoes.
+## ⚠️ A LOJA DE UPGRADES SAIU DAQUI, e virou tres pecas (plano §7 e §8): quem decide O QUE
+## mostrar e a VitrineDeUpgrades, quem DESENHA cada upgrade e o CartaoDeUpgrade, e quem
+## responde "isto esta ao alcance?" e o Alcance. Esta tela so compoe. O motivo nao e
+## arrumacao: as tres perguntas passaram a ter mais de um consumidor, e regra copiada em cada
+## consumidor e a familia "duas fontes para a mesma verdade" da CONVENCOES.
+##
+## ⚠️ E A LISTA SE REMONTA QUANDO UM REQUISITO E CRUZADO. Ate aqui ela era remontada apenas na
+## COMPRA -- e um upgrade recem-desbloqueado nao aparecia ate o jogador comprar outra coisa.
+## Numa coluna em que "o que vem depois" e o assunto, isso era o proprio assunto quebrado, sem
+## erro nenhum no console. Quem confere e _conferir_desbloqueio(), por um Grande so, e nao
+## varrendo os quarenta e quatro upgrades por quadro.
 ##
 ## Nao guarda numero nenhum. Le Jogo e Economia no quadro em que desenha, que e a regra 2
 ## de arquitetura -- assim um bonus novo aparece na tela sem ninguem avisar a HUD.
@@ -24,6 +28,23 @@ extends Control
 ## nao ter que procurar nada na arvore.
 var _relogios: Dictionary = {}
 
+## O menor requisito ainda nao cruzado, ou nulo quando nao ha nenhum. E o gatilho de
+## remontagem da loja: um Grande comparado por quadro, em vez de uma varredura.
+var _proximo_requisito: Grande = null
+
+## A sequencia de cada faixa de aviso JA DESENHADA nesta tela.
+##
+## ⚠️ ELAS CONSERTAM UM DEFEITO QUE PASSOU DESPERCEBIDO DESDE A ISSUE #69: a tela repintava o
+## aviso quando `tique()` devolvia `true`, e `tique()` nao devolve `true` na PRIMEIRA troca --
+## fila vazia mostra o aviso dentro do proprio `acrescentar()`, sem passar por tique nenhum.
+## Resultado: todo aviso que chegava com a fila ociosa ficava a duracao inteira dele na fila,
+## invisivel, e saia sem nunca ter sido desenhado. So apareciam os que chegavam ATRAS de outro.
+##
+## Quem acusou foi a CAPTURA do banner: a caixa apareceu na tela, com moldura, e vazia por
+## dentro. Nenhuma suite pegava -- as suites afirmam a FILA, e a fila estava certa.
+var _sequencia_do_rodape: int = -1
+var _sequencia_do_destaque: int = -1
+
 ## Quantidades do GDD §32. Comprar Maximo e a entrada 0, resolvida na hora do clique.
 const LOTES: Array[int] = [1, 10, 100]
 
@@ -34,25 +55,6 @@ const LOTES: Array[int] = [1, 10, 100]
 ## issue #69. A duracao de verdade agora vem de FilaDeAvisos.SEGUNDOS_POR_PRIORIDADE, e
 ## este numero e o PISO contra o qual a regua mede.
 const AVISO_VISIVEL: float = 1.6
-
-## OS TRES ESTADOS DA LOJA (issue #67).
-##
-## ⚠️ "DESABILITADO" REPRESENTAVA SITUACOES ECONOMICAMENTE MUITO DIFERENTES, e o jogador via
-## o mesmo cinza nas tres. A sessao observada achou a coluna inteira apagada no minuto 1 e
-## no minuto 30 -- e a tabela da regua registrava aquilo como "3 na loja", que le como um
-## minuto saudavel. "Tres na loja" e "tres botoes apagados" eram o mesmo numero.
-##
-##   ALCANCAVEL   da para comprar agora
-##   PERTO        ainda nao, mas voce esta chegando -- mostra a porcentagem
-##   LONGE        nao compete visualmente com o proximo objetivo
-##
-## A regra que separa os tres, e ela cabe numa linha:
-##
-##   botao caro e META. ausencia e VAZIO. botao que nunca acende e PROMESSA FALSA.
-##
-## ⚠️ E A PORCENTAGEM E TEXTO, e nao cor (issue #43). "72%" se le em qualquer monitor e em
-## qualquer daltonismo; a cor so acompanha.
-enum Alcance { ALCANCAVEL, PERTO, LONGE }
 
 ## AS FASES DO BOTAO DIGITAR (issue #68).
 ##
@@ -80,12 +82,8 @@ const ALTURAS_DO_DIGITAR: Array[float] = [96.0, 72.0, 52.0, 36.0]
 ## "quanto o clique deve render".
 const SEGUNDOS_QUE_O_CLIQUE_VALE: Array[float] = [1.0, 0.01, 0.0001]
 
-## A partir de quanto do custo o item vira "proximo objetivo".
-##
-## ⚠️ Limite de DESIGN, e nao botao de tuning: ele responde "a partir de quando vale a pena
-## mostrar que voce esta chegando", e nao "quanto o jogo deve custar". Numero ajustavel e
-## ajustado, e este nao tem por que ser.
-const PERTO_O_BASTANTE: float = 0.4
+## Respiro entre o banner e a borda da coluna do centro.
+const FOLGA_DO_BANNER: float = 12.0
 
 ## Quanto tempo o icone de gravacao ainda fica aceso.
 ##
@@ -104,7 +102,7 @@ func _ready() -> void:
 	_liberar_clique(self)
 	_estilizar()
 	_ligar_botoes()
-	_montar_upgrades()
+	_montar_a_loja()
 	_montar_automacao()
 
 	EventBus.automacao_comprada.connect(_ao_mudar_automacao)
@@ -117,8 +115,16 @@ func _ready() -> void:
 	EventBus.upgrade_comprado.connect(_ao_comprar_upgrade)
 	EventBus.jogo_gravado.connect(_ao_gravar)
 
+	# ⚠️ A LARGURA DO BANNER E ACERTADA ANTES DE ELE APARECER, e nao no quadro em que aparece:
+	# com a largura da cena, o autowrap do texto calcularia a altura errada e o primeiro quadro
+	# do banner sairia com a caixa alta. `resized` cobre a troca de resolucao e a de escala de
+	# interface; o adiado cobre a abertura, quando o pai ainda nao foi dimensionado.
+	resized.connect(_assentar_o_banner)
+	call_deferred("_assentar_o_banner")
+
 
 func _process(delta: float) -> void:
+	_conferir_desbloqueio()
 	_pintar()
 	_andar_a_fila(delta)
 
@@ -138,6 +144,7 @@ func _pintar() -> void:
 	%ValorMacacos.text = Formatador.formatar_discreto(Jogo.macacos)
 	_pintar_combo()
 	_pintar_o_digitar()
+	_pintar_objetivo()
 	# a unidade vem da ERA, e nao esta escrita aqui: na era 14 a contagem de macacos
 	# deixa de fazer sentido e o jogador passa a manipular possibilidades (GDD §6).
 	# Trocar so o fundo contaria metade da historia.
@@ -146,6 +153,15 @@ func _pintar() -> void:
 	%CustoMacaco.text = "%s %s" % [
 		Formatador.formatar(Economia.custo_de_macacos(1)), tr("para o próximo"),
 	]
+	# ⚠️ QUANTO UM MACACO RENDE, e nao so quanto ele custa. A coluna inteira era de precos:
+	# sem isto, "11,5 para o proximo" nao responde se vale a pena -- e a decisao de comprar
+	# macaco ou upgrade e a unica decisao economica do early game.
+	%ProducaoPorMacaco.text = tr("%s por segundo em cada macaco") % Formatador.formatar(
+		Grande.de_float(Economia.producao_por_macaco())
+	)
+	# a barra mede o mesmo que a porcentagem no botao: quanto do proximo macaco o saldo ja
+	# cobre. Duas leituras da mesma verdade, e nao duas verdades -- as duas saem do Alcance
+	%BarraMacaco.value = Alcance.fracao(Economia.custo_de_macacos(1)) * 100.0
 
 	for lote in LOTES:
 		var botao: Button = get_node("%Comprar" + str(lote))
@@ -159,14 +175,13 @@ func _pintar() -> void:
 	_pintar_relogio_dos_eventos()
 	%BotaoTeoremas.visible = Teoremas.pode_provar() or Jogo.prestigios > 0
 
+	# cada cartao le o proprio dado e o proprio saldo: a HUD nao sabe o preco de nada
 	for filho in %ListaUpgrades.get_children():
-		# cabecalho de familia nao tem id e nao e botao: perguntar a meta dele derrubaria
-		# o laco inteiro, e com ele o resto do quadro
-		if not filho.has_meta("id"):
-			continue
-		var dados: DadosUpgrade = Economia.upgrade_de(filho.get_meta("id"))
-		if dados != null:
-			_vestir_pelo_alcance(filho, Grande.de_float(dados.custo))
+		if filho is CartaoDeUpgrade:
+			(filho as CartaoDeUpgrade).atualizar()
+	for filho in %ListaFuturos.get_children():
+		if filho is CartaoDeUpgrade:
+			(filho as CartaoDeUpgrade).atualizar()
 
 	for botao in %ListaAutomacao.get_children():
 		var id: String = botao.get_meta("id")
@@ -181,6 +196,40 @@ func _pintar() -> void:
 		var dados := Automacao.de(id)
 		if dados != null:
 			_vestir_pelo_alcance(botao, Grande.de_float(dados.custo))
+
+
+## O PROXIMO OBJETIVO (plano §5.A). ⚠️ ELE EXISTE PORQUE A COLUNA DA ESQUERDA SO DIZIA
+## "QUANTO", e nunca "para onde". Um incremental sem alvo visivel e um contador subindo: o
+## Panorama ja guarda noventa e cinco significados, e nenhum deles aparecia antes de cair.
+##
+## ⚠️ A BARRA MEDE DO MARCO ANTERIOR AO PROXIMO, e nao de zero. Numa escala exponencial,
+## medir de zero deixa a barra colada em 100% da segunda era em diante -- ela pareceria
+## quebrada justamente onde a progressao fica mais interessante.
+func _pintar_objetivo() -> void:
+	var proximo := Marcos.proximo()
+	%PainelObjetivo.visible = proximo != null
+	if proximo == null:
+		return
+	%NomeObjetivo.text = tr(proximo.titulo)
+	var teto := proximo.requisito_grande()
+	var anterior := Marcos.atual()
+	var piso := anterior.requisito_grande() if anterior != null else Grande.zero()
+	%BarraObjetivo.value = _fracao_entre(piso, teto, Jogo.total_caracteres) * 100.0
+	%FaltaObjetivo.text = tr("faltam %s caracteres") % Formatador.formatar(
+		teto.menos(Jogo.total_caracteres) if teto.maior_que(Jogo.total_caracteres)
+		else Grande.zero()
+	)
+
+
+## Onde `atual` esta entre `piso` e `teto`, de 0 a 1.
+##
+## ⚠️ Faixa de largura zero ou invertida devolve 1, e nao uma divisao por zero: barra em
+## "inf%" nao quebra o jogo, ela desenha um numero impossivel e ninguem descobre de onde veio.
+func _fracao_entre(piso: Grande, teto: Grande, atual: Grande) -> float:
+	var largura := teto.menos(piso)
+	if largura.sinal() <= 0:
+		return 1.0
+	return clampf(atual.menos(piso).dividido(largura).para_float(), 0.0, 1.0)
 
 
 ## O combo de digitacao (issue #54). ⚠️ ELE PRECISA SER VISIVEL: multiplicador que age
@@ -205,9 +254,17 @@ func _pintar_combo() -> void:
 
 ## O botao DIGITAR encolhe conforme o papel do jogador muda (issue #68).
 ##
-## ⚠️ A LEGENDA ENVELHECE JUNTO. "+1 caractere por clique ou espaco" e verdade e e
-## irrelevante aos trinta minutos; na fase tardia ela passa a dizer o que o clique vale
-## CONTRA a producao, que e a informacao que sobrou.
+## ⚠️ AS TRES PRODUCOES FICAM EM TRES ROTULOS, e nao num so (plano §B.3). Ate aqui a legenda
+## do botao trocava de assunto no meio da partida: na fase 0 ela dizia o que o clique da, e
+## depois passava a dizer o que a producao automatica da -- duas informacoes diferentes no
+## mesmo lugar, e nunca as duas juntas. Agora:
+##
+##   DicaDigitar        o que o CLIQUE da -- a legenda do botao, sempre sobre o botao
+##   LinhaDeProducao    o que a AUTOMACAO da -- e nao competindo com a legenda do botao
+##   Combo              o MULTIPLICADOR, que aparece so quando existe
+##
+## O que o clique vale contra a producao continua decidindo a FASE (a altura do botao), que
+## e onde aquela comparacao sempre pertenceu: ela e sobre importancia, e nao sobre numero.
 func _pintar_o_digitar() -> void:
 	var fase := _fase_do_digitar()
 	%BotaoDigitar.custom_minimum_size.y = ALTURAS_DO_DIGITAR[fase]
@@ -218,12 +275,20 @@ func _pintar_o_digitar() -> void:
 
 	if fase == 0:
 		%DicaDigitar.text = tr("+1 caractere por clique ou espaço")
-		return
-	# "%s %s" e marca de formato: o tr() vem ANTES da substituicao
-	%DicaDigitar.text = "%s %s" % [
-		tr("o macaco produz isto sozinho a cada segundo:"),
-		Formatador.formatar(Jogo.caracteres_por_segundo),
-	]
+	else:
+		# o tr() vem ANTES da substituicao: traduz-se o molde, nunca o resultado
+		%DicaDigitar.text = tr("+%s por clique ou espaço") % Formatador.formatar(
+			Grande.de_float(Combo.multiplicador())
+		)
+
+	# ⚠️ SO APARECE QUANDO EXISTE. O macaco comeca sem saber digitar sozinho (GDD §3), e uma
+	# linha dizendo "automatico: 0 por segundo" nos primeiros trinta segundos ensina o jogador
+	# a nao ler aquela linha pelo resto da partida.
+	%LinhaDeProducao.visible = Jogo.caracteres_por_segundo.sinal() > 0
+	if %LinhaDeProducao.visible:
+		%LinhaDeProducao.text = tr("o macaco produz %s por segundo sozinho") % (
+			Formatador.formatar(Jogo.caracteres_por_segundo)
+		)
 
 
 ## Em que fase o botao esta, lida na hora. Zero e a fase inicial.
@@ -244,45 +309,25 @@ func _fase_do_digitar() -> int:
 ## ⚠️ O TEXTO BASE FICA NA META, e nao e relido do dado: ele ja passou por tr() na montagem,
 ## e refazer a traducao todo quadro seria trabalho por quadro para um texto que so muda
 ## quando o idioma muda -- e o idioma ja remonta a lista inteira.
+##
+## Quem responde em que estado o item esta e o Alcance, que e a fonte unica dos tres -- o
+## cartao de upgrade pergunta ao mesmo lugar.
 func _vestir_pelo_alcance(botao: Button, custo: Grande) -> void:
-	var alcance := _alcance_de(custo)
-	botao.disabled = alcance != Alcance.ALCANCAVEL
+	var estado := Alcance.de(custo)
+	botao.disabled = estado != Alcance.Estado.ALCANCAVEL
+	botao.modulate.a = Alcance.brilho_de(estado)
 
 	if not botao.has_meta("texto_base"):
 		botao.set_meta("texto_base", botao.text)
 	var base: String = botao.get_meta("texto_base")
 
-	match alcance:
-		Alcance.ALCANCAVEL:
-			botao.text = base
-			botao.modulate.a = 1.0
-		Alcance.PERTO:
-			# "%s  %d%%" e marca de formato, nao texto: nao passa por traducao
-			botao.text = "%s  %d%%" % [base, int(_quanto_do_custo(custo) * 100.0)]
-			botao.modulate.a = 0.85
-		_:
-			botao.text = base
-			# ⚠️ apagado de proposito: o distante nao pode competir com o proximo objetivo.
-			# Mas nao some -- ele continua sendo a promessa do que vem depois.
-			botao.modulate.a = 0.45
-
-
-func _alcance_de(custo: Grande) -> Alcance:
-	if not custo.maior_que(Jogo.dinheiro):
-		return Alcance.ALCANCAVEL
-	if _quanto_do_custo(custo) >= PERTO_O_BASTANTE:
-		return Alcance.PERTO
-	return Alcance.LONGE
-
-
-## Que fracao do custo o jogador ja tem, de 0 a 1.
-##
-## ⚠️ Custo zero ou negativo devolve 1: divisao por zero num contador de interface nao
-## quebra o jogo, ela desenha "inf%" e ninguem descobre de onde veio.
-func _quanto_do_custo(custo: Grande) -> float:
-	if custo.sinal() <= 0:
-		return 1.0
-	return clampf(Jogo.dinheiro.dividido(custo).para_float(), 0.0, 1.0)
+	# ⚠️ E A PORCENTAGEM E TEXTO, e nao cor (issue #43). "72%" se le em qualquer monitor e em
+	# qualquer daltonismo; o brilho so acompanha.
+	if estado == Alcance.Estado.PERTO:
+		# "%s  %d%%" e marca de formato, nao texto: nao passa por traducao
+		botao.text = "%s  %d%%" % [base, int(Alcance.fracao(custo) * 100.0)]
+		return
+	botao.text = base
 
 
 ## A sala em uso, a ocupacao e a proxima da escada do GDD §15.
@@ -297,14 +342,24 @@ func _pintar_sala() -> void:
 			Formatador.formatar_discreto(Jogo.macacos), Formatador.formatar_discreto(Economia.capacidade()),
 		],
 	] if atual != null else ""
+	# a mesma ocupacao, em barra: quem le numero le o rotulo, quem le forma le a barra
+	%BarraOcupacao.value = _fracao_entre(
+		Grande.zero(), Economia.capacidade(), Jogo.macacos
+	) * 100.0
 
 	var proxima := Economia.proxima_sala()
 	%BotaoSala.visible = proxima != null
+	%BeneficioSala.visible = proxima != null
 	if proxima != null:
-		%BotaoSala.text = "%s \u2014 %s" % [
+		%BotaoSala.text = "%s — %s" % [
 			tr(proxima.nome), Formatador.formatar(Grande.de_float(proxima.custo)),
 		]
-		%BotaoSala.tooltip_text = tr(proxima.descricao)
+		# ⚠️ O BENEFICIO SAI DO TOOLTIP. A escada de salas e uma decisao economica -- trocar
+		# de sala compete com comprar macaco e com comprar upgrade --, e ate aqui o que ela
+		# entregava estava escondido no hover, que nao alcanca teclado nem toque.
+		%BeneficioSala.text = tr("cabem %s macacos") % Formatador.formatar_discreto(
+			Grande.de_float(proxima.capacidade)
+		)
 		# ⚠️ a meta e refeita aqui porque estes dois botoes reescrevem o proprio texto todo
 		# quadro -- guardar o texto_base uma vez so deixaria a porcentagem grudada num nome
 		# de sala que ja mudou
@@ -332,19 +387,23 @@ func _montar_eventos() -> void:
 		if dados == null:
 			continue
 		var moldura := PanelContainer.new()
+		moldura.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		moldura.add_theme_stylebox_override("panel", Tema.painel(
 			Paleta.MECHANICAL_GOLD if not dados.e_punicao() else Paleta.MAGENTA_COSMICO, true
 		))
 		var margem := MarginContainer.new()
+		margem.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		for lado in ["left", "top", "right", "bottom"]:
 			margem.add_theme_constant_override("margin_" + lado, 10)
 		moldura.add_child(margem)
 
 		var linha := HBoxContainer.new()
+		linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		linha.add_theme_constant_override("separation", 12)
 		margem.add_child(linha)
 
 		var rotulo := Label.new()
+		rotulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		rotulo.text = tr(dados.nome)
 		rotulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		rotulo.add_theme_color_override(
@@ -377,13 +436,18 @@ func _pintar_maquina() -> void:
 
 	var proxima := Economia.proxima_maquina()
 	%BotaoMaquina.visible = proxima != null
+	%BeneficioMaquina.visible = proxima != null
 	if proxima == null:
 		return
 	# "%s — %s" e marca de formato, nao texto: nao passa por traducao
 	%BotaoMaquina.text = "%s — %s" % [
 		tr(proxima.nome), Formatador.formatar(Grande.de_float(proxima.custo)),
 	]
-	%BotaoMaquina.tooltip_text = tr(proxima.descricao)
+	# ⚠️ IDEM A SALA: o multiplicador da proxima maquina saiu do tooltip. Trocar de maquina e
+	# a compra mais cara da coluna, e o jogador decidia no escuro.
+	%BeneficioMaquina.text = tr("×%s em toda a produção") % Formatador.formatar(
+		Grande.de_float(proxima.multiplicador)
+	)
 	%BotaoMaquina.set_meta("texto_base", %BotaoMaquina.text)
 	_vestir_pelo_alcance(%BotaoMaquina, Grande.de_float(proxima.custo))
 
@@ -418,6 +482,7 @@ func _montar_automacao() -> void:
 			botao.pressed.connect(_ao_comprar_automacao.bind(dados.id))
 		%ListaAutomacao.add_child(botao)
 	%TituloAutomacao.visible = alguma
+	%EspacoAutomacao.visible = alguma
 
 
 func _ao_mudar_automacao(_id: String) -> void:
@@ -436,75 +501,156 @@ func _ao_comprar_automacao(id: String) -> void:
 	Automacao.comprar(id)
 
 
-## Um botao por upgrade ainda nao comprado e ja desbloqueado, AGRUPADO POR FAMILIA
-## (issue #53). Limpa antes de montar.
+# --- a loja de upgrades ---------------------------------------------------------------
+
+## As duas listas e o gatilho de remontagem, sempre juntos: elas particionam a MESMA
+## pergunta -- o que ja apareceu e o que ainda vem --, e montar uma sem a outra deixaria um
+## upgrade em nenhuma das duas ou nas duas.
+func _montar_a_loja() -> void:
+	_montar_upgrades()
+	_montar_futuros()
+	_proximo_requisito = _menor_requisito_pendente()
+
+
+## ⚠️ UM Grande COMPARADO POR QUADRO, e nao uma varredura dos quarenta e quatro upgrades. A
+## lista so muda quando o total cruza o proximo requisito -- e esse numero e conhecido no
+## momento da montagem.
+func _conferir_desbloqueio() -> void:
+	if _proximo_requisito == null:
+		return
+	if _proximo_requisito.maior_que(Jogo.total_caracteres):
+		return
+	_montar_a_loja()
+
+
+## O menor requisito ainda nao cruzado entre os upgrades nao comprados, ou nulo quando todos
+## ja apareceram. Nulo desliga a conferencia: comparar contra um numero que nao existe seria
+## remontar a loja toda vez, para sempre.
+func _menor_requisito_pendente() -> Grande:
+	# ⚠️ UM SO, e nao a lista da tela: a vitrine devolve os futuros ORDENADOS por requisito,
+	# entao o primeiro E o menor. Pedir quatro e procurar o minimo entre eles daria o mesmo
+	# numero por um caminho mais longo -- e um caminho mais longo que depende de a ordenacao
+	# continuar sendo por requisito.
+	var proximos := VitrineDeUpgrades.futuros(1)
+	if proximos.is_empty():
+		return null
+	return Grande.de_float(proximos[0].requisito)
+
+
+## Um cartao por upgrade ainda nao comprado e ja desbloqueado, AGRUPADO POR FAMILIA
+## (issue #53). Limpa antes de montar: repintar nao e reexecutar, e chamar de novo nao pode
+## empilhar dez copias do mesmo cartao.
 ##
 ## ⚠️ O CABECALHO SO SAI SE A FAMILIA TIVER ALGUEM EMBAIXO DELE. Emitir o titulo antes de
 ## saber se sobrou upgrade produziria "A MAQUINA" seguido de nada assim que o jogador
 ## comprasse o ultimo da familia -- uma secao vazia le como tela quebrada, e nao como
 ## "voce ja comprou tudo daqui".
 ##
-## Economia.upgrades() ja vem do mais barato para o mais caro, entao percorrer uma vez e
-## separar por familia preserva a escada dentro de cada secao sem ordenar de novo.
-##
 ## ⚠️ A FAMILIA NAO ESCOLHE COMPORTAMENTO NENHUM AQUI -- so o cabecalho embaixo do qual o
-## botao cai. O que o clique faz continua vindo do tipo de efeito, la na Economia.
+## cartao cai. O que o clique faz continua vindo do tipo de efeito, la na Economia.
 func _montar_upgrades() -> void:
 	for antigo in %ListaUpgrades.get_children():
 		%ListaUpgrades.remove_child(antigo)
 		antigo.queue_free()
 
-	var por_familia := {}
-	for dados in Economia.upgrades():
-		if Jogo.upgrades_comprados.has(dados.id):
-			continue
-		if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
-			continue
-		if not por_familia.has(dados.familia):
-			por_familia[dados.familia] = []
-		por_familia[dados.familia].append(dados)
-
+	var por_familia := VitrineDeUpgrades.por_familia(VitrineDeUpgrades.disponiveis())
 	# a ordem das secoes e a do enum, e nao a de quem apareceu primeiro: assim a loja nao
 	# se reorganiza sozinha a cada compra
 	for familia in DadosUpgrade.Familia.values():
 		var disponiveis: Array = por_familia.get(familia, [])
 		if disponiveis.is_empty():
 			continue
-
 		%ListaUpgrades.add_child(_cabecalho_de_familia(familia))
 		for dados in disponiveis:
-			var botao := Button.new()
-			# "%s — %s" e marca de formato, nao texto: nao passa por traducao. O que
-			# traduz e o nome, e o tr() vem ANTES da substituicao (CONVENCOES.md, idioma)
-			botao.text = "%s — %s" % [
-				tr(dados.nome), Formatador.formatar(Grande.de_float(dados.custo)),
-			]
-			botao.tooltip_text = tr(dados.descricao)
-			botao.focus_mode = Control.FOCUS_NONE
-			botao.set_meta("id", dados.id)
-			botao.pressed.connect(_ao_comprar.bind(dados.id))
-			%ListaUpgrades.add_child(botao)
+			%ListaUpgrades.add_child(CartaoDeUpgrade.disponivel(dados, _ao_comprar))
 
 
-## ⚠️ O cabecalho NAO pode entrar no laco que pinta os botoes: _pintar() percorre os
-## filhos de %ListaUpgrades chamando Economia.upgrade_de(get_meta("id")). Um Label sem a
-## meta "id" derrubaria aquele laco, entao o filtro la embaixo pergunta por `has_meta`.
+## O QUE VEM DEPOIS (plano §8). ⚠️ SEM ELA, A COLUNA RESPONDIA "o que posso comprar" e nunca
+## "por que continuar". Num incremental, o que sustenta a sessao e a proxima coisa -- e ate
+## aqui a proxima coisa simplesmente nao existia na tela: ela aparecia do nada quando o
+## requisito caia.
+##
+## ⚠️ E ELA REVELA POUCO DE PROPOSITO. Mostrar a arvore inteira nao cria antecipacao, cria
+## uma lista que ninguem le -- o numero esta em VitrineDeUpgrades.FUTUROS_NA_TELA, e e limite
+## de design.
+##
+## O titulo e o espaco somem junto quando nao ha futuro nenhum: secao vazia le como tela
+## quebrada, e o fim da escada de upgrades e um estado legitimo.
+func _montar_futuros() -> void:
+	for antigo in %ListaFuturos.get_children():
+		%ListaFuturos.remove_child(antigo)
+		antigo.queue_free()
+
+	var futuros := VitrineDeUpgrades.futuros()
+	%TituloFuturos.visible = not futuros.is_empty()
+	%EspacoFuturos.visible = not futuros.is_empty()
+	for dados in futuros:
+		%ListaFuturos.add_child(CartaoDeUpgrade.futuro(dados))
+
+
 ## ⚠️ ELE E SUBTITULO, E NAO TITULO. Na primeira captura o cabecalho saiu com a mesma cor
 ## e o mesmo corpo de "UPGRADES", logo abaixo dele -- e "UPGRADES / O MACACO" empilhados,
 ## iguais, leem como dois titulos e nao como secao e subsecao. O dourado fica com a secao;
-## a familia usa o marrom apagado que ja e o papel de legenda nesta tela (%NomeMaquina,
-## %NomeSala), em vez de inventar um terceiro nivel.
+## a familia usa o marrom apagado que ja e o papel de legenda nesta tela.
 ##
 ## Nenhum portao pega isto: a hierarquia visual nao tem regua, e a suite estava verde. Foi
 ## a captura do CI que mostrou -- que e o que ela existe para fazer.
-func _cabecalho_de_familia(familia: int) -> Label:
+##
+## ⚠️ O ICONE VEM DA FAMILIA DE ASSETS QUE JA EXISTE, e ele e DECORACAO: quem carrega a
+## leitura e o nome escrito ao lado. Por isso ele nao cresce com a escala do texto -- e por
+## isso a peca ausente nao e erro, e sim um cabecalho sem icone (decisao 0011).
+func _cabecalho_de_familia(familia: int) -> Control:
+	var linha := HBoxContainer.new()
+	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	linha.add_theme_constant_override("separation", 8)
+	# a meta e o que permite repintar o cabecalho na troca de lingua sem remontar a lista
+	linha.set_meta("familia", familia)
+
+	var icone := VitrineDeUpgrades.icone_de_familia(familia)
+	var textura := AssetsDoMenu.textura_de(icone) if not icone.is_empty() else null
+	if textura != null:
+		var imagem := TextureRect.new()
+		imagem.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		imagem.texture = textura
+		imagem.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		imagem.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		imagem.custom_minimum_size = Vector2(
+			VitrineDeUpgrades.LADO_DO_ICONE, VitrineDeUpgrades.LADO_DO_ICONE
+		)
+		# ⚠️ pixel art sem nearest e um icone borrado no meio de uma tela nitida, e nada no
+		# console diz isso
+		AssetsDoMenu.aplicar_filtro(imagem)
+		linha.add_child(imagem)
+
 	var titulo := Label.new()
+	titulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	titulo.text = tr(DadosUpgrade.NOMES_DE_FAMILIA[familia]).to_upper()
+	titulo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	titulo.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
 	titulo.add_theme_color_override(
 		"font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.3)))
-	titulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return titulo
+	linha.add_child(titulo)
+	return linha
+
+
+## Repinta o texto e o corpo dos cabecalhos de familia.
+##
+## ⚠️ REPINTA EM VEZ DE REMONTAR, e a diferenca importa: a lista de upgrades nao muda de
+## COMPOSICAO quando a lingua muda, e remonta-la faria os cartoes -- que repintam a si mesmos
+## -- serem destruidos e recriados a cada toque numa opcao de interface.
+func _repintar_cabecalhos() -> void:
+	for filho in %ListaUpgrades.get_children():
+		if not filho.has_meta("familia"):
+			continue
+		var familia: int = filho.get_meta("familia")
+		for neto in filho.get_children():
+			if neto is Label:
+				(neto as Label).text = tr(
+					DadosUpgrade.NOMES_DE_FAMILIA[familia]
+				).to_upper()
+				(neto as Label).add_theme_font_size_override(
+					"font_size", Tema.fonte(Tema.TITULO)
+				)
 
 
 # --- reacoes --------------------------------------------------------------------------
@@ -521,6 +667,10 @@ func _cabecalho_de_familia(familia: int) -> Label:
 ## ScrollContainer ignorado nao recebe a roda do mouse, e a coluna que acabou de ganhar
 ## rolagem nao rolaria. PASS resolve os dois lados -- a roda e consumida por quem rola, e o
 ## clique esquerdo, que ela nao usa, segue adiante e vira caractere.
+##
+## ⚠️ ELE ALCANCA SO QUEM JA ESTA NA ARVORE. Cartao, cabecalho e cartao de evento sao
+## montados depois, e cada um deles poe o proprio mouse_filter -- quem monta e que precisa
+## lembrar. Varrer a arvore de novo a cada montagem custaria mais e esqueceria o mesmo.
 func _liberar_clique(no: Node) -> void:
 	if no is ScrollContainer:
 		(no as Control).mouse_filter = Control.MOUSE_FILTER_PASS
@@ -603,7 +753,7 @@ func _ao_expandir_sala() -> void:
 
 ## O upgrade comprado sai da lista, e um requisito recem-atingido pode ter trazido outro.
 func _ao_comprar_upgrade(_id: String) -> void:
-	_montar_upgrades()
+	_montar_a_loja()
 
 
 ## Metade da recompensa de reabrir o jogo e ver o quanto rendeu enquanto estava fechado
@@ -620,9 +770,6 @@ func _ao_voltar_do_offline(produzido: Grande, _segundos: float) -> void:
 ## coisa -- o mesmo motivo pelo qual a tela cheia nao e exclusiva (issue #34) --, e uma
 ## janelinha modal a cada trinta segundos seria motivo para fechar o jogo.
 ##
-## ⚠️ E E UM SO PARA TODOS OS AVISOS. Um Label por assunto seria dois avisos empilhados no
-## quadro em que um marco cai junto de uma gravacao -- e o de baixo aparece por cima da
-## loja. O ultimo a chegar manda, e o anterior ja tinha sido lido ou nao seria lido nunca.
 ## ⚠️ O AUTOSAVE NAO ENTRA NA FILA. Ele acendia o mesmo rotulo que uma descoberta Lendaria,
 ## com a mesma prioridade -- e e o unico dos tres que o jogador nao estava esperando.
 ## Virou icone, e o icone nao apaga texto nenhum.
@@ -632,23 +779,69 @@ func _ao_gravar() -> void:
 	_ate_apagar_o_icone = ICONE_DE_GRAVACAO_VISIVEL
 
 
-
-
-## Anda a fila e o icone de gravacao. Os dois vivem em cantos diferentes da tela de
-## proposito: um e conteudo, o outro e sistema.
+## Anda as DUAS faixas de aviso e o icone de gravacao.
+##
+## ⚠️ AS TRES VIVEM EM LUGARES DIFERENTES DA TELA DE PROPOSITO (plano §9.4): o banner e
+## acontecimento, a linha do rodape e confirmacao, o icone e sistema. Ate aqui os tres
+## disputavam o mesmo rotulo -- e o unico dos tres que o jogador nao estava esperando, o
+## autosave, apagava os outros dois.
+##
+## ⚠️ E QUEM TICA E SO ESTA FUNCAO. Duas telas ticando a mesma fila andariam o relogio duas
+## vezes por quadro, e cada aviso duraria metade do que a tabela promete -- sem erro nenhum.
 func _andar_a_fila(delta: float) -> void:
-	if Avisos.tique(delta):
+	Avisos.tique(delta)
+
+	# ⚠️ COMPARA A SEQUENCIA, e nao o retorno do tique: o tique nao acusa a PRIMEIRA troca,
+	# porque fila vazia mostra o aviso dentro do proprio acrescentar(). Ver o comentario de
+	# _sequencia_do_rodape.
+	if Avisos.rodape_sequencia() != _sequencia_do_rodape:
+		_sequencia_do_rodape = Avisos.rodape_sequencia()
 		_pintar_o_aviso()
 	if Avisos.tem_aviso():
 		# desaparece nos ultimos segundos em vez de sumir num quadro: aviso que pisca vira
 		# ruido, e o jogador passa a nao ler nenhum deles
 		%Aviso.modulate.a = Avisos.quanto_resta()
 
+	if Avisos.destaque_sequencia() != _sequencia_do_destaque:
+		_sequencia_do_destaque = Avisos.destaque_sequencia()
+		%Banner.trocar()
+	%Banner.andar()
+	if %Banner.visible:
+		_assentar_o_banner()
+
 	if _ate_apagar_o_icone > 0.0:
 		_ate_apagar_o_icone -= delta
 		%IconeGravando.modulate.a = clampf(_ate_apagar_o_icone, 0.0, 1.0)
 		if _ate_apagar_o_icone <= 0.0:
 			%IconeGravando.visible = false
+
+
+## Poe o banner exatamente sobre a coluna do centro.
+##
+## ⚠️ ELE SEGUE A COLUNA, E NAO UMA FRACAO DA TELA, e isso foi visto numa captura: com ancoras
+## de 22% a 78% o banner cobria o topo da coluna da direita em 1920x1080 -- e em 1280x720, que
+## e a area logica com a escala de interface em 150%, ele cobriria a da esquerda. As colunas
+## tem largura FIXA em pixels (360 e 440), e fracao de tela nao acompanha largura fixa: a
+## proporcao entre elas muda a cada resolucao.
+##
+## ⚠️ E ELE NAO EMPURRA NADA. Entrar na coluna como mais uma linha do VBox moveria o botao
+## DIGITAR para baixo toda vez que uma descoberta saisse -- um alvo de clique que foge do
+## cursor, a cada poucos segundos, no unico botao que o jogador usa o tempo todo.
+## ⚠️ E A ALTURA E REPOSTA EM ZERO, e nunca preservada. `size.x = ...` no Godot le o Vector2
+## inteiro, troca o x e devolve os dois -- ou seja, ele PRESERVA o y. E o y da primeira vez e o
+## minimo calculado com a largura que o no tinha na cena (quarenta pixels): com autowrap, uma
+## frase de descoberta em quarenta pixels de largura vira quarenta linhas, e o banner nasceu com
+## mil pixels de altura cobrindo a coluna inteira. Zero obriga o Godot a reclampar para o minimo
+## da largura que vale AGORA -- Control cresce sozinho ate o minimo, mas nunca encolhe sozinho.
+##
+## Foi a captura que mostrou: a caixa do banner era a coluna do centro inteira, e o macaco tinha
+## sumido atras dela. Nenhuma suite pega isso -- layout nao tem regua.
+func _assentar_o_banner() -> void:
+	var caixa: Rect2 = %Centro.get_global_rect()
+	%Banner.position = (
+		caixa.position + Vector2(FOLGA_DO_BANNER, FOLGA_DO_BANNER) - global_position
+	)
+	%Banner.size = Vector2(maxf(caixa.size.x - FOLGA_DO_BANNER * 2.0, 1.0), 0.0)
 
 
 func _pintar_o_aviso() -> void:
@@ -672,8 +865,12 @@ func _cor_da_prioridade() -> Color:
 			return Paleta.MONKEY_BROWN.lightened(0.25)
 
 
+## ⚠️ NAO REMONTA A LISTA DE UPGRADES. Os cartoes repintam a si mesmos, escutando os mesmos
+## dois sinais -- e a COMPOSICAO da lista nao muda com a lingua. Remontar aqui destruiria e
+## recriaria oito cartoes a cada toque numa opcao.
 func _ao_mudar_idioma(_codigo: String) -> void:
-	_montar_upgrades()
+	_repintar_cabecalhos()
+	_montar_automacao()
 
 
 # --- aparencia ------------------------------------------------------------------------
@@ -688,6 +885,21 @@ func _estilizar() -> void:
 		grande.add_theme_font_size_override("font_size", Tema.fonte(Tema.DESTAQUE))
 		grande.add_theme_color_override("font_color", Tema.cor(Paleta.PAPER_CREAM))
 
+	# ⚠️ OS TRES BLOCOS DA ESQUERDA GANHARAM MOLDURA (plano §5.A). Ate aqui producao, saldo e
+	# colecao eram seis rotulos empilhados com o mesmo peso, separados so por um espaco: o
+	# jogador nao tinha como saber que "37,7 M" e "12,4 K" respondem perguntas diferentes --
+	# uma e velocidade, a outra e quanto da para gastar agora.
+	for painel in [%PainelObjetivo, %PainelProducao, %PainelSaldo, %PainelColecao]:
+		painel.add_theme_stylebox_override("panel", Tema.painel(
+			Paleta.MONKEY_BROWN.darkened(0.2), true
+		))
+
+	# a barra do objetivo e dourada porque objetivo e progresso, e progresso e a cor de
+	# producao do docs/ARTE.md §6
+	Tema.vestir_de_barra(%BarraObjetivo, Paleta.BANANA_GOLD)
+	Tema.vestir_de_barra(%BarraMacaco, Paleta.MECHANICAL_GOLD)
+	Tema.vestir_de_barra(%BarraOcupacao, Paleta.MONKEY_BROWN.lightened(0.25))
+
 	%AvisoOffline.add_theme_color_override("font_color", Tema.cor(Paleta.BANANA_GOLD))
 	# discreto de proposito: marrom apagado, corpo de legenda. O aviso confirma, e nao
 	# disputa atencao com o contador.
@@ -701,13 +913,26 @@ func _estilizar() -> void:
 
 	for legenda in [
 		%NomeCaracteres, %NomePorSegundo, %NomeDinheiro, %DicaDigitar, %CustoMacaco,
-		%NomeMaquina, %NomeSala, %NomeDescobertas,
+		%NomeMaquina, %NomeSala, %NomeDescobertas, %LinhaDeProducao, %FaltaObjetivo,
+		%ProducaoPorMacaco,
 	]:
 		legenda.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
 		legenda.add_theme_color_override("font_color", Tema.cor(Paleta.MONKEY_BROWN.lightened(0.25)))
 
+	# ⚠️ O BENEFICIO E DOURADO E O NOME E CREME, e a diferenca e proposital: o beneficio e a
+	# razao da compra, e o codigo de cores do docs/ARTE.md §6 diz que dourado e producao.
+	for beneficio in [%BeneficioSala, %BeneficioMaquina]:
+		beneficio.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
+		beneficio.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
+
+	# o nome do proximo marco e conteudo, e nao legenda: ele e a unica frase da coluna da
+	# esquerda que diz para onde o jogo esta indo
+	%NomeObjetivo.add_theme_font_size_override("font_size", Tema.fonte(Tema.CORPO))
+	%NomeObjetivo.add_theme_color_override("font_color", Tema.cor(Paleta.PAPER_CREAM))
+
 	for titulo in [
 		%TituloMacacos, %TituloUpgrades, %TituloMaquina, %TituloSala, %TituloAutomacao,
+		%TituloFuturos, %TituloObjetivo, %TituloProducao, %TituloSaldo, %TituloColecao,
 	]:
 		titulo.add_theme_font_size_override("font_size", Tema.fonte(Tema.TITULO))
 		titulo.add_theme_color_override("font_color", Tema.cor(Paleta.MECHANICAL_GOLD))
@@ -744,5 +969,5 @@ func _digitar(fundo: Color) -> StyleBoxFlat:
 func _ao_mudar_interface() -> void:
 	theme = Tema.montar()
 	_estilizar()
-	_montar_upgrades()
+	_repintar_cabecalhos()
 	_montar_automacao()

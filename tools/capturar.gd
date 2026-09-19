@@ -247,6 +247,25 @@ func _ready() -> void:
 		# quadros suficientes para a piscina chegar no regime permanente
 		for i in FRAMES_ATE_ESTABILIZAR * 8:
 			await get_tree().process_frame
+	elif cenario == "banner":
+		# ⚠️ ENTRA PELO BARRAMENTO, e nao preenchendo o banner na mao: o que a foto prova e o
+		# caminho inteiro -- Avisos classifica, escolhe a faixa e a duracao, e a HUD desenha.
+		# A mais rara e o caso extremo da caixa: texto mais longo e duracao maior.
+		Economia.digitar(500000)
+		Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+		Jogo.macacos = Grande.de_float(10.0)
+		var mais_rara: DadosDescoberta = null
+		for descoberta in Descobertas.todas():
+			if mais_rara == null or descoberta.categoria > mais_rara.categoria:
+				mais_rara = descoberta
+		# ⚠️ LIMPA A FILA ANTES. Os 500 mil caracteres acima disparam descobertas de verdade, e
+		# elas chegam na frente: sem isto a foto sai com a primeira COMUM que o sorteio deu, e a
+		# rara fica esperando atras dela -- foi exatamente o que a primeira captura mostrou.
+		Avisos.limpar()
+		if mais_rara != null:
+			EventBus.descoberta_encontrada.emit(mais_rara)
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
 	elif cenario == "estatisticas":
 		Descobertas.gerador.seed = 1
 		Economia.digitar(500000)

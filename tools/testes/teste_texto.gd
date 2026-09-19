@@ -26,7 +26,17 @@ const RAIZ_DADOS := "res://data"
 
 ## Campos de .tres que o jogador le. Nota nao entra: ela e nota de rodape para quem
 ## balanceia, e nao texto de jogo.
-const CAMPOS_DE_TEXTO: PackedStringArray = ["nome", "descricao", "titulo", "texto"]
+##
+## ⚠️ `unidade` ENTROU DEPOIS, E FALTAVA. Ela e o nome que a era da a coisa que o jogador
+## acumula -- "macacos", "simulacoes", "universos" --, e a HUD escreve ela no titulo da coluna
+## da loja desde a issue #30. Como o campo nao era varrido, tres das quatro unidades nunca
+## tiveram linha no CSV: o jogo em ingles mostrava "MACACOS" no meio de uma tela em ingles,
+## sem quebrar nada e sem imprimir erro. Quem acusou foi uma CAPTURA em ingles.
+##
+## Campo de texto novo num .tres entra nesta lista junto -- ou ele nasce fora da conta.
+const CAMPOS_DE_TEXTO: PackedStringArray = [
+	"nome", "descricao", "titulo", "texto", "unidade",
+]
 
 ## Marca de formato nao e texto: nao passa por traducao e nao precisa de linha no CSV.
 ## A lista e explicita de proposito -- "esqueci de traduzir" e "isto nao se traduz" se
@@ -135,6 +145,15 @@ func _moldes_em_constante() -> void:
 	# os nomes dos tres tipos de marco (issue #51)
 	for nome_do_tipo in Panorama.NOMES_DE_TIPO:
 		_exigir(nome_do_tipo, "Panorama.NOMES_DE_TIPO")
+	# ⚠️ AS FRASES DE EFEITO DA LOJA DE UPGRADES. Elas sao moldes em constante -- "×%s em toda
+	# a producao" chega ao jogador por uma variavel --, e varredura de literal nao alcanca
+	# variavel. Sem esta linha, o dia em que alguem acrescentar um tipo de efeito novo com uma
+	# frase nova, a frase fica sem linha no CSV e a loja escreve em portugues no jogo em ingles.
+	for tipo in VitrineDeUpgrades.FRASES_DE_EFEITO:
+		_exigir(
+			str(VitrineDeUpgrades.FRASES_DE_EFEITO[tipo]),
+			"VitrineDeUpgrades.FRASES_DE_EFEITO",
+		)
 	# ⚠️ OS VERSOS DO POEMA (issue #52). Eles chegam ao jogador por um PackedStringArray de
 	# um .tres, e a varredura de campo de texto do _texto_dos_dados so olha nome, descricao,
 	# titulo e texto -- os versos passariam inteiros sem linha no CSV.

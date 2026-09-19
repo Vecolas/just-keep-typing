@@ -209,18 +209,30 @@ luz azul vindo do cosmos é a assinatura visual da franquia**.
 **Sombras** macias, profundas, levemente cinematográficas. Nada de iluminação chapada; os
 objetos têm bastante sensação de volume.
 
-**Estilo de renderização — e ele é DOIS, de propósito** (issue #44, decisão
-[0006](decisoes/0006-pixel-art-no-menu-tipografia-na-partida.md)):
+**Estilo de renderização — e ele é DOIS, de propósito** (issue #44, decisões
+[0006](decisoes/0006-pixel-art-no-menu-tipografia-na-partida.md) e
+[0011](decisoes/0011-o-macaco-entra-na-partida.md)):
 
 | Onde | Como |
 |---|---|
 | Menu, Arquivos, Créditos | **pixel art**, com UI tipográfica por cima |
-| Partida | tipografia, arte ASCII e `Theme` montado em código |
+| Partida — a **grade** de fundo | arte ASCII, que multiplica e encolhe por era |
+| Partida — a **máquina da frente** e o **macaco** | **pixel art**, as mesmas duas peças do menu |
+| Partida — painéis, cartões, números | tipografia e `Theme` montado em código |
 
-A partida não tem sprite nenhum, e isso não é uma etapa provisória: é o que permite
-atravessar catorze eras e 10^50 caracteres por segundo sem um asset por era (issue #26). O
-menu é uma cena **parada, de tamanho conhecido**, e é ali que o macaco, a máquina e a
-janela estrelada existem como objetos em vez de aproximações tipográficas.
+⚠️ **A linha que separa as duas metades da partida é ESCALA, e não técnica.** O que
+multiplica por era é ASCII — é isso que permite atravessar catorze eras e 10^50 caracteres
+por segundo sem um asset por era (issue #26). O que é **fixo** — dois objetos, do mesmo
+tamanho em todas as eras — é pixel art, e são as mesmas peças do menu: a mesa da partida é
+literalmente a mesa do menu, que é a §15 deste documento sendo cumprida em vez de prometida.
+
+⚠️ **E nenhum asset novo foi pedido para isso.** O macaco, a máquina e os quatro ícones de
+família da loja já existiam, desenhados nas issues #45 e #46. Um segundo conjunto para o
+mesmo significado seria uma família competindo com a outra — e "isso não parece do mesmo
+jogo" é exatamente o que nenhuma medição pega (§17.11).
+
+O menu continua sendo uma cena **parada, de tamanho conhecido**, e é ali que a janela
+estrelada e o cenário existem como objetos em vez de aproximações tipográficas.
 
 O que amarra as duas metades é a §15: *nunca deixa de parecer Just Keep Typing*. A cola é a
 **paleta** da seção 6 — que não muda —, o dourado, o `∞` e a máquina de escrever. Não é a
@@ -282,6 +294,40 @@ ciano.
 **Cards** (máquinas, upgrades, descobertas, probabilidades) — quase retangulares, bordas
 finas em dourado/bronze, ornamentação discreta. A referência é painel científico construído
 dentro de uma biblioteca mecânica, não moldura medieval.
+
+**O banner de descoberta** — a faixa larga no topo da coluna do centro. Ele é a peça que
+transforma uma descoberta de linha de rodapé em acontecimento, e cada parte dele responde uma
+pergunta diferente:
+
+```text
+∞   NOVA DESCOBERTA
+    O Jogo
+    Um macaco digitou o código-fonte deste jogo. Compila.
+```
+
+| Parte | Responde | Como |
+|---|---|---|
+| marca | **quão raro** | o símbolo de raridade da tabela abaixo, em corpo grande |
+| rubrica | **o que aconteceu** | `NOVA DESCOBERTA`, `MARCO`, `TEOREMA PROVADO` |
+| título | **o que é** | serifado, o maior título da partida depois do contador |
+| detalhe | **o que significa** | a frase que o dado já tem escrita |
+
+⚠️ **A moldura toma a cor da raridade, e a cor é a ÚLTIMA das três leituras.** Quem carrega a
+informação são a marca e a rubrica, que são texto (issue #43).
+
+⚠️ **E ele não interrompe nada.** Não rouba foco, não para o jogo, não pede clique e não
+empurra o botão `DIGITAR` para baixo — este é um jogo que fica aberto atrás de outra coisa
+(issue #34). Ele aparece sobre a coluna do centro e sai sozinho, com o tempo crescendo da
+raridade Comum à Paradoxal.
+
+**Duas faixas, e nunca uma** (decisão [0012](decisoes/0012-o-jogador-le-a-loja-sem-o-mouse.md)):
+o banner é **acontecimento**; a linha discreta do rodapé é **confirmação**. Misturar as duas
+faz a gravação automática apagar uma descoberta Lendária, que foi exatamente o que acontecia.
+
+**Cartão de upgrade** — nome e custo na primeira linha, descrição, efeito em dourado e o
+botão de comprar. Tudo **visível**, sem hover: tooltip não alcança teclado, não alcança toque
+e não alcança quem lê a tela de relance. Os três estados econômicos se distinguem por brilho
+**e** por texto — o que está perto mostra a porcentagem escrita.
 
 **Painéis de papel** — informação especial aparece literalmente como uma folha sobre a
 interface, com sombra, dobra, grampo, rasguinho ou borda irregular:

@@ -234,6 +234,44 @@ static func painel(
 	return estilo
 
 
+## A ALTURA DE UMA BARRA DE PROGRESSO, em pixels logicos.
+##
+## ⚠️ Limite de DESIGN, e nao botao de tuning: seis pixels e o que se ve de relance sem a barra
+## virar um segundo bloco de conteudo. Ela e apoio ao numero que esta escrito ao lado, e nunca
+## a informacao principal -- por isso ela e fina, e por isso ela nao mostra porcentagem.
+const ALTURA_DA_BARRA: int = 6
+
+
+## Poe a barra de progresso no estilo do jogo: trilho escuro, preenchimento na cor pedida.
+##
+## ⚠️ A PORCENTAGEM ESCRITA FICA DESLIGADA, e isso e a issue #43 aplicada: o numero que
+## importa ja esta no rotulo ao lado, em texto de tamanho legivel. Uma porcentagem dentro de
+## uma barra de seis pixels e texto que ninguem le -- e texto ilegivel e pior que texto
+## ausente, porque ocupa o lugar de algo que seria lido.
+##
+## ⚠️ E ELA NUNCA E A UNICA LEITURA. Toda barra desta interface tem um rotulo do lado dizendo
+## o mesmo em numero: forma sem texto nao alcanca quem nao distingue a cor do preenchimento do
+## trilho, e nao alcanca ninguem que precise do valor exato.
+static func vestir_de_barra(barra: ProgressBar, tinta: Color) -> void:
+	barra.show_percentage = false
+	barra.custom_minimum_size.y = float(ALTURA_DA_BARRA)
+	barra.min_value = 0.0
+	barra.max_value = 100.0
+
+	var trilho := StyleBoxFlat.new()
+	trilho.bg_color = fundo(Paleta.INK_BROWN.lightened(0.1))
+	trilho.set_corner_radius_all(3)
+	barra.add_theme_stylebox_override("background", trilho)
+
+	var preenchimento := StyleBoxFlat.new()
+	# ⚠️ o parametro se chama `tinta` e nao `cor` porque `cor()` e a funcao estatica deste
+	# arquivo: um parametro com o mesmo nome a esconde, e o alto contraste deixaria de valer
+	# para toda barra do jogo sem uma linha no console
+	preenchimento.bg_color = cor(tinta)
+	preenchimento.set_corner_radius_all(3)
+	barra.add_theme_stylebox_override("fill", preenchimento)
+
+
 static func botao(
 	preenchimento: Color, borda: Color = Paleta.MECHANICAL_GOLD.darkened(0.2)
 ) -> StyleBoxFlat:
