@@ -411,12 +411,22 @@ func _os_degraus_estao_cheios() -> void:
 ##
 ## Ponto de entrada e DERIVADO da pasta: todo .gd com um .tscn irmao. Ferramenta nova entra
 ## na conta sozinha, sem ninguem lembrar de acrescentar uma linha aqui.
-const SEM_SORTEIO_AINDA: PackedStringArray = [
-	# nao produzem caractere: um mede quadro com o multiplicador cravado na mao, o outro so
-	# monta a galeria a partir de imagens que ja existem
-	"medir_quadro.gd",
-	"gerar_galeria.gd",
-]
+## ⚠️ ELA ESTA VAZIA, E ISSO E O ESTADO CERTO. Ela teve dois nomes -- `medir_quadro.gd` e
+## `gerar_galeria.gd` --, com a justificativa "nao produzem caractere". A justificativa era
+## FALSA, e o detector concordava com ela porque media o lugar errado:
+##
+##   as duas MONTAM A CENA PRINCIPAL, e a Partida tica `Economia.acumular` por quadro.
+##   Nenhuma das duas chama a Economia no proprio arquivo -- e era so isso que o detector
+##   procurava.
+##
+## O sintoma apareceu na galeria: catorze fotos de era saiam com uma descoberta aleatoria por
+## cima do cenario, uma diferente a cada geracao -- numa galeria que esta no git justamente
+## para o diff mostrar o que mudou na TELA. A regua de quadro tinha o mesmo defeito sem
+## sintoma visivel: descoberta muda a producao, producao muda quantas letras nascem.
+##
+## As duas semeiam agora, e a divida ficou sem membro. A constante continua aqui para a
+## proxima divida ter casa -- e com o motivo de cada saida escrito acima dela.
+const SEM_SORTEIO_AINDA: PackedStringArray = []
 
 
 func _quem_produz_caractere_semeia_o_sorteio() -> void:
@@ -446,7 +456,15 @@ func _conferir_semente(caminho: String, nome_do_arquivo: String) -> int:
 	var texto := arquivo.get_as_text()
 	arquivo.close()
 
-	var produz := texto.contains("Economia.digitar") or texto.contains("Economia.acumular")
+	# ⚠️ MONTAR A CENA PRINCIPAL CONTA COMO PRODUZIR. A Partida tica `Economia.acumular` todo
+	# quadro: uma ferramenta que monta o jogo produz caractere sem escrever uma linha de
+	# Economia. O detector antigo procurava so a chamada direta, e por isso aprovou duas
+	# ferramentas nao deterministicas por duas versoes seguidas.
+	var produz := (
+		texto.contains("Economia.digitar")
+		or texto.contains("Economia.acumular")
+		or texto.contains("application/run/main_scene")
+	)
 
 	if nome_do_arquivo in SEM_SORTEIO_AINDA:
 		# a outra metade da divida: se este arquivo passar a produzir caractere, ele sai da
