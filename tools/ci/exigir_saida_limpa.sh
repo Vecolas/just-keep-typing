@@ -66,6 +66,24 @@ declare -a FATAIS=(
 	'Failed loading resource'
 )
 
+# ⚠️ E AS EXCECOES NOMEADAS, com o motivo de cada uma. Uma linha aqui e uma linha que o
+# portao deixa passar PARA SEMPRE -- entao ela precisa dizer de onde vem e por que nao e o
+# jogo. Divida declarada, e nao padrao afrouxado: afrouxar `ERROR: Condition "` cegaria o
+# portao para toda asserção da engine, e foi uma delas que achou o grab_focus.
+declare -a ESPERADOS=(
+	# o runner do CI não tem placa de som. O ALSA falha ao abrir o dispositivo e o Godot cai
+	# no driver mudo, que é o comportamento certo num ambiente sem áudio -- a linha seguinte
+	# no log é "All audio drivers failed, falling back to the dummy driver".
+	# Não é defeito do jogo, e não há o que consertar aqui.
+	'ERROR: Condition "status < 0" is true. Returning: ERR_CANT_OPEN'
+)
+
+# tira as esperadas antes de procurar as fatais: assim uma linha esperada nunca conta, e uma
+# fatal que por acaso se pareça com ela continua contando
+for esperada in "${ESPERADOS[@]}"; do
+	saida="$(grep -vF "$esperada" <<< "$saida" || true)"
+done
+
 achados=""
 for padrao in "${FATAIS[@]}"; do
 	linhas="$(printf '%s\n' "$saida" | grep -F "$padrao" || true)"
