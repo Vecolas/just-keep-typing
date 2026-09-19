@@ -101,6 +101,22 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 
+	# ⚠️ A PASTA E CRIADA ANTES DE QUALQUER CAMINHO APONTAR PARA DENTRO DELA. O Save e o
+	# Config passam a gravar aqui nas linhas seguintes, e num user:// limpo -- que e todo
+	# runner de CI -- a pasta nao existe ainda:
+	#
+	#     ERROR: Config: nao abriu user://capturas/opcoes_da_captura.json para escrita
+	#     ERROR: Save: nao abriu user://capturas/save_da_captura_1.json.tmp (erro 7)
+	#
+	# E o pior: a foto saia assim mesmo. `menu_cheio` existe para fotografar o CONTINUAR com
+	# um Manuscrito no disco -- e no CI ele vinha fotografando o cartao VAZIO havia versoes,
+	# porque o save que ele acabara de gravar nunca chegou ao disco. A captura nao provava o
+	# que o nome dela promete, e o job ficava verde.
+	#
+	# Ela era criada la embaixo, na hora de salvar o PNG -- tarde demais para quem grava no
+	# _ready. Quem acusou foi o portao de saida limpa (tools/ci/exigir_saida_limpa.sh).
+	DirAccess.make_dir_recursive_absolute(PASTA)
+
 	# a captura nunca encosta no save de quem joga, e parte sempre de partida nova: assim
 	# duas capturas do mesmo commit dao a mesma imagem, que e o que faz o diff valer
 	Save.caminho = "user://capturas/save_da_captura.json"
