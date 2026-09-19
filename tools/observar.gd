@@ -158,10 +158,9 @@ func _observar() -> void:
 
 	# ⚠️ "QUANDO O JOGADOR PAROU DE LER OS TEXTOS" TEM UMA METADE MEDIVEL, e e esta.
 	#
-	# A HUD tem UM slot de aviso (hud.gd::_avisar): cada marco, cada descoberta e cada
-	# autosave escreve por cima do anterior e reinicia o relogio de AVISO_VISIVEL. Dois
-	# avisos dentro dessa janela querem dizer que o primeiro SUMIU antes de dar tempo de
-	# ler -- e isso nao e opiniao, e aritmetica.
+	# A HUD tem UM slot por FAIXA: o banner do topo e a linha do rodape. Dentro de uma faixa,
+	# dois avisos perto demais querem dizer que o primeiro saiu antes de dar tempo de ler --
+	# e isso nao e opiniao, e aritmetica.
 	#
 	# A outra metade -- se o jogador QUIS ler -- continua sendo dele.
 	# ⚠️ GUARDA O INSTANTE E A PRIORIDADE. A primeira versao guardava so o instante e
@@ -169,20 +168,40 @@ func _observar() -> void:
 	# EVENTOS CAEM, que a issue #69 nao muda. O que ela muda e o que a fila FAZ com eles.
 	#
 	# E o terceiro defeito desta familia nesta sessao: medir a entrada em vez do resultado.
-	var avisos: Array[Dictionary] = []
-	var anotar := func(prioridade: int) -> void:
-		avisos.append({"instante": Jogo.tempo_jogado, "prioridade": prioridade})
+	# ⚠️ A REGRA VEM DA FONTE, e nao de uma copia aqui. Ate a reforma da interface estas duas
+	# lambdas reimplementavam a classificacao do autoload Avisos -- e copia da regra numa REGUA
+	# e a pior copia possivel: ela nao muda o jogo, ela muda o numero que decide se o jogo esta
+	# bom. As funcoes sao estaticas em FilaDeAvisos exatamente para esta ferramenta poder
+	# chama-las sem subir autoload nenhum.
+	#
+	# ⚠️ E SAO DUAS CONTAS, UMA POR FAIXA. Descoberta e marco conceitual passaram a ter fila
+	# propria -- o banner do topo --, e somar as duas faixas numa simulacao so mediria uma fila
+	# que nao existe: ela diria que os avisos disputam slot quando eles nao disputam mais. Medir
+	# so o rodape seria pior ainda: a faixa que carrega o conteudo colecionavel do jogo ficaria
+	# sem regua nenhuma, e ponto cego nao declarado e ponto cego que ninguem lembra que existe.
+	var avisos_do_rodape: Array[Dictionary] = []
+	var avisos_do_banner: Array[Dictionary] = []
+	var anotar := func(
+		faixa: int, prioridade: int, segundos: float
+	) -> void:
+		var aviso := {
+			"instante": Jogo.tempo_jogado,
+			"prioridade": prioridade,
+			"segundos": segundos,
+		}
+		if faixa == FilaDeAvisos.Faixa.DESTAQUE:
+			avisos_do_banner.append(aviso)
+			return
+		avisos_do_rodape.append(aviso)
 	var anotar_marco := func(m: DadosMarco) -> void:
 		anotar.call(
-			FilaDeAvisos.Prioridade.ALTA
-			if m.tipo == DadosMarco.Tipo.CONCEITUAL
-			else FilaDeAvisos.Prioridade.NORMAL
+			FilaDeAvisos.faixa_de_marco(m), FilaDeAvisos.prioridade_de_marco(m), -1.0
 		)
 	var anotar_descoberta := func(d: DadosDescoberta) -> void:
 		anotar.call(
-			FilaDeAvisos.Prioridade.CRITICA
-			if d.categoria >= DadosDescoberta.Categoria.LENDARIO
-			else FilaDeAvisos.Prioridade.ALTA
+			FilaDeAvisos.faixa_de_descoberta(d),
+			FilaDeAvisos.prioridade_de_descoberta(d),
+			FilaDeAvisos.segundos_de_descoberta(d.categoria),
 		)
 	EventBus.marco_alcancado.connect(anotar_marco)
 	EventBus.descoberta_encontrada.connect(anotar_descoberta)
@@ -269,29 +288,34 @@ func _observar() -> void:
 	])
 	EventBus.marco_alcancado.disconnect(anotar_marco)
 	EventBus.descoberta_encontrada.disconnect(anotar_descoberta)
-	_contar_o_que_nao_deu_para_ler(avisos)
+	_contar_o_que_nao_deu_para_ler(
+		avisos_do_rodape, preload("res://src/ui/hud.gd").AVISO_VISIVEL, "rodape"
+	)
+	_contar_o_que_nao_deu_para_ler(
+		avisos_do_banner, FilaDeAvisos.SEGUNDOS_POR_CATEGORIA[0], "banner"
+	)
 
 	print("")
 	print("um minuto sem compra possivel E sem acontecimento e um minuto em que a tela nao")
 	print("muda e o jogador nao tem o que decidir. A regua nao ve isso.")
 
 
-## Quantos avisos foram apagados antes de completarem AVISO_VISIVEL na tela.
+## Quantos avisos de UMA FAIXA nao chegaram a ficar o tempo minimo na tela.
 ##
-## ⚠️ O NUMERO SAI DA CONSTANTE DA HUD, e nao de um 1,6 digitado aqui. Ela e um limite de
-## design e pode mudar; copia-la criaria a segunda fonte, e a copia e sempre a que
-## envelhece.
-## Quantos avisos NAO chegaram a ficar o tempo minimo na tela.
+## ⚠️ O PISO VEM DE FORA, e de uma constante -- nunca de um numero digitado aqui. Para o
+## rodape ele e hud.gd::AVISO_VISIVEL; para o banner e a menor duracao da tabela de raridade,
+## que e o menor tempo que um banner deveria ficar. Copiar qualquer um dos dois criaria a
+## segunda fonte, e a copia e sempre a que envelhece.
 ##
-## ⚠️ RODA A FILA DE VERDADE, com os instantes e as prioridades reais da partida. Medir
-## "quantos eventos caem a menos de 1,6 s um do outro" mediria a ENTRADA -- e a entrada nao
-## muda com a issue #69. O que muda e o que a fila faz com eles.
+## ⚠️ RODA A FILA DE VERDADE, com os instantes, as prioridades e as duracoes reais da partida.
+## Medir "quantos eventos caem a menos de 1,6 s um do outro" mediria a ENTRADA -- e a entrada
+## nao muda com a fila. O que muda e o que a fila FAZ com eles.
 ##
-## O piso e AVISO_VISIVEL, e nao a duracao de cada prioridade: interessa quantos nao
-## alcancaram nem o minimo. Medir cada um contra a propria duracao daria um numero melhor e
-## menos honesto.
-func _contar_o_que_nao_deu_para_ler(avisos: Array[Dictionary]) -> void:
-	var piso: float = preload("res://src/ui/hud.gd").AVISO_VISIVEL
+## O piso e o minimo da faixa, e nao a duracao de cada aviso: interessa quantos nao alcancaram
+## nem o minimo. Medir cada um contra a propria duracao daria um numero melhor e menos honesto.
+func _contar_o_que_nao_deu_para_ler(
+	avisos: Array[Dictionary], piso: float, faixa: String
+) -> void:
 	avisos.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return float(a["instante"]) < float(b["instante"]))
 
@@ -321,14 +345,22 @@ func _contar_o_que_nao_deu_para_ler(avisos: Array[Dictionary]) -> void:
 				if float(visto[antes]) < piso - 0.001:
 					curtos += 1
 			relogio += passo
-		fila.acrescentar("aviso %d" % mostrados, int(aviso["prioridade"]), ate)
+		var extras := {}
+		if float(aviso["segundos"]) > 0.0:
+			extras["segundos"] = float(aviso["segundos"])
+		fila.acrescentar(
+			"aviso %d" % mostrados, int(aviso["prioridade"]), ate, extras
+		)
 
 	print("")
-	print("⚠️ avisos que a fila entregou:               %d de %d" % [mostrados, avisos.size()])
-	print("⚠️ que nao ficaram os %.1f s minimos:         %d  (%.0f%%)" % [
-		piso, curtos, 0.0 if mostrados == 0 else 100.0 * float(curtos) / float(mostrados),
+	print("⚠️ %s -- avisos que a fila entregou:         %d de %d" % [
+		faixa, mostrados, avisos.size(),
 	])
-	print("   medido rodando FilaDeAvisos com os instantes e prioridades reais da partida.")
+	print("⚠️ %s -- que nao ficaram os %.1f s minimos:   %d  (%.0f%%)" % [
+		faixa, piso, curtos,
+		0.0 if mostrados == 0 else 100.0 * float(curtos) / float(mostrados),
+	])
+	print("   medido rodando FilaDeAvisos com os instantes, prioridades e duracoes reais.")
 	print("   o autosave nao entra: desde a issue #69 ele e um icone, e nao apaga texto.")
 
 
@@ -377,19 +409,17 @@ func _quantos_na_loja() -> int:
 ## como saudavel um minuto em que o jogador nao tinha o que fazer.
 ##
 ## Vitrine e oferta sao coisas diferentes: um item a 5% do custo e uma promessa distante;
-## um a 70% e um alvo. O limiar sai da HUD, e nao de um numero digitado aqui.
+## um a 70% e um alvo.
+##
+## ⚠️ QUEM RESPONDE E O `Alcance`, e nao uma conta escrita aqui. O limiar e a formula moram na
+## mesma classe que a tela usa para decidir o brilho de cada botao: uma copia nesta regua daria
+## uma tabela medindo uma loja diferente da que o jogador ve -- e regua que mede outra coisa e
+## pior que regua nenhuma, porque ela decide o balanceamento.
 func _quantos_perto() -> int:
-	var perto: float = preload("res://src/ui/hud.gd").PERTO_O_BASTANTE
 	var quantos := 0
-	for dados in Economia.upgrades():
-		if Jogo.upgrades_comprados.has(dados.id):
-			continue
-		if Grande.de_float(dados.requisito).maior_que(Jogo.total_caracteres):
-			continue
+	for dados in VitrineDeUpgrades.disponiveis():
 		var custo := Grande.de_float(dados.custo)
-		if custo.sinal() <= 0 or not custo.maior_que(Jogo.dinheiro):
-			continue
-		if Jogo.dinheiro.dividido(custo).para_float() >= perto:
+		if Alcance.de(custo) == Alcance.Estado.PERTO:
 			quantos += 1
 	return quantos
 
