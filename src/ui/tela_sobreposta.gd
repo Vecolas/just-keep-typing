@@ -30,15 +30,14 @@ var _foco_anterior: Control = null
 func abrir() -> void:
 	_foco_anterior = get_viewport().gui_get_focus_owner()
 	visible = true
-	var alvo := _primeiro_foco()
-	if alvo != null:
-		alvo.call_deferred("grab_focus")
+	# o foco e adiado porque quem acabou de ficar visivel ainda nao esta posicionado -- e
+	# passa pelo Foco porque entre o pedido e o quadro seguinte a tela pode ter fechado
+	Foco.pedir(_primeiro_foco())
 
 
 func fechar() -> void:
 	visible = false
-	if is_instance_valid(_foco_anterior) and _foco_anterior.is_visible_in_tree():
-		_foco_anterior.call_deferred("grab_focus")
+	Foco.pedir(_foco_anterior)
 	_foco_anterior = null
 
 

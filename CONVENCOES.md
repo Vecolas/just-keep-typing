@@ -1035,6 +1035,17 @@ godot --headless --path . tools/teste_fumaca.tscn    # minutos
 
 Os dois últimos precisam imprimir `PASSOU`. Rode o de cima primeiro — termina em segundos.
 
+⚠️ **E `PASSOU` sozinho não basta.** Para rodar localmente o mesmo portão que o CI roda —
+`PASSOU` **e** `stderr` limpo — use o mesmo script:
+
+```bash
+./tools/ci/exigir_passou.sh "suíte" godot --headless --path . tools/testes/runner.tscn
+./tools/ci/exigir_passou.sh "fumaça" godot --headless --path . tools/teste_fumaca.tscn
+```
+
+Ler só a última linha da saída é como confiar em `exit 0`: a HUD já passou uma versão
+inteira lançando `Node not found` a cada montagem, com `PASSOU` logo abaixo.
+
 ⚠️ **Mexeu no `i18n/textos.csv`? Reimporte antes de rodar.** Os `.translation` são gerados
 na importação e não são versionados: linha acrescentada e não importada fica escrita, passa
 em todos os portões de texto — a chave existe! — e mesmo assim sai em português no jogo em
@@ -1064,7 +1075,40 @@ rode antes**, que é o que a regra de git desta página já previa.
 carrega, quando um autoload não sobe, quando o caminho do argumento está errado. Um CI que
 confiasse no código de saída ficaria verde para sempre a partir do dia em que alguém
 renomeasse `runner.tscn`. Por isso cada passo passa por `tools/ci/exigir_passou.sh`, que
-**exige a palavra `PASSOU` na saída** e reprova se aparecer `FALHOU` — as duas metades.
+**exige a palavra `PASSOU` na saída** e reprova se aparecer `FALHOU`.
+
+### ⚠️ E `PASSOU` não significa que a tela funciona
+
+São **três** metades, e a terceira nasceu de um caso real:
+
+```text
+ERROR: Node not found: "%EspacoFuturos" (relative to ".../HUD").
+SCRIPT ERROR: Invalid assignment of property 'visible' on a base object of type 'null'.
+...
+PASSOU (6800 afirmacoes em 27 suites)
+```
+
+**A HUD lançava erro a cada montagem, e a suíte imprimia `PASSOU`.** Nenhuma afirmação olhava
+aquilo: as suítes afirmam **lógica**, e o que quebrou foi **montagem**.
+
+> **Portão realmente verde = suíte verde + `stderr` sem erro que ninguém pediu + captura
+> válida.**
+
+Quem decide o que é "erro que ninguém pediu" é `tools/ci/exigir_saida_limpa.sh`, e ele roda
+nos dois lugares: junto de cada portão e junto de **cada captura** — porque uma cena que sobe
+com `Node not found` desenha e salva o PNG do mesmo jeito, só que com um pedaço faltando.
+
+⚠️ **Ele NÃO reprova por qualquer `ERROR:`, e isso é deliberado.** `push_error` é como este
+projeto grita, e metade das suítes alimenta o código com entrada inválida **para vê-lo
+gritar** — `Grande.dividido: divisao por zero` sob teste é o comportamento certo. Reprovar ali
+seria um portão que morde o código certo, e portão que morde o código certo é portão que
+alguém desliga. A lista é de padrões que **não têm versão legítima**: `SCRIPT ERROR:`,
+`Parse Error:`, `Node not found:`, `ERROR: Condition "`, e mais quatro — cada um com o motivo
+escrito ao lado.
+
+No primeiro dia ele achou duas coisas que estavam lá havia versões: uma função de suíte que
+**abortava na primeira linha** (dez afirmações, incluindo a de controle, nunca rodaram) e
+`grab_focus` pedido em nó fora da árvore, em três telas.
 
 ⚠️ **A versão do Godot é fixada no workflow**, e não "a mais recente": engine nova é uma
 mudança que ninguém pediu entrando por um caminho que ninguém olha, e ela chegaria como uma
@@ -1166,6 +1210,30 @@ justamente para pegar erro de tuning. Erros dessa família, dos projetos anterio
 `ok`, `igual`, `perto` e `entre` dão conta, e cada falha já diz o esperado e o obtido.
 **Nenhum teste é escrito antes de existir lógica para testar.**
 
+### ⚠️ Portão novo: prove uma vez que a regra ERRADA reprova
+
+> **Para todo portão que protege uma regra crítica, quebre a regra de propósito e veja o
+> portão morder. Uma vez. Antes de confiar nele.**
+
+Não é zelo: é a única coisa que distingue portão de carimbo. E neste projeto o risco é maior
+que o normal, porque **o catálogo real tem propriedades correlacionadas que mascaram teste
+ruim**. O caso que originou a regra:
+
+```text
+a afirmação    "os futuros vêm ordenados por requisito"
+a sabotagem    trocar a ordenação para custo
+o resultado    vitrine e alcance    148 afirmacoes, 0 falhas
+```
+
+No catálogo de hoje, custo e requisito **sobem juntos**. Nenhuma afirmação sobre o dado real
+consegue separar a regra certa da errada — e a suíte tinha 148 afirmações verdes dizendo que
+conseguia.
+
+O conserto é dar **controle** ao portão: dados sintéticos em que as duas regras discordam de
+propósito (ali, dois upgrades — um caro que desbloqueia já, um barato que desbloqueia longe).
+
+Na reforma de interface, **cinco de onze defeitos** só apareceram por esse procedimento.
+
 ### Visual
 
 ```bash
@@ -1175,8 +1243,28 @@ godot --path . tools/capturar.tscn                          # quadro avulso
 
 A galeria são capturas fixas sobrescritas em `docs/capturas/` e **versionadas**: como as
 imagens estão no git, o diff mostra exatamente o que mudou na tela — é o jeito mais barato
-de perceber que um ajuste de shader estragou a leitura. Obrigatória antes de publicar
-release ou atualizar página de loja.
+de perceber que um ajuste de shader estragou a leitura.
+
+### ⚠️ A galeria é artefato OBRIGATÓRIO de revisão, e não ferramenta auxiliar
+
+> **Mudou algo visual? O diff da galeria é lido por uma pessoa antes do merge.**
+
+```text
+antes  →  gerar galeria determinística  →  depois  →  diff visual  →  leitura humana
+```
+
+Não é preciosismo: na reforma de interface, **três defeitos só apareceram olhando a imagem**
+— banner vazio por dentro, banner cobrindo a coluna da direita, banner com mil pixels de
+altura cobrindo o macaco. Nenhum era regra de negócio, e nenhuma das 7.018 afirmações
+enxergava qualquer um deles.
+
+⚠️ **E o julgamento estético NÃO se automatiza.** Este projeto já demonstrou três vezes que
+tentar isso é falsa confiança. A régua mostra **o que mudou**; quem diz se ficou bom é quem
+olha.
+
+⚠️ **A geração precisa ser determinística, senão o diff mente.** Semente fixa, fila de avisos
+limpa antes de cada foto e slot apagado antes de começar — as três já custaram uma galeria
+inteira acusando mudança que nunca houve (`TUNING.md`).
 
 O `capturar.tscn` é para olhar, não para versionar; sai em `user://capturas`. Vários
 problemas de leitura visual só aparecem numa captura parada.

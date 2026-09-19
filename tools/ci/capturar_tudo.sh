@@ -35,6 +35,12 @@ capturar() {
 		echo "::error::a captura \"$descricao\" não produziu imagem" >&2
 		exit 1
 	fi
+	# ⚠️ "capturou" NÃO SIGNIFICA QUE A IMAGEM PRESTA. Uma cena que sobe com `Node not
+	# found` desenha e salva o PNG do mesmo jeito -- só que com um pedaço da tela faltando.
+	# Foi exatamente assim que a HUD ficou meia hora quebrada com tudo verde.
+	if ! printf '%s' "$saida" | "$raiz/tools/ci/exigir_saida_limpa.sh" "captura $descricao"; then
+		exit 1
+	fi
 	quantas=$((quantas + 1))
 }
 
@@ -46,7 +52,10 @@ capturar() {
 # ⚠️ `banner` E O UNICO JEITO DE O CI VER A FAIXA DO TOPO. Ela so existe por alguns segundos
 # durante o jogo, entao ela nao aparece em nenhuma outra captura -- e o que ela pode quebrar
 # (nao caber, nao contrastar, nao quebrar linha) so se ve numa foto parada.
-for cenario in menu_cheio arquivos_cheio principal banner panorama descobertas descobertas_fim estatisticas; do
+# ⚠️ `loja_fim` E O UNICO JEITO DE O CI VER `PRÓXIMAS MELHORIAS`. A coluna da direita e um
+# ScrollContainer: com a loja cheia, a secao que a reforma criou fica ABAIXO DA DOBRA em
+# 1080p, e a foto de `principal` nao prova nada sobre ela. Mesmo motivo de `descobertas_fim`.
+for cenario in menu_cheio arquivos_cheio principal loja_fim banner panorama descobertas descobertas_fim estatisticas; do
 	capturar "$cenario em 1080p" --resolution 1920x1080 -- "cenario=$cenario"
 done
 
