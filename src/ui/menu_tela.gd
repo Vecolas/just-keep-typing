@@ -246,7 +246,7 @@ func _dar_o_foco_inicial() -> void:
 	for opcao in OPCOES:
 		var botao := _botoes[opcao["no"]] as Button
 		if not botao.disabled:
-			botao.call_deferred("grab_focus")
+			Foco.pedir(botao)
 			return
 
 

@@ -385,7 +385,7 @@ func _dar_o_foco() -> void:
 				break
 	if alvo == null:
 		alvo = _voltar
-	alvo.call_deferred("grab_focus")
+	Foco.pedir(alvo)
 
 
 # --------------------------------------------------------------------------------- acoes
