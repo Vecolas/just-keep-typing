@@ -11,10 +11,16 @@
 #
 # É o falso verde uma camada acima do código. Ver CONVENCOES.md.
 #
-# As duas metades importam:
+# As TRÊS metades importam:
 #
-#   sem `PASSOU`  -> reprova, mesmo com exit 0
-#   com `FALHOU`  -> reprova, mesmo que `PASSOU` apareça em algum lugar da saída
+#   sem `PASSOU`        -> reprova, mesmo com exit 0
+#   com `FALHOU`        -> reprova, mesmo que `PASSOU` apareça em algum lugar da saída
+#   com erro no stderr  -> reprova, mesmo com `PASSOU` e sem `FALHOU`
+#
+# ⚠️ A TERCEIRA É A MAIS NOVA, E NASCEU DE UM CASO REAL. A HUD lançava `Node not found` a
+# cada montagem enquanto a suíte imprimia `PASSOU (6800 afirmacoes)`: as suítes afirmam
+# **lógica**, e o que quebrou foi **montagem**. Quem decide o que é erro de verdade é
+# `exigir_saida_limpa.sh`, que tem a lista e o motivo de cada padrão.
 set -uo pipefail
 
 if [ "$#" -lt 2 ]; then
@@ -41,6 +47,13 @@ fi
 if ! printf '%s' "$saida" | grep -q "PASSOU"; then
 	echo "::error::$nome não imprimiu PASSOU (código de saída: $codigo)"
 	echo "::error::exit 0 não significa que o portão rodou -- ver tools/ci/exigir_passou.sh"
+	exit 1
+fi
+
+# ⚠️ E A SAÍDA TEM QUE ESTAR LIMPA. `PASSOU` diz que as afirmações passaram; ele não diz
+# nada sobre o que a engine cuspiu enquanto elas rodavam.
+aqui="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if ! printf '%s' "$saida" | "$aqui/exigir_saida_limpa.sh" "$nome"; then
 	exit 1
 fi
 
