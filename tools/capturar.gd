@@ -266,6 +266,44 @@ func _ready() -> void:
 			EventBus.descoberta_encontrada.emit(mais_rara)
 		for i in FRAMES_ATE_ESTABILIZAR:
 			await get_tree().process_frame
+	elif cenario == "loja_fim":
+		# ⚠️ A FOTO DE `PRÓXIMAS MELHORIAS`. A coluna da direita e um ScrollContainer, e com
+		# os blocos de macaco, sala, maquina e automacao mais tres ou quatro cartoes, a secao
+		# de futuros fica ABAIXO DA DOBRA em 1080p -- ou seja, a captura de `principal` nao
+		# prova nada sobre ela. Foto que nao chega la nao prova a secao que a reforma criou.
+		#
+		# Mesmo motivo e mesmo jeito de `descobertas_fim`.
+		#
+		# ⚠️ OS DOIS SORTEIOS SAO SEMEADOS, e sem isso esta foto nao serve para comparar nada.
+		# A producao sorteia descoberta, descoberta muda a producao, e producao muda QUAIS
+		# upgrades aparecem na coluna: tres geracoes seguidas deram tres lojas diferentes --
+		# com um evento aleatorio no centro de uma delas, para completar.
+		Descobertas.gerador.seed = 1
+		Eventos.gerador.seed = 1
+		Economia.digitar(500000)
+		Jogo.upgrades_comprados = ["instinto_digitador"] as Array[String]
+		Jogo.macacos = Grande.de_float(10.0)
+		for i in FRAMES_ATE_ESTABILIZAR:
+			await get_tree().process_frame
+		var hud := get_tree().root.find_child("HUD", true, false)
+		if hud == null:
+			printerr("FALHA  a HUD nao foi montada")
+			get_tree().quit(1)
+			return
+		var rolagem_da_loja := hud.find_child("RolagemLoja", true, false) as ScrollContainer
+		if rolagem_da_loja == null:
+			printerr("FALHA  a rolagem da loja nao foi encontrada")
+			get_tree().quit(1)
+			return
+		# o fim de verdade, e nao um numero chutado: o maximo muda com a escala e com o idioma
+		rolagem_da_loja.scroll_vertical = int(
+			rolagem_da_loja.get_v_scroll_bar().max_value
+		)
+		# a fila e limpa NO FIM, e nao no comeco: as descobertas caem durante os quadros de
+		# assentamento, e o banner cobriria a coluna do centro nesta foto -- que e sobre a loja
+		Avisos.limpar()
+		for i in 2:
+			await get_tree().process_frame
 	elif cenario == "estatisticas":
 		Descobertas.gerador.seed = 1
 		Economia.digitar(500000)

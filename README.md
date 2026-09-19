@@ -86,7 +86,7 @@ Escala acima de 100% na menor resolução é o caso que estoura tudo — e carac
 então só a foto mostra rótulo saindo do botão.
 
 Cenários: `menu`, `menu_cheio`, `arquivos`, `arquivos_cheio`, `principal`, `panorama`,
-`descobertas`, `estatisticas`, `letras`, `banner`. Os que começam com `menu` e `arquivos` param antes
+`descobertas`, `estatisticas`, `letras`, `banner`, `loja_fim`. Os que começam com `menu` e `arquivos` param antes
 da partida; todos os outros entram numa. O sufixo `_cheio` **joga um pouco e volta**, para a
 foto ter um Manuscrito no disco — sem save o CONTINUAR sai apagado e o resumo dele não
 existe.
