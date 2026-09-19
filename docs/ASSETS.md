@@ -227,6 +227,48 @@ saiu assim.
 
 ---
 
+## A partida usa estas peças — e nenhuma nova foi pedida
+
+A reforma de interface (decisões
+[0011](decisoes/0011-o-macaco-entra-na-partida.md) e
+[0012](decisoes/0012-o-jogador-le-a-loja-sem-o-mouse.md)) levou pixel art para dentro da
+partida. O plano previa um lote novo e grande: painéis, botões, molduras, cartões, banners,
+ícones e um cenário central. **Nenhuma peça nova foi gerada**, e isso é decisão:
+
+| O que a partida precisava | O que ela usa | Por quê |
+|---|---|---|
+| macaco e máquina no centro | `macaco.png`, `maquina.png` | são **dois**, fixos, para as catorze eras |
+| ícone de cada família de upgrade | `icone_banana`, `icone_engrenagem`, `icone_papel`, `icone_infinito` | quatro famílias, quatro ícones que já existiam e já significam isso |
+| moldura dos painéis, dos cartões e do banner | `Tema.painel()`, montado em código | moldura não é arte por conteúdo: ela é cor de borda e raio de canto |
+
+⚠️ **Pedir um segundo conjunto para o mesmo significado é o erro caro.** Duas famílias de
+ícones para "a máquina" divergem no próximo lote, e "isso não parece do mesmo jogo" é
+exatamente o que nenhuma medição pega (`ARTE.md` §17.11). Derive em vez de duplicar.
+
+### Se um dia faltar peça, o pedido vem antes da entrega
+
+Só há um papel nesta interface que uma peça desenhada faria melhor que o `Theme`: a
+**moldura do banner de descoberta**, que hoje é um retângulo de borda colorida. Se ela for
+pedida um dia, a ficha é esta — e ela segue as cinco regras do topo deste arquivo:
+
+- **o que a peça é:** uma moldura larga e rasa de bronze, como a placa de identificação
+  aparafusada na frente de uma máquina de escrever, **oca** no meio
+- **tamanho:** 64×24, borda 8, escala 4× — os mesmos números da família de UI, e o tamanho
+  sai da constante do consumidor, e não de um palpite
+- **o que a separa das vizinhas:** `placa_normal.png` é um **botão** e tem miolo; esta é
+  **oca** e mais rasa, porque quem desenha o fundo é o painel atrás dela
+- **a família:** molduras de interface, escala 4×, mesma paleta da §6 do `ARTE.md`
+- **o que a cobre:** `teste_assets` confere tamanho e existência;
+  `docs/capturas/banner_de_descoberta.png` é o diff que mostra se ela ficou legível
+- ⚠️ **sem texto dentro.** Nem "NOVA DESCOBERTA", nem símbolo de raridade: os dois são
+  desenhados pelo Godot, porque os dois **mudam** — de idioma e de raridade
+
+⚠️ **E a cor dela é modulada em runtime pela raridade.** A peça tem que ser desenhada em
+tons neutros de bronze, e não em dourado saturado: uma moldura que já chega colorida briga
+com o magenta de uma descoberta Paradoxal.
+
+---
+
 ## O que foi preenchido pela convenção, e não pedido
 
 ⚠️ **Isto está escrito para poder ser corrigido antes da entrega, e não depois.** Quem pediu

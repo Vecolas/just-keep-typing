@@ -276,6 +276,20 @@ asserções em inglês, quebrando testes sem nada ter mudado no código.
 
 Português porque é a língua de origem: a chave da tabela É o texto em português.
 
+### ⚠️ Campo de texto novo num `.tres` entra na varredura junto
+
+O portão varre uma **lista de campos** dos `.tres` de `data/` — `nome`, `descricao`,
+`titulo`, `texto`, `unidade`. Campo que não está na lista nunca é cobrado por ninguém.
+
+Isso já custou: `unidade` é o nome que a era dá à coisa que o jogador acumula ("macacos",
+"simulações", "universos"), a HUD escreve ela no título da coluna da loja desde a issue #30,
+e o campo **não era varrido**. Três das quatro unidades nunca tiveram linha no CSV: o jogo em
+inglês mostrava `MACACOS` no meio de uma tela em inglês, sem quebrar nada e sem imprimir
+erro. Quem acusou foi uma captura em inglês, meses depois.
+
+A lista mora em `teste_texto.gd::CAMPOS_DE_TEXTO`. Campo novo entra nela **na mesma
+mudança** que o cria — ou ele nasce fora da conta.
+
 ### O que não se traduz
 
 Marca de formato (`%02d:%02d`) e número de exemplo que a cena mostra antes de o jogo

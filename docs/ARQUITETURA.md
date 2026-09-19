@@ -17,6 +17,7 @@ os que vieram antes dele.
 | 1 | `EventBus` | `src/autoload/event_bus.gd` | Só sinais. Não guarda estado, não tem lógica. |
 | 2 | `Jogo` | `src/autoload/jogo.gd` | Só estado da partida. Não calcula, não desenha, não tem `_process`. |
 | 3 | `Save` | `src/autoload/save.gd` | Grava, carrega, migra, verifica e guarda backup. |
+| 3.5 | `Combo` | `src/autoload/combo.gd` | O multiplicador de digitação (issue #54). |
 | 4 | `Economia` | `src/autoload/economia.gd` | Produção, custo, compra. Só calcula. |
 | 5 | `Marcos` | `src/autoload/marcos.gd` | O Panorama: quando um número ganha significado. |
 | 6 | `Descobertas` | `src/autoload/descobertas.gd` | A chance por caractere e as sete categorias. |
@@ -25,6 +26,7 @@ os que vieram antes dele.
 | 9 | `Automacao` | `src/autoload/automacao.gd` | Gerente, técnico, administrador e diretor. |
 | 10 | `Fragmentos` | `src/autoload/fragmentos.gd` | O segundo prestígio. |
 | 11 | `Audio` | `src/autoload/audio.gd` | Os cinco barramentos e os sons. Cria o mixer; não lê opção. |
+| 11.5 | `Avisos` | `src/autoload/avisos.gd` | O que vira aviso, em que **faixa** da tela e por quanto tempo. |
 | 12 | `Config` | `src/autoload/config.gd` | As opções da **instalação**, e onde cada slot mora. |
 | 13 | `Autosave` | `src/autoload/autosave.gd` | **Quando** gravar. Quem grava é o `Save`. |
 | 14 | `Cenas` | `src/autoload/cenas.gd` | O caminho Boot → Menu → Arquivos → Partida → Menu. |
@@ -96,7 +98,7 @@ que é quem sabe se há partida aberta.
 | `src/nucleo/` | Lógica pura, sem cena: `Grande`, `Formatador`, `Relogio`. Testável headless. |
 | `src/producao/` | Macacos, máquinas, salas — quem gera caractere |
 | `src/progressao/` | Marcos, descobertas, teoremas, `Manuscrito` (o cartão de um slot) e `NomesDeManuscrito` (o que o nome pode ser) |
-| `src/ui/` | Telas: Abertura, Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — mais `TelaSobreposta` (base das que abrem por cima), `BotaoDeSegurar`, `CenarioDoMenu` e `AssetsDoMenu` |
+| `src/ui/` | Telas: Abertura, Menu, Arquivos, HUD, Panorama, Descobertas, Estatísticas, Opções, Créditos — mais `TelaSobreposta` (base das que abrem por cima), `BotaoDeSegurar`, `CenarioDoMenu` e `AssetsDoMenu`. E as quatro peças da loja e dos avisos: `VitrineDeUpgrades` (o que a loja mostra), `CartaoDeUpgrade` (como cada upgrade se desenha), `Alcance` (os três estados de compra) e `BannerDeDestaque` (a faixa do topo) |
 | `src/cena/` | O Boot, a Partida, a cena das eras e a câmera que se afasta |
 | `assets/menu/` | A pixel art do menu (issue #45). O briefing é `docs/ASSETS.md`; a tabela que vale é `src/ui/assets_do_menu.gd` |
 | `data/` | `.tres` de balanceamento — nenhum código |
